@@ -1,0 +1,16 @@
+﻿<Application x:Class="YouthCenterSignIn.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="using:YouthCenterSignIn"
+             RequestedTheme="Light">
+    <Application.Resources>
+        <ResourceDictionary>
+            <x:String x:Key="SignInIcon"></x:String>
+            <SolidColorBrush x:Key="SignInForeground" Color="Green" />
+
+            <x:String x:Key="SignOutIcon"></x:String>
+
+            <SolidColorBrush x:Key="CancelForeground" Color="Firebrick" />
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>
