@@ -23,7 +23,7 @@ namespace YouthCenterSignIn
             this.Suspending += OnSuspending;
 
             //ApplicationView.PreferredLaunchWindowingMode = ApplicationViewWindowingMode.FullScreen;
-            Logic.Data.DataProvider.Current = new DataProvider();
+            Logic.Data.DataProvider.Current = new UwpDataProvider();
         }
 
         /// <summary>

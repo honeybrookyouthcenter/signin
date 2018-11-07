@@ -99,7 +99,7 @@
       <DependentUpon>BigIconButton.xaml</DependentUpon>
     </Compile>
     <Compile Include="Converters\NullOrEmptyConverter.cs" />
-    <Compile Include="DataProvider.cs" />
+    <Compile Include="UwpDataProvider.cs" />
     <Compile Include="MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>

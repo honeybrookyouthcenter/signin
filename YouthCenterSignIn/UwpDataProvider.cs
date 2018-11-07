@@ -9,7 +9,7 @@ using YouthCenterSignIn.Logic.Data;
 
 namespace YouthCenterSignIn
 {
-    public class DataProvider : Logic.Data.DataProvider
+    public class UwpDataProvider : DataProvider
     {
         private const string birthDateName = "Birth date";
 
