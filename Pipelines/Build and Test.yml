@@ -27,3 +27,10 @@ steps:
     solution: '$(solution)'
     configuration: '$(buildConfiguration)'
     msbuildArgs: '/p:AppxBundlePlatforms="$(buildPlatform)" /p:AppxPackageDir="$(appxPackageDir)" /p:AppxBundle=Always /p:UapAppxPackageBuildMode=StoreUpload'
+
+- task: VSTest@2
+  inputs:
+    testSelector: 'testAssemblies'
+    searchFolder: '$(Build.SourcesDirectory)'
+    testAssemblyVer2: '**\*test*.dll;!**\*microsoft*;!**\obj\**'
+    testConfiguration: $(buildConfiguration)
