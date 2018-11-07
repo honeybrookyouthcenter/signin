@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using YouthCenterSignIn.Logic.Data;
 
@@ -26,7 +25,7 @@ namespace YouthCenterSignIn.Logic.Tests
 
         public override Task<List<Person>> GetPeople()
         {
-            return DoAsyncInvoke(() => People);
+            return Task.FromResult(People);
         }
 
         #endregion
@@ -39,13 +38,10 @@ namespace YouthCenterSignIn.Logic.Tests
 
         protected override Task<string> GetJsonFileContent(string file)
         {
-            return DoAsyncInvoke(() =>
-            {
-                if (JsonFiles.TryGetValue(file, out string json))
-                    return json;
+            if (JsonFiles.TryGetValue(file, out string json))
+                return Task.FromResult(json);
 
-                return "";
-            });
+            return Task.FromResult("");
         }
 
         protected override Task SetJsonFileContent(string file, string json)
@@ -84,15 +80,15 @@ namespace YouthCenterSignIn.Logic.Tests
 
         #endregion
 
-        public Task RunningTask { get; private set; }
-        Task<T> DoAsyncInvoke<T>(Func<T> action)
-        {
-            if (RunningTask == null || RunningTask.IsCompleted)
-                RunningTask = new Task<T>(action);
-            else
-                RunningTask = RunningTask.ContinueWith((t) => new Task<T>(action));
+        //Task<T> DoAsyncInvoke<T>(Func<T> action)
+        //{
+        //    T actionResult;
 
-            return (Task<T>)RunningTask;
-        }
+        //    lock (this)
+        //    {
+        //        actionResult = action.Invoke();
+        //    }
+        //    return Task.FromResult(actionResult);
+        //}
     }
 }
