@@ -8,9 +8,8 @@ pool:
 
 variables:
   solution: '**/*.sln'
-  buildPlatform: 'x86|x64|ARM'
-  buildConfiguration: 'Release'
-  appxPackageDir: '$(build.artifactStagingDirectory)\AppxPackages\'
+  buildPlatform: 'x86'
+  buildConfiguration: 'Debug'
 
 steps:
 - task: NuGetToolInstaller@0
@@ -23,14 +22,16 @@ steps:
 
 - task: VSBuild@1
   inputs:
-    platform: 'x86'
+    platform: '$(buildPlatform)'
     solution: '$(solution)'
     configuration: '$(buildConfiguration)'
-    msbuildArgs: '/p:AppxBundlePlatforms="$(buildPlatform)" /p:AppxPackageDir="$(appxPackageDir)" /p:AppxBundle=Always /p:UapAppxPackageBuildMode=StoreUpload'
 
 - task: VSTest@2
   inputs:
     testSelector: 'testAssemblies'
     searchFolder: '$(Build.SourcesDirectory)'
-    testAssemblyVer2: '**\*test*.dll;!**\*microsoft*;!**\obj\**'
+    testAssemblyVer2:
+      "**\*test*.dll
+      !**\*microsoft*
+      !**\obj\**"
     testConfiguration: $(buildConfiguration)
