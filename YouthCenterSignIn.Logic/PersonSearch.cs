@@ -1,6 +1,7 @@
 ﻿using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
+using System.Threading.Tasks;
 using YouthCenterSignIn.Logic.Data;
 
 namespace YouthCenterSignIn.Logic
@@ -10,6 +11,7 @@ namespace YouthCenterSignIn.Logic
         public PersonSearch() : base(new ObservableCollection<Person>())
         { }
 
+        public Task SearchTask { get; private set; }
         string searchText;
         public string SearchText
         {
@@ -18,13 +20,13 @@ namespace YouthCenterSignIn.Logic
             {
                 searchText = value;
 
-                UpdateSearchResults();
+                SearchTask = UpdateSearchResults();
 
                 OnPropertyChanged();
             }
         }
 
-        private async void UpdateSearchResults()
+        private async Task UpdateSearchResults()
         {
             var search = SearchText.ToLower();
             if (string.IsNullOrWhiteSpace(search))

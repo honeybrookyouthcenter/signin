@@ -165,10 +165,10 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.NETCore.UniversalWindowsPlatform">
-      <Version>6.1.7</Version>
+      <Version>6.2.2</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.Toolkit.Uwp.UI.Animations">
-      <Version>3.0.0</Version>
+      <Version>5.0.0</Version>
     </PackageReference>
   </ItemGroup>
   <ItemGroup>

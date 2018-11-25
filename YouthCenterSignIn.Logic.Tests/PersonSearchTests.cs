@@ -1,6 +1,5 @@
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Linq;
-using System.Threading;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace YouthCenterSignIn.Logic.Tests
 {
@@ -15,7 +14,7 @@ namespace YouthCenterSignIn.Logic.Tests
                 SearchText = "James"
             };
 
-            Thread.Sleep(1);
+            search.SearchTask.Wait();
             Assert.AreEqual("James", search.Single().FirstName,
                 "The search text was set to James, so the first (and only) result should have a first name of James.");
         }
