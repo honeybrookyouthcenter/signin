@@ -1,14 +1,10 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Package xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10" 
-         xmlns:mp="http://schemas.microsoft.com/appx/2014/phone/manifest" 
-         xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10" 
-         xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
-         IgnorableNamespaces="uap mp rescap">
-  <Identity Name="3ef43e24-ba3e-4508-88a8-89a83194c79e" Publisher="CN=james" Version="1.0.0.0" />
-  <mp:PhoneIdentity PhoneProductId="3ef43e24-ba3e-4508-88a8-89a83194c79e" PhonePublisherId="00000000-0000-0000-0000-000000000000" />
+<Package xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10" xmlns:mp="http://schemas.microsoft.com/appx/2014/phone/manifest" xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10" xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities" IgnorableNamespaces="uap mp rescap">
+  <Identity Name="227JamesEsh.YouthCenterSignIn" Publisher="CN=0B248870-6AD0-4452-8147-D9A5B065C61D" Version="1.0.0.0" />
+  <mp:PhoneIdentity PhoneProductId="a49062f9-58cd-40b2-83c2-230ba6e5a660" PhonePublisherId="00000000-0000-0000-0000-000000000000" />
   <Properties>
-    <DisplayName>YouthCenterSignIn</DisplayName>
-    <PublisherDisplayName>james</PublisherDisplayName>
+    <DisplayName>Youth Center Sign In</DisplayName>
+    <PublisherDisplayName>James Esh</PublisherDisplayName>
     <Logo>Assets\StoreLogo.png</Logo>
   </Properties>
   <Dependencies>
@@ -19,7 +15,7 @@
   </Resources>
   <Applications>
     <Application Id="App" Executable="$targetnametoken$.exe" EntryPoint="YouthCenterSignIn.App">
-      <uap:VisualElements DisplayName="YouthCenterSignIn" Square150x150Logo="Assets\Square150x150Logo.png" Square44x44Logo="Assets\Square44x44Logo.png" Description="YouthCenterSignIn" BackgroundColor="transparent">
+      <uap:VisualElements DisplayName="Youth Center Sign In" Square150x150Logo="Assets\Square150x150Logo.png" Square44x44Logo="Assets\Square44x44Logo.png" Description="YouthCenterSignIn" BackgroundColor="transparent">
         <uap:DefaultTile Wide310x150Logo="Assets\Wide310x150Logo.png">
         </uap:DefaultTile>
         <uap:SplashScreen Image="Assets\SplashScreen.png" />
@@ -28,7 +24,7 @@
   </Applications>
   <Capabilities>
     <Capability Name="internetClient" />
-    <rescap:Capability Name="broadFileSystemAccess" />
     <uap:Capability Name="contacts" />
+    <rescap:Capability Name="broadFileSystemAccess" />
   </Capabilities>
 </Package>
