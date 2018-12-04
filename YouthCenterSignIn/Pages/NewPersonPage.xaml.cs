@@ -36,9 +36,12 @@ namespace YouthCenterSignIn.Pages
             await message.ShowAsync();
         }
 
-        private void Next_Tapped(object sender, TappedRoutedEventArgs e)
+        async void Next_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            VisualStateManager.GoToState(this, "GuardianInfo", true);
+            if (NewPerson.HasValidPersonInfo(out var issues))
+                VisualStateManager.GoToState(this, "GuardianInfo", true);
+            else
+                await new MessageDialog(issues).ShowAsync();
         }
 
         private void Back_Tapped(object sender, TappedRoutedEventArgs e)
@@ -49,9 +52,9 @@ namespace YouthCenterSignIn.Pages
         private void Done_Tapped(object sender, TappedRoutedEventArgs e)
         {
             Logic.Data.DataProvider.Current.AddPerson(NewPerson);
-
-            ((Frame)Parent).GoBack(new SlideNavigationTransitionInfo());
-            ((Frame)Parent).Navigate(typeof(PersonPage), NewPerson);
+            var parent = (Frame)Parent;
+            parent.GoBack(new SlideNavigationTransitionInfo());
+            parent.Navigate(typeof(PersonPage), NewPerson);
         }
     }
 }

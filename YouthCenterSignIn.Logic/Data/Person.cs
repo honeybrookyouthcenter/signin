@@ -56,6 +56,38 @@ namespace YouthCenterSignIn.Logic.Data
 
         public override string ToString() => $"{Id}: {FullName}";
 
+        public bool HasValidPersonInfo(out string issues)
+        {
+            issues = "";
+
+            var emptyFields = new List<string>();
+            if (string.IsNullOrWhiteSpace(FirstName))
+                emptyFields.Add("first name");
+            if (string.IsNullOrWhiteSpace(LastName))
+                emptyFields.Add("last name");
+            if (string.IsNullOrWhiteSpace(Address))
+                emptyFields.Add("address");
+
+            if (emptyFields.Any())
+            {
+                issues = "Please enter your ";
+                if (emptyFields.Count == 1)
+                    issues += emptyFields[0];
+                else
+                {
+                    issues += string.Join(", ", emptyFields.Take(emptyFields.Count - 1));
+                    issues += $" and {emptyFields.Last()}";
+                }
+
+                issues += ".\r\n";
+            }
+
+            if (BirthDate.CompareTo(DateTimeOffset.Now.AddYears(-6)) > 0)
+                issues += "You have to be at least six to sign up.";
+
+            return string.IsNullOrWhiteSpace(issues);
+        }
+
         #region Signed in
 
         public async Task RefreshSignedIn()
