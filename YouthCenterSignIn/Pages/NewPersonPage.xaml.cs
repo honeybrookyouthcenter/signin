@@ -22,10 +22,7 @@ namespace YouthCenterSignIn.Pages
             VisualStateManager.GoToState(this, "PersonInfo", false);
         }
 
-        Person NewPerson { get; } = new Person();
-
-        public string GuardianFullName { get; set; }
-        public string GuardianPhoneNumber { get; set; }
+        Person NewPerson { get; } = new Person() { Guardian = new Guardian() };
 
         private async void Cancel_Tapped(object sender, TappedRoutedEventArgs e)
         {
@@ -38,7 +35,7 @@ namespace YouthCenterSignIn.Pages
 
         async void Next_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            if (NewPerson.HasValidPersonInfo(out var issues))
+            if (NewPerson.HasValidInfo(out var issues))
                 VisualStateManager.GoToState(this, "GuardianInfo", true);
             else
                 await new MessageDialog(issues).ShowAsync();

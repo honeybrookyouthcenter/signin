@@ -57,9 +57,9 @@
                     </StackPanel.RenderTransform>
                     <TextBlock Style="{ThemeResource SubtitleTextBlockStyle}" Text="Some info about your guardian" />
 
-                    <TextBox Header="Guardian's name" Text="{x:Bind GuardianPhoneNumber}" />
-                    <TextBox Header="Guardian's phone number" Text="{x:Bind GuardianPhoneNumber}" />
-                    <TextBox Header="Guardian's email (optional)" Text="{x:Bind GuardianPhoneNumber}" />
+                    <TextBox Header="Guardian's name" Text="{x:Bind NewPerson.Guardian.Name}" />
+                    <TextBox Header="Guardian's phone number" Text="{x:Bind NewPerson.Guardian.PhoneNumber}" />
+                    <TextBox Header="Guardian's email (optional)" Text="{x:Bind NewPerson.Guardian.Email}" />
                 </StackPanel>
             </Grid>
         </ScrollViewer>

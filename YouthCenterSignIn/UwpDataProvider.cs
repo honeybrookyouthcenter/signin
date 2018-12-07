@@ -11,8 +11,6 @@ namespace YouthCenterSignIn
 {
     public class UwpDataProvider : DataProvider
     {
-        private const string birthDateName = "Birth date";
-
         protected override async Task<string> GetJsonFileContent(string fileName)
         {
             var rootFolder = await GetRootFolder();
@@ -47,47 +45,112 @@ namespace YouthCenterSignIn
 
         public override async Task<List<Person>> GetPeople()
         {
-            Person ContactToPerson(Contact contact)
-            {
-                return new Person(contact.Id, contact.FirstName, contact.LastName);
-            }
-
             var contactStore = await ContactManager.RequestStoreAsync();
-            return (await contactStore.FindContactsAsync()).Select(c => ContactToPerson(c)).ToList();
+            return (await contactStore.FindContactsAsync()).Select(c => ContactToPerson(c)).Where(c => c != null).ToList();
+        }
+
+        Person ContactToPerson(Contact contact)
+        {
+            try
+            {
+                string id = contact.Id;
+                string firstName = contact.FirstName;
+                string lastName = contact.LastName;
+                DateTimeOffset date = contact.ImportantDates.FirstOrDefault(d => d.Kind == ContactDateKind.Birthday).ToDateTimeOffset();
+                string phoneNumber = contact.Phones.FirstOrDefault()?.Number;
+                string address = contact.Addresses.FirstOrDefault().ToFullAddress();
+                Guardian guardian = Guardian.FromText(contact.Notes);
+
+                return new Person(id, firstName, lastName, date, phoneNumber, address, guardian);
+            }
+            catch
+            {
+                return null;
+                //TODO report
+            }
         }
 
         public override async Task AddPerson(Person person)
         {
-            var contact = PersonToContact(person);
-            await SaveContact(contact);
-        }
-
-        Contact PersonToContact(Person person)
-        {
-            return new Contact
-            {
-                FirstName = person.FirstName,
-                LastName = person.LastName,
-                //TODO
-            };
-        }
-
-        async Task SaveContact(Contact contact)
-        {
             try
             {
-                var contactStore = await ContactManager.RequestStoreAsync(ContactStoreAccessType.AppContactsReadWrite);
-
-                var contactList = (await contactStore.FindContactListsAsync()).FirstOrDefault();
-                if (contactList == null)
-                    throw new NullReferenceException("Could not find a contact list to add the contact to.");
-
-                await contactList.SaveContactAsync(contact);
+                var contact = PersonToContact(person);
+                await SaveContact(contact);
             }
             catch
             {
                 //TODO handle error
             }
         }
+
+        Contact PersonToContact(Person person)
+        {
+            var contact = new Contact
+            {
+                Id = person.Id,
+                FirstName = person.FirstName,
+                LastName = person.LastName,
+                Notes = person.Guardian?.ToString()
+            };
+            contact.Phones.Add(new ContactPhone() { Kind = ContactPhoneKind.Mobile, Number = person.PhoneNumber });
+            contact.Addresses.Add(person.Address.ToContactAddress());
+            if (person.BirthDate != new DateTimeOffset())
+                contact.ImportantDates.Add(person.BirthDate.ToContactDate());
+
+            return contact;
+        }
+
+        async Task SaveContact(Contact contact)
+        {
+            var contactStore = await ContactManager.RequestStoreAsync(ContactStoreAccessType.AppContactsReadWrite);
+
+            var contactList = (await contactStore.FindContactListsAsync()).FirstOrDefault();
+            if (contactList == null)
+                throw new NullReferenceException("Could not find a contact list to add the contact to.");
+
+            await contactList.SaveContactAsync(contact);
+        }
+    }
+
+    static class ContactExtensions
+    {
+        #region Dates
+
+        public static DateTimeOffset ToDateTimeOffset(this ContactDate contactDate)
+        {
+            if (contactDate == null || contactDate.Year == null || contactDate.Month == null || contactDate.Day == null)
+                return default(DateTimeOffset);
+
+            return new DateTimeOffset(new DateTime(contactDate.Year.Value, Convert.ToInt32(contactDate.Month.Value), Convert.ToInt32(contactDate.Day.Value)));
+        }
+
+        public static ContactDate ToContactDate(this DateTimeOffset dateTimeOffset)
+        {
+            return new ContactDate()
+            {
+                Year = dateTimeOffset.Year,
+                Month = Convert.ToUInt32(dateTimeOffset.Month),
+                Day = Convert.ToUInt32(dateTimeOffset.Day)
+            };
+        }
+
+        #endregion
+
+        #region Addresses
+
+        public static string ToFullAddress(this ContactAddress address)
+        {
+            if (address == null)
+                return null;
+
+            return address.ToString(); //TODO
+        }
+
+        public static ContactAddress ToContactAddress(this string fullAddress)
+        {
+            return new ContactAddress(); //TODO
+        }
+
+        #endregion
     }
 }

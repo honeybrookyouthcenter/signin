@@ -31,32 +31,71 @@ namespace YouthCenterSignIn.Logic.Data
 
         public Person() { }
 
-        public Person(string id, string firstName, string lastName)
+        public Person(string id, string firstName, string lastName, DateTimeOffset birthDate, string phoneNumber, string address, Guardian guardian)
         {
             Id = id;
             FirstName = firstName;
             LastName = lastName;
+            BirthDate = birthDate;
+            PhoneNumber = phoneNumber;
+            Address = address;
+            Guardian = guardian;
         }
 
-        public string Id { get; }
+        string id;
+        public string Id
+        {
+            get => id;
+            set { id = value; OnPropertyChanged(); }
+        }
 
-        public string FirstName { get; set; }
+        string firstName;
+        public string FirstName
+        {
+            get => firstName;
+            set { firstName = value; OnPropertyChanged(); }
+        }
 
-        public string LastName { get; set; }
+        string lastName;
+        public string LastName
+        {
+            get => lastName;
+            set { lastName = value; OnPropertyChanged(); }
+        }
 
-        public DateTimeOffset BirthDate { get; set; }
+        DateTimeOffset birthDate;
+        public DateTimeOffset BirthDate
+        {
+            get => birthDate;
+            set { birthDate = value; OnPropertyChanged(); }
+        }
 
-        public string PhoneNumber { get; set; }
+        string phoneNumber;
+        public string PhoneNumber
+        {
+            get => phoneNumber;
+            set { phoneNumber = value; OnPropertyChanged(); }
+        }
 
-        public string Address { get; set; }
+        string address;
+        public string Address
+        {
+            get => address;
+            set { address = value; OnPropertyChanged(); }
+        }
 
-        public string Notes { get; set; }
+        Guardian guardian;
+        public Guardian Guardian
+        {
+            get => guardian;
+            set { guardian = value; OnPropertyChanged(); }
+        }
 
         public string FullName => $"{FirstName} {LastName}";
 
         public override string ToString() => $"{Id}: {FullName}";
 
-        public bool HasValidPersonInfo(out string issues)
+        public bool HasValidInfo(out string issues)
         {
             issues = "";
 
@@ -82,7 +121,9 @@ namespace YouthCenterSignIn.Logic.Data
                 issues += ".\r\n";
             }
 
-            if (BirthDate.CompareTo(DateTimeOffset.Now.AddYears(-6)) > 0)
+            if (BirthDate == new DateTimeOffset())
+                issues += "Please select your birth date.";
+            else if (BirthDate.CompareTo(DateTimeOffset.Now.AddYears(-6)) > 0)
                 issues += "You have to be at least six to sign up.";
 
             return string.IsNullOrWhiteSpace(issues);
