@@ -5,13 +5,99 @@ using System.Linq;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.Contacts;
 using Windows.Storage;
+using Windows.UI.Popups;
 using YouthCenterSignIn.Logic.Data;
 
 namespace YouthCenterSignIn
 {
     public class UwpDataProvider : DataProvider
     {
-        private const string birthDateName = "Birth date";
+        public override async Task ShowMessage(string message = null, Exception exception = null)
+        {
+            if (!string.IsNullOrWhiteSpace(message))
+                await new MessageDialog(message).ShowAsync();
+
+            //TODO add reporting
+        }
+
+        #region People
+
+        public override async Task<List<Person>> GetPeople()
+        {
+            var contactStore = await ContactManager.RequestStoreAsync();
+            return (await contactStore.FindContactsAsync())
+                .Select(c => ContactToPerson(c))
+                .Where(c => c != null)
+                .ToList();
+        }
+
+        Person ContactToPerson(Contact contact)
+        {
+            try
+            {
+                string id = contact.Id;
+                string firstName = contact.FirstName;
+                string lastName = contact.LastName;
+                DateTimeOffset date = contact.ImportantDates.FirstOrDefault(d => d.Kind == ContactDateKind.Birthday).ToDateTimeOffset();
+                string phoneNumber = contact.Phones.FirstOrDefault()?.Number;
+                string address = contact.Addresses.FirstOrDefault().ToFullAddress();
+                Guardian guardian = Guardian.FromText(contact.Notes);
+
+                return new Person(id, firstName, lastName, date, phoneNumber, address, guardian);
+            }
+            catch (Exception ex)
+            {
+                var reportTask = ShowMessage(exception: ex);
+                return null;
+            }
+        }
+
+        public override async Task<bool> AddPerson(Person person)
+        {
+            try
+            {
+                var contact = PersonToContact(person);
+                await SaveContact(contact);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                await ShowMessage("Oops! Something went wrong while signing you up. Sorry about that...", ex);
+                return false;
+            }
+        }
+
+        Contact PersonToContact(Person person)
+        {
+            var contact = new Contact
+            {
+                Id = person.Id,
+                FirstName = person.FirstName,
+                LastName = person.LastName,
+                Notes = person.Guardian?.ToString()
+            };
+            if (!string.IsNullOrWhiteSpace(person.PhoneNumber))
+                contact.Phones.Add(new ContactPhone() { Kind = ContactPhoneKind.Mobile, Number = person.PhoneNumber });
+            contact.Addresses.Add(person.Address.ToContactAddress());
+            contact.ImportantDates.Add(person.BirthDate.ToContactDate());
+
+            return contact;
+        }
+
+        async Task SaveContact(Contact contact)
+        {
+            var contactStore = await ContactManager.RequestStoreAsync(ContactStoreAccessType.AppContactsReadWrite);
+
+            var contactList = (await contactStore.FindContactListsAsync()).FirstOrDefault();
+            if (contactList == null)
+                contactList = await contactStore.CreateContactListAsync("Youth Center");
+
+            await contactList.SaveContactAsync(contact);
+        }
+
+        #endregion
+
+        #region Json
 
         protected override async Task<string> GetJsonFileContent(string fileName)
         {
@@ -45,49 +131,48 @@ namespace YouthCenterSignIn
             ApplicationData.Current.LocalSettings.Values[key] = json;
         }
 
-        public override async Task<List<Person>> GetPeople()
-        {
-            Person ContactToPerson(Contact contact)
-            {
-                return new Person(contact.Id, contact.FirstName, contact.LastName);
-            }
+        #endregion
+    }
 
-            var contactStore = await ContactManager.RequestStoreAsync();
-            return (await contactStore.FindContactsAsync()).Select(c => ContactToPerson(c)).ToList();
+    static class ContactExtensions
+    {
+        #region Dates
+
+        public static DateTimeOffset ToDateTimeOffset(this ContactDate contactDate)
+        {
+            if (contactDate == null || contactDate.Year == null || contactDate.Month == null || contactDate.Day == null)
+                return default(DateTimeOffset);
+
+            return new DateTimeOffset(new DateTime(contactDate.Year.Value, Convert.ToInt32(contactDate.Month.Value), Convert.ToInt32(contactDate.Day.Value)));
         }
 
-        public override async Task AddPerson(Person person)
+        public static ContactDate ToContactDate(this DateTimeOffset dateTimeOffset)
         {
-            var contact = PersonToContact(person);
-            await SaveContact(contact);
-        }
-
-        Contact PersonToContact(Person person)
-        {
-            return new Contact
+            return new ContactDate()
             {
-                FirstName = person.FirstName,
-                LastName = person.LastName,
-                //TODO
+                Year = dateTimeOffset.Year,
+                Month = Convert.ToUInt32(dateTimeOffset.Month),
+                Day = Convert.ToUInt32(dateTimeOffset.Day)
             };
         }
 
-        async Task SaveContact(Contact contact)
+        #endregion
+
+        #region Addresses
+
+        public static string ToFullAddress(this ContactAddress address)
         {
-            try
-            {
-                var contactStore = await ContactManager.RequestStoreAsync(ContactStoreAccessType.AppContactsReadWrite);
+            if (address == null)
+                return null;
 
-                var contactList = (await contactStore.FindContactListsAsync()).FirstOrDefault();
-                if (contactList == null)
-                    throw new NullReferenceException("Could not find a contact list to add the contact to.");
-
-                await contactList.SaveContactAsync(contact);
-            }
-            catch
-            {
-                //TODO handle error
-            }
+            return address.ToString(); //TODO
         }
+
+        public static ContactAddress ToContactAddress(this string fullAddress)
+        {
+            return new ContactAddress(); //TODO
+        }
+
+        #endregion
     }
 }

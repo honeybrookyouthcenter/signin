@@ -22,10 +22,7 @@ namespace YouthCenterSignIn.Pages
             VisualStateManager.GoToState(this, "PersonInfo", false);
         }
 
-        Person NewPerson { get; } = new Person();
-
-        public string GuardianFullName { get; set; }
-        public string GuardianPhoneNumber { get; set; }
+        public Person NewPerson { get; } = new Person() { Guardian = new Guardian() };
 
         private async void Cancel_Tapped(object sender, TappedRoutedEventArgs e)
         {
@@ -36,9 +33,12 @@ namespace YouthCenterSignIn.Pages
             await message.ShowAsync();
         }
 
-        private void Next_Tapped(object sender, TappedRoutedEventArgs e)
+        async void Next_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            VisualStateManager.GoToState(this, "GuardianInfo", true);
+            if (NewPerson.HasValidInfo(out var issues))
+                VisualStateManager.GoToState(this, "GuardianInfo", true);
+            else
+                await new MessageDialog(issues).ShowAsync();
         }
 
         private void Back_Tapped(object sender, TappedRoutedEventArgs e)
@@ -46,12 +46,18 @@ namespace YouthCenterSignIn.Pages
             VisualStateManager.GoToState(this, "PersonInfo", true);
         }
 
-        private void Done_Tapped(object sender, TappedRoutedEventArgs e)
+        async void Done_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            Logic.Data.DataProvider.Current.AddPerson(NewPerson);
+            if (!NewPerson.Guardian.HasValidInfo(out var issues))
+            {
+                await new MessageDialog(issues).ShowAsync();
+                return;
+            }
 
-            ((Frame)Parent).GoBack(new SlideNavigationTransitionInfo());
-            ((Frame)Parent).Navigate(typeof(PersonPage), NewPerson);
+            await DataProvider.Current.AddPerson(NewPerson);
+            var parent = (Frame)Parent;
+            parent.GoBack(new SlideNavigationTransitionInfo());
+            parent.Navigate(typeof(PersonPage), NewPerson);
         }
     }
 }

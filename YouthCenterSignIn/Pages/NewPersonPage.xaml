@@ -6,6 +6,7 @@
       xmlns:local="using:YouthCenterSignIn.Pages"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       x:Name="uiNewPersonPage"
+      x:DefaultBindMode="TwoWay"
       Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
       mc:Ignorable="d">
 
@@ -39,7 +40,7 @@
                     <TextBlock Style="{ThemeResource SubtitleTextBlockStyle}" Text="Some info about you" />
                     <TextBox Header="First name" Text="{x:Bind NewPerson.FirstName}" />
                     <TextBox Header="Last name" Text="{x:Bind NewPerson.LastName}" />
-                    <DatePicker Date="{Binding NewPerson.BirthDate, ElementName=uiNewPersonPage}" Header="Birth date" />
+                    <DatePicker Date="{Binding Path=NewPerson.BirthDate, ElementName=uiNewPersonPage, Mode=TwoWay}" Header="Birth date" />
                     <TextBox Height="90"
                              Header="Address"
                              Text="{x:Bind NewPerson.Address}" />
@@ -56,9 +57,9 @@
                     </StackPanel.RenderTransform>
                     <TextBlock Style="{ThemeResource SubtitleTextBlockStyle}" Text="Some info about your guardian" />
 
-                    <TextBox Header="Guardian's name" Text="{x:Bind GuardianPhoneNumber}" />
-                    <TextBox Header="Guardian's phone number" Text="{x:Bind GuardianPhoneNumber}" />
-                    <TextBox Header="Guardian's email (optional)" Text="{x:Bind GuardianPhoneNumber}" />
+                    <TextBox Header="Guardian's name" Text="{x:Bind NewPerson.Guardian.Name}" />
+                    <TextBox Header="Guardian's phone number" Text="{x:Bind NewPerson.Guardian.PhoneNumber}" />
+                    <TextBox Header="Guardian's email (optional)" Text="{x:Bind NewPerson.Guardian.Email}" />
                 </StackPanel>
             </Grid>
         </ScrollViewer>
