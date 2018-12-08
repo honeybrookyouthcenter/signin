@@ -35,8 +35,10 @@ namespace YouthCenterSignIn.Logic.Data
             set { email = value; OnPropertyChanged(); }
         }
 
-        public bool HasValidInfo()
+        public bool HasValidInfo(out string issues)
         {
+            issues = "";
+
             return true; //TOOD
         }
 

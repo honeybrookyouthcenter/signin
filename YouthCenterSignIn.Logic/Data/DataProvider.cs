@@ -1,6 +1,7 @@
-﻿using Newtonsoft.Json;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 
 namespace YouthCenterSignIn.Logic.Data
 {
@@ -52,7 +53,9 @@ namespace YouthCenterSignIn.Logic.Data
 
         #endregion
 
-        public abstract Task AddPerson(Person person);
+        public abstract Task ShowMessage(string message, Exception ex = null);
+
+        public abstract Task<bool> AddPerson(Person person);
 
         public abstract Task<List<Person>> GetPeople();
 

@@ -22,7 +22,7 @@ namespace YouthCenterSignIn.Pages
             VisualStateManager.GoToState(this, "PersonInfo", false);
         }
 
-        Person NewPerson { get; } = new Person() { Guardian = new Guardian() };
+        public Person NewPerson { get; } = new Person() { Guardian = new Guardian() };
 
         private async void Cancel_Tapped(object sender, TappedRoutedEventArgs e)
         {
@@ -46,9 +46,15 @@ namespace YouthCenterSignIn.Pages
             VisualStateManager.GoToState(this, "PersonInfo", true);
         }
 
-        private void Done_Tapped(object sender, TappedRoutedEventArgs e)
+        async void Done_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            Logic.Data.DataProvider.Current.AddPerson(NewPerson);
+            if (!NewPerson.Guardian.HasValidInfo(out var issues))
+            {
+                await new MessageDialog(issues).ShowAsync();
+                return;
+            }
+
+            await DataProvider.Current.AddPerson(NewPerson);
             var parent = (Frame)Parent;
             parent.GoBack(new SlideNavigationTransitionInfo());
             parent.Navigate(typeof(PersonPage), NewPerson);

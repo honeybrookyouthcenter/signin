@@ -42,7 +42,7 @@ namespace YouthCenterSignIn.Logic.Data
             Guardian = guardian;
         }
 
-        string id;
+        string id = Guid.NewGuid().ToString();
         public string Id
         {
             get => id;
@@ -63,7 +63,7 @@ namespace YouthCenterSignIn.Logic.Data
             set { lastName = value; OnPropertyChanged(); }
         }
 
-        DateTimeOffset birthDate;
+        DateTimeOffset birthDate = DateTimeOffset.Now;
         public DateTimeOffset BirthDate
         {
             get => birthDate;
@@ -121,9 +121,7 @@ namespace YouthCenterSignIn.Logic.Data
                 issues += ".\r\n";
             }
 
-            if (BirthDate == new DateTimeOffset())
-                issues += "Please select your birth date.";
-            else if (BirthDate.CompareTo(DateTimeOffset.Now.AddYears(-6)) > 0)
+            if (BirthDate.CompareTo(DateTimeOffset.Now.AddYears(-6)) > 0)
                 issues += "You have to be at least six to sign up.";
 
             return string.IsNullOrWhiteSpace(issues);
