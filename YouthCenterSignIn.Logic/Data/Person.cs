@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace YouthCenterSignIn.Logic.Data
 {
-    public class Person : INotifyPropertyChanged
+    public class Person : NotifyBase
     {
         #region People
 
@@ -31,13 +30,12 @@ namespace YouthCenterSignIn.Logic.Data
 
         public Person() { }
 
-        public Person(string id, string firstName, string lastName, DateTimeOffset birthDate, string phoneNumber, string address, Guardian guardian)
+        public Person(string id, string firstName, string lastName, DateTimeOffset birthDate, Address address, Guardian guardian = null)
         {
             Id = id;
             FirstName = firstName;
             LastName = lastName;
             BirthDate = birthDate;
-            PhoneNumber = phoneNumber;
             Address = address;
             Guardian = guardian;
         }
@@ -70,15 +68,8 @@ namespace YouthCenterSignIn.Logic.Data
             set { birthDate = value; OnPropertyChanged(); }
         }
 
-        string phoneNumber;
-        public string PhoneNumber
-        {
-            get => phoneNumber;
-            set { phoneNumber = value; OnPropertyChanged(); }
-        }
-
-        string address;
-        public string Address
+        Address address;
+        public Address Address
         {
             get => address;
             set { address = value; OnPropertyChanged(); }
@@ -93,9 +84,7 @@ namespace YouthCenterSignIn.Logic.Data
 
         public string FullName => $"{FirstName} {LastName}";
 
-        public override string ToString() => $"{Id}: {FullName}";
-
-        public bool HasValidInfo(out string issues)
+        public bool IsValid(out string issues)
         {
             issues = "";
 
@@ -104,7 +93,7 @@ namespace YouthCenterSignIn.Logic.Data
                 emptyFields.Add("first name");
             if (string.IsNullOrWhiteSpace(LastName))
                 emptyFields.Add("last name");
-            if (string.IsNullOrWhiteSpace(Address))
+            if (Address?.IsValid() != true)
                 emptyFields.Add("address");
 
             if (emptyFields.Any())
@@ -154,24 +143,6 @@ namespace YouthCenterSignIn.Logic.Data
                 await SignedInLog.SignOut();
 
             await RefreshSignedIn();
-        }
-
-        #endregion
-
-        #region Notify
-
-        /// <summary>
-        /// Property Changed event
-        /// </summary>
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        /// <summary>
-        /// Fire the PropertyChanged event
-        /// </summary>
-        /// <param name="propertyName">Name of the property that changed (defaults from CallerMemberName)</param>
-        protected void OnPropertyChanged([System.Runtime.CompilerServices.CallerMemberName] string propertyName = "")
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
         #endregion

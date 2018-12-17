@@ -35,7 +35,7 @@ namespace YouthCenterSignIn.Pages
 
         async void Next_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            if (NewPerson.HasValidInfo(out var issues))
+            if (NewPerson.IsValid(out var issues))
                 VisualStateManager.GoToState(this, "GuardianInfo", true);
             else
                 await new MessageDialog(issues).ShowAsync();
@@ -48,7 +48,7 @@ namespace YouthCenterSignIn.Pages
 
         async void Done_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            if (!NewPerson.Guardian.HasValidInfo(out var issues))
+            if (!NewPerson.Guardian.IsValid(out var issues))
             {
                 await new MessageDialog(issues).ShowAsync();
                 return;

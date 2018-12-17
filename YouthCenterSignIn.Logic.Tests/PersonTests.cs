@@ -12,33 +12,44 @@ namespace YouthCenterSignIn.Logic.Tests
         {
             var person = new Person();
 
-            Assert.IsFalse(person.HasValidInfo(out string issues), "The person should not be valid when first created.");
+            Assert.IsFalse(person.IsValid(out string issues), "The person should not be valid when first created.");
             Assert.AreEqual("Please enter your first name, last name and address.\r\nYou have to be at least six to sign up.", issues,
                 "The first name, last name and address are blank and there is an invalid date of birth.");
 
             person.LastName = "Esh";
-            Assert.IsFalse(person.HasValidInfo(out issues), "The person should not be valid when first created.");
+            Assert.IsFalse(person.IsValid(out issues), "The person should not be valid when first created.");
             Assert.AreEqual("Please enter your first name and address.\r\nYou have to be at least six to sign up.", issues,
                 "The first name and address are blank and there is an invalid date of birth.");
 
             person.BirthDate = DateTimeOffset.Now.AddYears(-2);
-            Assert.IsFalse(person.HasValidInfo(out issues), "The person should not be valid when first created.");
+            Assert.IsFalse(person.IsValid(out issues), "The person should not be valid when first created.");
             Assert.AreEqual("Please enter your first name and address.\r\nYou have to be at least six to sign up.", issues,
                 "The first name and address are blank and there is still an invalid date of birth.");
 
             person.BirthDate = new DateTimeOffset(new DateTime(1999, 2, 23));
-            Assert.IsFalse(person.HasValidInfo(out issues), "The person should not be valid when first created.");
+            Assert.IsFalse(person.IsValid(out issues), "The person should not be valid when first created.");
             Assert.AreEqual("Please enter your first name and address.\r\n", issues,
                 "The first name and address are blank but the birth date is valid.");
 
-            person.Address = "52 Evergreen St, Gordonville PA 1759";
-            Assert.IsFalse(person.HasValidInfo(out issues), "The person should not be valid when first created.");
+            person.Address = new Address("52 Evergreen St", "Gordonville", "PA");
+            Assert.IsFalse(person.IsValid(out issues), "The person should not be valid when first created.");
             Assert.AreEqual("Please enter your first name.\r\n", issues,
                 "The first name is blank.");
 
             person.FirstName = "James";
-            Assert.IsTrue(person.HasValidInfo(out issues), "The person should not be valid when first created.");
+            Assert.IsTrue(person.IsValid(out issues), "The person should not be valid when first created.");
             Assert.AreEqual("", issues, "There are no issues so the issues message should be blank");
+        }
+        [TestMethod]
+        public void Person_PropertyChangedTest()
+        {
+            var person = new Person();
+
+            bool changed = false;
+            person.PropertyChanged += (_, __) => changed = true;
+
+            person.FirstName = "James";
+            Assert.IsTrue(changed, "The property changed event should have fired when a property changed.");
         }
     }
 }

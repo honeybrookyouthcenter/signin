@@ -9,18 +9,18 @@ namespace YouthCenterSignIn.Logic.Data
     {
         #region Logs
 
-        static Dictionary<string, IEnumerable<Log>> logsCache = new Dictionary<string, IEnumerable<Log>>();
+        public static Dictionary<string, IEnumerable<Log>> Cache { get; } = new Dictionary<string, IEnumerable<Log>>();
 
         public static async Task<IEnumerable<Log>> GetLogs(DateTime date)
         {
             string file = GetLogsFileNameForDate(date);
-            if (!logsCache.TryGetValue(file, out var datesLogsCache))
+            if (!Cache.TryGetValue(file, out var datesLogsCache))
             {
                 var logs = await DataProvider.Current.GetSetting<List<Log>>(file, StorageType.LocalFile) ?? new List<Log>();
-                logsCache.Add(file, logs.OrderBy(l => l.SignedIn).ThenBy(l => l.PersonName));
+                Cache.Add(file, logs.OrderBy(l => l.SignedIn).ThenBy(l => l.PersonName));
             }
 
-            return logsCache[file];
+            return Cache[file];
         }
 
         static async Task SaveLogs(IEnumerable<Log> logs)
@@ -33,11 +33,24 @@ namespace YouthCenterSignIn.Logic.Data
             string file = GetLogsFileNameForDate(currentDate);
             await DataProvider.Current.SetSetting(file, logs, StorageType.LocalFile);
 
-            if (logsCache.ContainsKey(file))
-                logsCache[file] = logs;
+            if (Cache.ContainsKey(file))
+                Cache[file] = logs;
             else
-                logsCache.Add(file, logs);
+                Cache.Add(file, logs);
+
+            OnLogsSaved();
         }
+
+
+        #region LogsSaved Event
+
+        public static event EventHandler LogsSaved;
+        static void OnLogsSaved()
+        {
+            LogsSaved?.Invoke(null, EventArgs.Empty);
+        }
+
+        #endregion
 
         private static string GetLogsFileNameForDate(DateTime date)
         {

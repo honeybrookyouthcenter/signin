@@ -39,11 +39,9 @@ namespace YouthCenterSignIn
                 string firstName = contact.FirstName;
                 string lastName = contact.LastName;
                 DateTimeOffset date = contact.ImportantDates.FirstOrDefault(d => d.Kind == ContactDateKind.Birthday).ToDateTimeOffset();
-                string phoneNumber = contact.Phones.FirstOrDefault()?.Number;
-                string address = contact.Addresses.FirstOrDefault().ToFullAddress();
-                Guardian guardian = Guardian.FromText(contact.Notes);
+                Address address = contact.Addresses.FirstOrDefault().ToFullAddress();
 
-                return new Person(id, firstName, lastName, date, phoneNumber, address, guardian);
+                return new Person(id, firstName, lastName, date, address);
             }
             catch (Exception ex)
             {
@@ -76,8 +74,8 @@ namespace YouthCenterSignIn
                 LastName = person.LastName,
                 Notes = person.Guardian?.ToString()
             };
-            if (!string.IsNullOrWhiteSpace(person.PhoneNumber))
-                contact.Phones.Add(new ContactPhone() { Kind = ContactPhoneKind.Mobile, Number = person.PhoneNumber });
+            if (!string.IsNullOrWhiteSpace(person.Guardian?.PhoneNumber))
+                contact.Phones.Add(new ContactPhone() { Kind = ContactPhoneKind.Mobile, Number = person.Guardian?.PhoneNumber });
             contact.Addresses.Add(person.Address.ToContactAddress());
             contact.ImportantDates.Add(person.BirthDate.ToContactDate());
 
@@ -160,17 +158,22 @@ namespace YouthCenterSignIn
 
         #region Addresses
 
-        public static string ToFullAddress(this ContactAddress address)
+        public static Address ToFullAddress(this ContactAddress address)
         {
             if (address == null)
                 return null;
 
-            return address.ToString(); //TODO
+            return new Address(address.StreetAddress, city: address.Locality, state: address.Region);
         }
 
-        public static ContactAddress ToContactAddress(this string fullAddress)
+        public static ContactAddress ToContactAddress(this Address address)
         {
-            return new ContactAddress(); //TODO
+            return new ContactAddress()
+            {
+                StreetAddress = address.StreetAddress,
+                Locality = address.City,
+                Region = address.State
+            };
         }
 
         #endregion

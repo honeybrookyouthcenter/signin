@@ -44,7 +44,6 @@
                     <TextBox Height="90"
                              Header="Address"
                              Text="{x:Bind NewPerson.Address}" />
-                    <TextBox Header="Phone number (optional)" Text="{x:Bind NewPerson.PhoneNumber}" />
                 </StackPanel>
 
                 <StackPanel Name="uiGuardianInfo"

@@ -9,6 +9,12 @@ namespace YouthCenterSignIn.Logic
         public AdminManager()
         {
             GetTodaysLogs();
+            Log.LogsSaved += Log_LogsSaved;
+        }
+
+        private void Log_LogsSaved(object sender, EventArgs e)
+        {
+            GetTodaysLogs();
         }
 
         async void GetTodaysLogs()

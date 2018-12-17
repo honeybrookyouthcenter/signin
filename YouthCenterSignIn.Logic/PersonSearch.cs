@@ -28,15 +28,16 @@ namespace YouthCenterSignIn.Logic
 
         private async Task UpdateSearchResults()
         {
-            var search = SearchText.ToLower();
+            var search = SearchText?.ToLower();
             if (string.IsNullOrWhiteSpace(search))
             {
                 Items.Clear();
                 return;
             }
 
-            var results = (await Person.GetPeople()).Where(p => p.FullName.ToLower().Contains(search));
-            results.OrderByDescending(p => p.FullName.ToLower().StartsWith(search));
+            var results = (await Person.GetPeople())
+                .Where(p => p.FullName.ToLower().Contains(search))
+                .OrderByDescending(p => p.FullName.ToLower().StartsWith(search));
 
             foreach (var person in Items.ToArray())
             {
