@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Windows.ApplicationModel.Contacts;
 using Windows.Storage;
 using Windows.UI.Popups;
+using Windows.UI.Xaml;
 using YouthCenterSignIn.Logic.Data;
 
 namespace YouthCenterSignIn
@@ -108,8 +109,13 @@ namespace YouthCenterSignIn
                 return null;
         }
 
-        private static async Task<StorageFolder> GetRootFolder() =>
-            await KnownFolders.DocumentsLibrary.CreateFolderAsync("Youth Center Sign In", CreationCollisionOption.OpenIfExists);
+        private static async Task<StorageFolder> GetRootFolder()
+        {
+            var userPath = UserDataPaths.GetForUser(App.User).Profile;
+            var userFolder = await StorageFolder.GetFolderFromPathAsync(userPath);
+            var oneDriveFolder = await userFolder.GetFolderAsync("OneDrive");
+            return await oneDriveFolder.CreateFolderAsync("Youth Center Sign In", CreationCollisionOption.OpenIfExists);
+        }
 
         protected override string GetJsonSetting(string key)
         {
