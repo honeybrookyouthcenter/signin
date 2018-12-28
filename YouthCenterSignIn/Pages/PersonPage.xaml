@@ -10,7 +10,8 @@
       Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
       mc:Ignorable="d">
 
-    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+    <StackPanel Margin="100"
+                Padding="20">
         <TextBlock Style="{ThemeResource HeaderTextBlockStyle}">
             <Run Text="Hey " /><Run Text="{x:Bind Person.FirstName}" /><Run Text=", welcome to the Youth Center!" />
         </TextBlock>

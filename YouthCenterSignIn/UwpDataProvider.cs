@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using Windows.ApplicationModel.Contacts;
 using Windows.Storage;
 using Windows.UI.Popups;
-using Windows.UI.Xaml;
 using YouthCenterSignIn.Logic.Data;
 
 namespace YouthCenterSignIn
@@ -26,7 +25,8 @@ namespace YouthCenterSignIn
         public override async Task<List<Person>> GetPeople()
         {
             var contactStore = await ContactManager.RequestStoreAsync();
-            return (await contactStore.FindContactsAsync())
+
+            return (await (await GetContactList(contactStore)).GetContactReader().ReadBatchAsync()).Contacts
                 .Select(c => ContactToPerson(c))
                 .Where(c => c != null)
                 .ToList();
@@ -51,18 +51,18 @@ namespace YouthCenterSignIn
             }
         }
 
-        public override async Task<bool> AddPerson(Person person)
+        protected override async Task<string> AddPersonToData(Person person)
         {
             try
             {
                 var contact = PersonToContact(person);
                 await SaveContact(contact);
-                return true;
+                return contact.Id;
             }
             catch (Exception ex)
             {
                 await ShowMessage("Oops! Something went wrong while signing you up. Sorry about that...", ex);
-                return false;
+                return null;
             }
         }
 
@@ -70,11 +70,11 @@ namespace YouthCenterSignIn
         {
             var contact = new Contact
             {
-                Id = person.Id,
                 FirstName = person.FirstName,
                 LastName = person.LastName,
                 Notes = person.Guardian?.ToString()
             };
+
             if (!string.IsNullOrWhiteSpace(person.Guardian?.PhoneNumber))
                 contact.Phones.Add(new ContactPhone() { Kind = ContactPhoneKind.Mobile, Number = person.Guardian?.PhoneNumber });
             contact.Addresses.Add(person.Address.ToContactAddress());
@@ -86,12 +86,23 @@ namespace YouthCenterSignIn
         async Task SaveContact(Contact contact)
         {
             var contactStore = await ContactManager.RequestStoreAsync(ContactStoreAccessType.AppContactsReadWrite);
-
-            var contactList = (await contactStore.FindContactListsAsync()).FirstOrDefault();
-            if (contactList == null)
-                contactList = await contactStore.CreateContactListAsync("Youth Center");
-
+            ContactList contactList = await GetContactList(contactStore);
             await contactList.SaveContactAsync(contact);
+        }
+
+        async Task<ContactList> GetContactList(ContactStore contactStore)
+        {
+            const string contactListName = "Youth Center";
+
+            var contactLists = await contactStore.FindContactListsAsync();
+            var contactList = contactLists.FirstOrDefault(l => l.DisplayName == contactListName);
+            if (contactList == null)
+            {
+                contactList = await contactStore.CreateContactListAsync(contactListName);
+                await contactList.SaveAsync();
+            }
+
+            return contactList;
         }
 
         #endregion
@@ -101,20 +112,31 @@ namespace YouthCenterSignIn
         protected override async Task<string> GetJsonFileContent(string fileName)
         {
             var rootFolder = await GetRootFolder();
-            var item = await rootFolder.TryGetItemAsync(fileName);
+            if (rootFolder == null)
+                return null;
 
+            var item = await rootFolder.TryGetItemAsync(fileName);
             if (item is IStorageFile file)
                 return await FileIO.ReadTextAsync(file);
             else
                 return null;
         }
 
-        private static async Task<StorageFolder> GetRootFolder()
+        private async Task<StorageFolder> GetRootFolder()
         {
-            var userPath = UserDataPaths.GetForUser(App.User).Profile;
-            var userFolder = await StorageFolder.GetFolderFromPathAsync(userPath);
-            var oneDriveFolder = await userFolder.GetFolderAsync("OneDrive");
-            return await oneDriveFolder.CreateFolderAsync("Youth Center Sign In", CreationCollisionOption.OpenIfExists);
+            try
+            {
+                var userPath = UserDataPaths.GetForUser(App.User).Profile;
+                var userFolder = await StorageFolder.GetFolderFromPathAsync(userPath);
+                var oneDriveFolder = await userFolder.GetFolderAsync("OneDrive");
+                return await oneDriveFolder.CreateFolderAsync("Youth Center Sign In", CreationCollisionOption.OpenIfExists);
+            }
+            catch (UnauthorizedAccessException)
+            {
+                await ShowMessage("Could not access the folder, please give permission to the app.");
+                await Windows.System.Launcher.LaunchUriAsync(new Uri("ms-settings:privacy-broadfilesystemaccess"));
+                return null;
+            }
         }
 
         protected override string GetJsonSetting(string key)
@@ -125,8 +147,10 @@ namespace YouthCenterSignIn
         protected override async Task SetJsonFileContent(string fileName, string json)
         {
             var rootFolder = await GetRootFolder();
-            var file = await rootFolder.CreateFileAsync(fileName, CreationCollisionOption.OpenIfExists);
+            if (rootFolder == null)
+                return;
 
+            var file = await rootFolder.CreateFileAsync(fileName, CreationCollisionOption.OpenIfExists);
             await FileIO.WriteTextAsync(file, json);
         }
 

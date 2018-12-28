@@ -4,7 +4,9 @@ namespace YouthCenterSignIn.Logic.Data
 {
     public class Address : NotifyBase
     {
-        public Address(string address1, string city, string state)
+        public Address() { }
+
+        public Address(string address1, string city, string state) : this()
         {
             StreetAddress = address1;
             City = city;

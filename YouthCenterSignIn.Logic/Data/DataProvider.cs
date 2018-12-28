@@ -55,7 +55,21 @@ namespace YouthCenterSignIn.Logic.Data
 
         public abstract Task ShowMessage(string message, Exception ex = null);
 
-        public abstract Task<bool> AddPerson(Person person);
+        public async Task<bool> AddPerson(Person person)
+        {
+            //TODO write test
+            var newId = await AddPersonToData(person);
+            if (newId != null)
+            {
+                person.Id = newId;
+
+                Person.ClearPeopleCache();
+                return true;
+            }
+
+            return false;
+        }
+        protected abstract Task<string> AddPersonToData(Person person);
 
         public abstract Task<List<Person>> GetPeople();
 
@@ -80,9 +94,9 @@ namespace YouthCenterSignIn.Logic.Data
                 return;
             }
 
-            if (newPin.Length != 4)
+            if (newPin.Length != 6)
             {
-                ShowMessage("The PIN must be 4 characters long.");
+                ShowMessage("The PIN must be 6 characters long.");
                 return;
             }
 
@@ -95,7 +109,7 @@ namespace YouthCenterSignIn.Logic.Data
             AdminPin = newPin;
         }
 
-        public const string DefaultAdminPin = "1234";
+        public const string DefaultAdminPin = "123123";
         public string AdminPin
         {
             get

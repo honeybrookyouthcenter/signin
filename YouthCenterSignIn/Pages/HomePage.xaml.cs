@@ -1,16 +1,11 @@
-﻿using Windows.UI.Xaml;
+﻿using Windows.UI.ViewManagement;
+using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
 using YouthCenterSignIn.Logic;
 using YouthCenterSignIn.Logic.Data;
 
-// The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=234238
-
 namespace YouthCenterSignIn.Pages
 {
-    /// <summary>
-    /// An empty page that can be used on its own or navigated to within a Frame.
-    /// </summary>
     public sealed partial class HomePage : Page
     {
         public PersonSearch PersonSearch { get; } = new PersonSearch();
@@ -19,24 +14,19 @@ namespace YouthCenterSignIn.Pages
         {
             var getTask = Person.GetPeople();
             InitializeComponent();
+
+            Loaded += HomePage_Loaded;
         }
 
-        private void TextBlock_Tapped(object sender, Windows.UI.Xaml.Input.TappedRoutedEventArgs e)
+        private void HomePage_Loaded(object sender, RoutedEventArgs e)
         {
-            var textblock = ((TextBlock)sender);
-            var person = (Person)textblock.DataContext;
-
-            ((Frame)Parent).Navigate(typeof(PersonPage), person);
-        }
-
-        private void Border_DoubleTapped(object sender, Windows.UI.Xaml.Input.DoubleTappedRoutedEventArgs e)
-        {
-            FlyoutBase.ShowAttachedFlyout((FrameworkElement)sender);
+            uiName.Focus(FocusState.Keyboard);
+            InputPane.GetForCurrentView().TryShow();
         }
 
         private void uiPin_PasswordChanged(object sender, RoutedEventArgs e)
         {
-            if (uiPin.Password.Length != 4)
+            if (uiPin.Password.Length != 6)
                 return;
 
             string pin = uiPin.Password;
@@ -44,15 +34,22 @@ namespace YouthCenterSignIn.Pages
             uiPinMessages.Text = "";
             uiPin.Password = "";
 
-            if (Logic.Data.DataProvider.Current.AuthenticateAdmin(pin))
+            if (DataProvider.Current.AuthenticateAdmin(pin))
                 ((Frame)Parent).Navigate(typeof(AdminPage));
             else
                 uiPinMessages.Text = "Wrong pin!";
         }
 
-        private void SignUp_Tapped(object sender, Windows.UI.Xaml.Input.TappedRoutedEventArgs e)
+        private void SignUp_Tapped(object sender, RoutedEventArgs e)
         {
             ((Frame)Parent).Navigate(typeof(NewPersonPage));
+        }
+
+        private void UiName_SuggestionChosen(AutoSuggestBox sender, AutoSuggestBoxSuggestionChosenEventArgs args)
+        {
+            var person = (Person)args.SelectedItem;
+
+            ((Frame)Parent).Navigate(typeof(PersonPage), person);
         }
     }
 }

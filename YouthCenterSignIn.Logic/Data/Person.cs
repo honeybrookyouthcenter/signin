@@ -26,11 +26,13 @@ namespace YouthCenterSignIn.Logic.Data
             return peopleCache.OrderBy(p => p.FirstName).ThenBy(p => p.LastName);
         }
 
+        public static void ClearPeopleCache() => peopleCache = null;
+
         #endregion
 
         public Person() { }
 
-        public Person(string id, string firstName, string lastName, DateTimeOffset birthDate, Address address, Guardian guardian = null)
+        public Person(string id, string firstName, string lastName, DateTimeOffset birthDate, Address address, Guardian guardian = null) : this()
         {
             Id = id;
             FirstName = firstName;
@@ -40,7 +42,7 @@ namespace YouthCenterSignIn.Logic.Data
             Guardian = guardian;
         }
 
-        string id = Guid.NewGuid().ToString();
+        string id;
         public string Id
         {
             get => id;
@@ -68,7 +70,7 @@ namespace YouthCenterSignIn.Logic.Data
             set { birthDate = value; OnPropertyChanged(); }
         }
 
-        Address address;
+        Address address = new Address();
         public Address Address
         {
             get => address;

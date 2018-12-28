@@ -17,13 +17,16 @@
             <RowDefinition />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-        <TextBlock Margin="0 0 0 10"
+        <StackPanel Orientation="Horizontal" Margin="0 0 0 10">
+            <TextBlock VerticalAlignment="Center"
                    Style="{ThemeResource HeaderTextBlockStyle}"
                    Text="Sign in logs" />
+            <CalendarDatePicker VerticalAlignment="Bottom" Margin="30 0 0 10" Date="{x:Bind AdminManager.Date, Mode=TwoWay}"/>
+        </StackPanel>
 
         <ListView Grid.Row="1"
                   Margin="-10 0 0 0"
-                  ItemsSource="{x:Bind AdminManager.TodaysLogs}"
+                  ItemsSource="{x:Bind AdminManager.Logs}"
                   SelectionMode="None">
             <ListView.ItemTemplate>
                 <DataTemplate x:DataType="data:Log">

@@ -11,13 +11,13 @@ namespace YouthCenterSignIn.Logic.Data
 
         public static Dictionary<string, IEnumerable<Log>> Cache { get; } = new Dictionary<string, IEnumerable<Log>>();
 
-        public static async Task<IEnumerable<Log>> GetLogs(DateTime date)
+        public static async Task<IEnumerable<Log>> GetLogs(DateTimeOffset date)
         {
             string file = GetLogsFileNameForDate(date);
             if (!Cache.TryGetValue(file, out var datesLogsCache))
             {
                 var logs = await DataProvider.Current.GetSetting<List<Log>>(file, StorageType.LocalFile) ?? new List<Log>();
-                Cache.Add(file, logs.OrderBy(l => l.SignedIn).ThenBy(l => l.PersonName));
+                Cache.Add(file, logs.OrderBy(l => !l.SignedIn).ThenBy(l => l.PersonName));
             }
 
             return Cache[file];
@@ -52,7 +52,7 @@ namespace YouthCenterSignIn.Logic.Data
 
         #endregion
 
-        private static string GetLogsFileNameForDate(DateTime date)
+        private static string GetLogsFileNameForDate(DateTimeOffset date)
         {
             return $"{date.ToString("yyyy-MM-dd")}.json";
         }
@@ -62,13 +62,13 @@ namespace YouthCenterSignIn.Logic.Data
         private Log()
         { } //Do nothing, private so the New method is what has to be used
 
-        public static async Task<Log> New(Person person)
+        public static async Task<Log> New(Person person, DateTime? date = null)
         {
             var log = new Log
             {
                 PersonId = person.Id,
                 PersonName = person.FullName,
-                SignInTime = DateTime.Now,
+                SignInTime = date ?? DateTime.Now,
                 Guid = Guid.NewGuid()
             };
 

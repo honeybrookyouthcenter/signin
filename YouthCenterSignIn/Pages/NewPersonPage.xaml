@@ -14,56 +14,18 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition />
-            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition/>
+            <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
 
         <TextBlock Margin="30,30,30,10"
                    Style="{ThemeResource HeaderTextBlockStyle}"
                    Text="Sign up" />
 
-        <ScrollViewer Grid.Row="1" x:DefaultBindMode="TwoWay">
-            <Grid Margin="30,0,30,0">
-                <Grid.Resources>
-                    <Style TargetType="TextBox">
-                        <Setter Property="HorizontalAlignment" Value="Left" />
-                        <Setter Property="MinWidth" Value="200" />
-                    </Style>
-                </Grid.Resources>
-                <StackPanel Name="uiPersonInfo"
-                            IsHitTestVisible="False"
-                            Opacity="0"
-                            RenderTransformOrigin="0.5,0.5"
-                            Spacing="15">
-                    <StackPanel.RenderTransform>
-                        <CompositeTransform />
-                    </StackPanel.RenderTransform>
-                    <TextBlock Style="{ThemeResource SubtitleTextBlockStyle}" Text="Some info about you" />
-                    <TextBox Header="First name" Text="{x:Bind NewPerson.FirstName}" />
-                    <TextBox Header="Last name" Text="{x:Bind NewPerson.LastName}" />
-                    <DatePicker Date="{Binding Path=NewPerson.BirthDate, ElementName=uiNewPersonPage, Mode=TwoWay}" Header="Birth date" />
-                    <TextBox Height="90"
-                             Header="Address"
-                             Text="{x:Bind NewPerson.Address}" />
-                </StackPanel>
-
-                <StackPanel Name="uiGuardianInfo"
-                            IsHitTestVisible="False"
-                            Opacity="0"
-                            RenderTransformOrigin="0.5,0.5"
-                            Spacing="15">
-                    <StackPanel.RenderTransform>
-                        <CompositeTransform />
-                    </StackPanel.RenderTransform>
-                    <TextBlock Style="{ThemeResource SubtitleTextBlockStyle}" Text="Some info about your guardian" />
-
-                    <TextBox Header="Guardian's name" Text="{x:Bind NewPerson.Guardian.Name}" />
-                    <TextBox Header="Guardian's phone number" Text="{x:Bind NewPerson.Guardian.PhoneNumber}" />
-                    <TextBox Header="Guardian's email (optional)" Text="{x:Bind NewPerson.Guardian.Email}" />
-                </StackPanel>
-            </Grid>
-        </ScrollViewer>
-
-        <StackPanel Grid.Row="2" Margin="30,10,30,30">
+        <StackPanel Grid.Column="1" Margin="30,30,00,0"
+                    Width="175">
             <controls:BigIconButton Name="uiNext"
                                     Margin="0 0 0 20"
                                     Icon=""
@@ -90,6 +52,47 @@
                                     Tapped="Back_Tapped"
                                     Visibility="Collapsed" />
         </StackPanel>
+
+        <ScrollViewer Grid.Row="1" Grid.ColumnSpan="2" x:DefaultBindMode="TwoWay">
+            <Grid Margin="30,0,30,0">
+                <Grid.Resources>
+                    <Style TargetType="TextBox">
+                        <Setter Property="HorizontalAlignment" Value="Left" />
+                        <Setter Property="MinWidth" Value="200" />
+                    </Style>
+                </Grid.Resources>
+                <StackPanel Name="uiPersonInfo"
+                            IsHitTestVisible="False"
+                            Opacity="0"
+                            RenderTransformOrigin="0.5,0.5"
+                            Spacing="15">
+                    <StackPanel.RenderTransform>
+                        <CompositeTransform />
+                    </StackPanel.RenderTransform>
+                    <TextBlock Style="{ThemeResource SubtitleTextBlockStyle}" Text="Some info about you" />
+                    <TextBox Header="First name" Text="{x:Bind NewPerson.FirstName, UpdateSourceTrigger=PropertyChanged}" />
+                    <TextBox Header="Last name" Text="{x:Bind NewPerson.LastName, UpdateSourceTrigger=PropertyChanged}" />
+                    <DatePicker Date="{Binding Path=NewPerson.BirthDate, ElementName=uiNewPersonPage, Mode=TwoWay}" Header="Birth date" />
+
+                    <controls:AddressControl Address="{x:Bind NewPerson.Address}"/>
+                </StackPanel>
+
+                <StackPanel Name="uiGuardianInfo"
+                            IsHitTestVisible="False"
+                            Opacity="0"
+                            RenderTransformOrigin="0.5,0.5"
+                            Spacing="15">
+                    <StackPanel.RenderTransform>
+                        <CompositeTransform />
+                    </StackPanel.RenderTransform>
+                    <TextBlock Style="{ThemeResource SubtitleTextBlockStyle}" Text="Some info about your guardian" />
+
+                    <TextBox Header="Guardian's name" Text="{x:Bind NewPerson.Guardian.Name, UpdateSourceTrigger=PropertyChanged}" />
+                    <TextBox Header="Guardian's phone number" Text="{x:Bind NewPerson.Guardian.PhoneNumber, UpdateSourceTrigger=PropertyChanged}" />
+                    <TextBox Header="Guardian's email (optional)" Text="{x:Bind NewPerson.Guardian.Email, UpdateSourceTrigger=PropertyChanged}" />
+                </StackPanel>
+            </Grid>
+        </ScrollViewer>
 
         <VisualStateManager.VisualStateGroups>
             <VisualStateGroup>

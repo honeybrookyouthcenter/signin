@@ -26,7 +26,7 @@ namespace YouthCenterSignIn.Pages
 
         private async void Cancel_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            MessageDialog message = new MessageDialog("Are you sure you want to cancel? You'll loose the information you entered.", "Cancel");
+            MessageDialog message = new MessageDialog("Are you sure you want to cancel? You'll loose any information you entered.", "Cancel");
             message.Commands.Add(new UICommand("Yes", (_) => ((Frame)Parent).GoBack()));
             message.Commands.Add(new UICommand("No"));
 
@@ -54,10 +54,12 @@ namespace YouthCenterSignIn.Pages
                 return;
             }
 
-            await DataProvider.Current.AddPerson(NewPerson);
+            var addSucceeded = await DataProvider.Current.AddPerson(NewPerson);
             var parent = (Frame)Parent;
             parent.GoBack(new SlideNavigationTransitionInfo());
-            parent.Navigate(typeof(PersonPage), NewPerson);
+
+            if (addSucceeded)
+                parent.Navigate(typeof(PersonPage), NewPerson);
         }
     }
 }

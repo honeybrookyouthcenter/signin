@@ -5,7 +5,7 @@ namespace YouthCenterSignIn.Logic.Tests
     [TestClass]
     public class DataProviderTests : TestBase
     {
-        private const string NewPin = "4321";
+        private const string NewPin = "321321";
 
         [TestMethod]
         public void DataProvider_AdminPin_ChangeTest()
@@ -18,7 +18,7 @@ namespace YouthCenterSignIn.Logic.Tests
                 DataProvider.ChangeAdminPin(Data.DataProvider.DefaultAdminPin, "123", "123"));
             Assert.ThrowsException<MessageException>(() =>
                 DataProvider.ChangeAdminPin(Data.DataProvider.DefaultAdminPin, NewPin, "4567"));
-            Assert.AreEqual(Data.DataProvider.DefaultAdminPin, DataProvider.AdminPin, 
+            Assert.AreEqual(Data.DataProvider.DefaultAdminPin, DataProvider.AdminPin,
                 "We tried to change the pin incorrectly, it should not have changed.");
 
             DataProvider.ChangeAdminPin(Data.DataProvider.DefaultAdminPin, NewPin, NewPin);

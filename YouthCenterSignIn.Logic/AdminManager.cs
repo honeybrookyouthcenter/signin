@@ -4,28 +4,35 @@ using YouthCenterSignIn.Logic.Data;
 
 namespace YouthCenterSignIn.Logic
 {
-    public class AdminManager
+    public class AdminManager : NotifyBase
     {
+        public ObservableCollection<Log> Logs { get; } = new ObservableCollection<Log>();
+
+        DateTimeOffset date = DateTimeOffset.Now;
+        public DateTimeOffset Date
+        {
+            get => date;
+            set { date = value; GetLogs(); OnPropertyChanged(); }
+        }
+
         public AdminManager()
         {
-            GetTodaysLogs();
+            GetLogs();
             Log.LogsSaved += Log_LogsSaved;
         }
 
         private void Log_LogsSaved(object sender, EventArgs e)
         {
-            GetTodaysLogs();
+            GetLogs();
         }
 
-        async void GetTodaysLogs()
+        async void GetLogs()
         {
-            TodaysLogs.Clear();
-            foreach (var log in await Log.GetLogs(DateTime.Today))
+            Logs.Clear();
+            foreach (var log in await Log.GetLogs(Date))
             {
-                TodaysLogs.Add(log);
+                Logs.Add(log);
             }
         }
-
-        public ObservableCollection<Log> TodaysLogs { get; } = new ObservableCollection<Log>();
     }
 }

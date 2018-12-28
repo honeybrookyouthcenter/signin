@@ -7,25 +7,78 @@
       xmlns:data="using:YouthCenterSignIn.Logic.Data"
       xmlns:local="using:YouthCenterSignIn.Pages"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      xmlns:tk="using:Microsoft.Toolkit.Uwp.UI.Controls"
       Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
       mc:Ignorable="d">
     <Page.Resources>
         <converters:CountToVisibilityConverter x:Key="CountToVisibility" />
     </Page.Resources>
     <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition />
-            <RowDefinition Height="3*" />
-        </Grid.RowDefinitions>
+        <ScrollViewer>
+            <RelativePanel
+                Background="#AFFF"
+                Margin="100"
+                Padding="20"
+                       HorizontalAlignment="Left"
+                       VerticalAlignment="Top">
+                <StackPanel Name="uiWelcome"
+                            Margin="0 0 0 15">
+                    <TextBlock Style="{ThemeResource SubheaderTextBlockStyle}">
+                       Welcome to the
+                    </TextBlock>
+                    <TextBlock FontWeight="SemiBold" Style="{ThemeResource HeaderTextBlockStyle}">
+                       Honey Brook Youth Center!
+                    </TextBlock>
+                </StackPanel>
+                <AutoSuggestBox Name="uiName"
+                                Width="350"
+                                HorizontalAlignment="Left"
+                                BorderThickness="0 0 0 2"
+                                FontSize="25"
+                                FontWeight="Light"
+                                Padding="0 0 0 6"
+                                PlaceholderText="Type your name"
+                                SuggestionChosen="UiName_SuggestionChosen"
+                                ItemsSource="{x:Bind PersonSearch}"
+                                RelativePanel.Below="uiWelcome"
+                                Text="{x:Bind PersonSearch.SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                    <AutoSuggestBox.ItemTemplate>
+                        <DataTemplate x:DataType="data:Person">
+                            <TextBlock Style="{ThemeResource SubtitleTextBlockStyle}"
+                                       Text="{x:Bind FullName}" />
+                        </DataTemplate>
+                    </AutoSuggestBox.ItemTemplate>
+                </AutoSuggestBox>
 
-        <Border Grid.RowSpan="2"
-                Width="100"
-                Height="100"
-                HorizontalAlignment="Left"
-                VerticalAlignment="Top"
-                Background="Transparent"
-                DoubleTapped="Border_DoubleTapped">
-            <FlyoutBase.AttachedFlyout>
+                <tk:DropShadowPanel Margin="0 30 0 0"
+                            Background="{ThemeResource SystemColorHighlightBrush}"
+                                    ShadowOpacity=".5"
+                                    OffsetX="3"
+                                    OffsetY="3"
+                                    BlurRadius="25"
+                                    Visibility="{x:Bind PersonSearch.Count, Mode=OneWay, Converter={StaticResource CountToVisibility}}"
+                                    RelativePanel.Below="uiName">
+                    <Button FontStyle="Italic"
+                            Background="{ThemeResource SystemColorHighlightBrush}"
+                            RequestedTheme="Dark"
+                            BorderThickness="0"
+                            Padding="10 7"
+                            Click="SignUp_Tapped"
+                            Content="New here? Sign up!" />
+                </tk:DropShadowPanel>
+            </RelativePanel>
+        </ScrollViewer>
+
+        <CommandBar HorizontalAlignment="Right"
+                    VerticalAlignment="Bottom"
+                    Background="Transparent"
+                    Margin="0 0 -48 0"
+                    IsOpen="True">
+        <AppBarButton Opacity=".5"
+                      AllowFocusOnInteraction="True"
+                      Icon="List"
+                      Label="Logs">
+            <AppBarButton.Flyout>
                 <Flyout>
                     <StackPanel Margin="5 5 5 0">
                         <PasswordBox Name="uiPin"
@@ -36,49 +89,8 @@
                         <TextBlock Name="uiPinMessages" Margin="0 10 0 0" />
                     </StackPanel>
                 </Flyout>
-            </FlyoutBase.AttachedFlyout>
-        </Border>
-
-        <RelativePanel Grid.Row="1"
-                       HorizontalAlignment="Center"
-                       VerticalAlignment="Top">
-            <TextBlock Name="uiWelcome"
-                       Margin="0 0 0 15"
-                       Style="{ThemeResource HeaderTextBlockStyle}"
-                       Text="Welcome to the Honey Brook Youth Center!" />
-            <TextBox Name="uiName"
-                     Width="380"
-                     HorizontalAlignment="Left"
-                     BorderThickness="0 0 0 2"
-                     FontSize="25"
-                     FontWeight="Light"
-                     Padding="0 0 0 8"
-                     PlaceholderText="Type your name here to sign in"
-                     RelativePanel.Below="uiWelcome"
-                     Text="{x:Bind PersonSearch.SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-            <ListView Name="uiSearch"
-                      HorizontalAlignment="Center"
-                      VerticalAlignment="Top"
-                      ItemsSource="{x:Bind PersonSearch}"
-                      RelativePanel.Below="uiName"
-                      SelectionMode="None">
-                <ListView.ItemTemplate>
-                    <DataTemplate x:DataType="data:Person">
-                        <TextBlock Style="{ThemeResource SubtitleTextBlockStyle}"
-                                   Tapped="TextBlock_Tapped"
-                                   Text="{x:Bind FullName}" />
-                    </DataTemplate>
-                </ListView.ItemTemplate>
-            </ListView>
-
-            <TextBlock Margin="0 30 0 0"
-                       FontStyle="Italic"
-                       Opacity=".8"
-                       RelativePanel.AlignTopWith="uiSearch"
-                       Style="{ThemeResource SubtitleTextBlockStyle}"
-                       Tapped="SignUp_Tapped"
-                       Text="New here? Sign up!"
-                       Visibility="{x:Bind PersonSearch.Count, Mode=OneWay, Converter={StaticResource CountToVisibility}}" />
-        </RelativePanel>
+            </AppBarButton.Flyout>
+        </AppBarButton>
+        </CommandBar>
     </Grid>
 </Page>
