@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace YouthCenterSignIn.Logic.Data
 {
-    public class Log
+    public class Log : NotifyBase
     {
         #region Logs
 
