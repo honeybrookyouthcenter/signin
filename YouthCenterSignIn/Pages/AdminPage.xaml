@@ -8,6 +8,7 @@
       xmlns:data="using:YouthCenterSignIn.Logic.Data"
       xmlns:local="using:YouthCenterSignIn.Pages"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      xmlns:graphControls="using:Microsoft.Toolkit.Uwp.UI.Controls.Graph"
       Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
       mc:Ignorable="d">
 
@@ -17,12 +18,23 @@
             <RowDefinition />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-        <StackPanel Orientation="Horizontal" Margin="0 0 0 10">
+        <Grid Margin="0 0 0 10">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
             <TextBlock VerticalAlignment="Center"
                    Style="{ThemeResource HeaderTextBlockStyle}"
                    Text="Sign in logs" />
-            <CalendarDatePicker VerticalAlignment="Bottom" Margin="30 0 0 10" Date="{x:Bind AdminManager.Date, Mode=TwoWay}"/>
-        </StackPanel>
+
+            <CalendarDatePicker Grid.Row="1" VerticalAlignment="Bottom" Margin="30 0 0 10" Date="{x:Bind AdminManager.Date, Mode=TwoWay}"/>
+
+            <graphControls:AadLogin x:Name="Login"
+                                    Grid.Column="1"
+                                    View="SmallProfilePhotoLeft"
+                                    AllowSignInAsDifferentUser="False" />      
+        </Grid>
 
         <ListView Grid.Row="1"
                   Margin="-10 0 0 0"

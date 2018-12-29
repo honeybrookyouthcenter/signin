@@ -4,7 +4,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.Contacts;
+using Windows.ApplicationModel.Core;
 using Windows.Storage;
+using Windows.UI.Core;
 using Windows.UI.Popups;
 using YouthCenterSignIn.Logic.Data;
 
@@ -12,24 +14,45 @@ namespace YouthCenterSignIn
 {
     public class UwpDataProvider : DataProvider
     {
+        internal Graph Graph { get; } = new Graph();
+
         public override async Task ShowMessage(string message = null, Exception exception = null)
         {
             if (!string.IsNullOrWhiteSpace(message))
-                await new MessageDialog(message).ShowAsync();
+            {
+                await CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, async () =>
+                {
+                    await new MessageDialog(message).ShowAsync();
+                });
+            }
 
-            //TODO add reporting
+            if (exception != null)
+            {
+                //TODO add reporting
+            }
         }
 
         #region People
 
         public override async Task<List<Person>> GetPeople()
         {
-            var contactStore = await ContactManager.RequestStoreAsync();
+            if (!Graph.IsAuthenticated)
+            {
+                await ShowAuthenticationMessage();
+                return new List<Person>();
+            }
+
+            var contactStore = await ContactManager.RequestStoreAsync(ContactStoreAccessType.AllContactsReadWrite);
 
             return (await (await GetContactList(contactStore)).GetContactReader().ReadBatchAsync()).Contacts
                 .Select(c => ContactToPerson(c))
                 .Where(c => c != null)
                 .ToList();
+        }
+
+        internal async Task ShowAuthenticationMessage()
+        {
+            await ShowMessage("Please login to a Microsoft account on the logs page.");
         }
 
         Person ContactToPerson(Contact contact)
