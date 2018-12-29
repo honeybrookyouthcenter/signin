@@ -44,35 +44,36 @@ namespace YouthCenterSignIn.Logic
             return pin == Pin;
         }
 
-        public void ChangeAdminPin(string currentPin, string newPin, string newPinConfirm)
+        public bool ChangeAdminPin(string currentPin, string newPin, string newPinConfirm)
         {
             void ShowMessage(string message) => DataProvider.ShowMessage(message);
 
             if (currentPin != Pin)
             {
                 ShowMessage("Incorrect PIN.");
-                return;
+                return false;
             }
 
             if (newPin == Pin)
             {
                 ShowMessage("The new PIN is the same as the current PIN.");
-                return;
+                return false;
             }
 
             if (newPin.Length != 6)
             {
                 ShowMessage("The PIN must be 6 characters long.");
-                return;
+                return false;
             }
 
             if (newPin != newPinConfirm)
             {
                 ShowMessage("The confirmation PIN is not the same.");
-                return;
+                return false;
             }
 
             Pin = newPin;
+            return true;
         }
 
         public const string DefaultPin = "123123";
