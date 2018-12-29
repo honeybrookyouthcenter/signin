@@ -86,19 +86,28 @@ namespace YouthCenterSignIn.Logic.Data
 
         public string FullName => $"{FirstName} {LastName}";
 
-        public async Task Save()
+        public async Task<bool> Save()
         {
-            if (!IsValid(out string personIssues))
-                throw new InvalidOperationException(personIssues);
+            try
+            {
+                if (!IsValid(out string personIssues))
+                    throw new InvalidOperationException(personIssues);
 
-            string guardianIssues = null;
-            if (Guardian?.IsValid(out guardianIssues) != true)
-                throw new InvalidOperationException(guardianIssues ?? "There must be a guardian to save!");
+                string guardianIssues = null;
+                if (Guardian?.IsValid(out guardianIssues) != true)
+                    throw new InvalidOperationException(guardianIssues ?? "There must be a guardian to save!");
 
-            var newId = await DataProvider.Current.SavePerson(this);
+                var newId = await DataProvider.Current.SavePerson(this);
+                Id = newId;
 
-            Id = newId ?? throw new Exception("Saving the person to the data store failed!");
-            ClearPeopleCache();
+                ClearPeopleCache();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                await DataProvider.Current.ShowMessage("Oops! Something went wrong while signing you up. Sorry about that...", ex);
+                return false;
+            }
         }
 
         public bool IsValid(out string issues)

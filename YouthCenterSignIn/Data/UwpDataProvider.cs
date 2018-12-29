@@ -42,7 +42,8 @@ namespace YouthCenterSignIn
         {
             var contacts = await Graph.GetContacts();
 
-            return contacts.Select(c => ContactToPerson(c))
+            return contacts
+                .Select(c => ContactToPerson(c))
                 .Where(c => c != null)
                 .ToList();
         }
@@ -66,17 +67,9 @@ namespace YouthCenterSignIn
 
         public override async Task<string> SavePerson(Person person)
         {
-            try
-            {
-                var contact = PersonToContact(person);
-                await Graph.SaveContact(contact);
-                return contact.Id;
-            }
-            catch (Exception ex)
-            {
-                await ShowMessage("Oops! Something went wrong while signing you up. Sorry about that...", ex);
-                return null;
-            }
+            var contact = PersonToContact(person);
+            var newContact = await Graph.SaveContact(contact);
+            return newContact.Id;
         }
 
         MsG.Contact PersonToContact(Person person)
