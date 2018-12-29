@@ -58,60 +58,6 @@ namespace YouthCenterSignIn.Logic.Data
         public abstract Task<string> SavePerson(Person person);
 
         public abstract Task<List<Person>> GetPeople();
-
-        #region Authentication
-
-        public bool AuthenticateAdmin(string pin)
-        {
-            return pin == AdminPin;
-        }
-
-        public void ChangeAdminPin(string currentPin, string newPin, string newPinConfirm)
-        {
-            if (currentPin != AdminPin)
-            {
-                ShowMessage("Incorrect PIN.");
-                return;
-            }
-
-            if (newPin == AdminPin)
-            {
-                ShowMessage("The new PIN is the same as the current PIN.");
-                return;
-            }
-
-            if (newPin.Length != 6)
-            {
-                ShowMessage("The PIN must be 6 characters long.");
-                return;
-            }
-
-            if (newPin != newPinConfirm)
-            {
-                ShowMessage("The confirmation PIN is not the same.");
-                return;
-            }
-
-            AdminPin = newPin;
-        }
-
-        public const string DefaultAdminPin = "123123";
-        public string AdminPin
-        {
-            get
-            {
-                //Waiting is ok because app settings don't need async
-                var savedPin = GetSetting<string>(nameof(AdminPin), StorageType.AppSetting).Result;
-                return savedPin ?? DefaultAdminPin;
-            }
-
-            private set
-            {
-                var saveTask = SetSetting(nameof(AdminPin), value, StorageType.AppSetting);
-            }
-        }
-
-        #endregion
     }
 
     public enum StorageType

@@ -34,7 +34,7 @@ namespace YouthCenterSignIn.Pages
             uiPinMessages.Text = "";
             uiPin.Password = "";
 
-            if (DataProvider.Current.AuthenticateAdmin(pin))
+            if (new Admin().Authenticate(pin))
                 ((Frame)Parent).Navigate(typeof(AdminPage));
             else
                 uiPinMessages.Text = "Wrong pin!";

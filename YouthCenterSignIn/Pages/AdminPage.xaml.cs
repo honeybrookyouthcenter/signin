@@ -10,7 +10,7 @@ namespace YouthCenterSignIn.Pages
     /// </summary>
     public sealed partial class AdminPage : Page
     {
-        public AdminManager AdminManager { get; } = new AdminManager();
+        public Admin Admin { get; } = new Admin();
 
         public AdminPage()
         {

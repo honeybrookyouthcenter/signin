@@ -25,10 +25,13 @@
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
             <TextBlock VerticalAlignment="Center"
-                   Style="{ThemeResource HeaderTextBlockStyle}"
-                   Text="Sign in logs" />
+                       Style="{ThemeResource HeaderTextBlockStyle}"
+                       Text="Sign in logs" />
 
-            <CalendarDatePicker Grid.Column="1" VerticalAlignment="Bottom" Margin="30 0 0 10" Date="{x:Bind AdminManager.Date, Mode=TwoWay}"/>
+            <CalendarDatePicker Grid.Column="1" 
+                                VerticalAlignment="Bottom" 
+                                Margin="30 0 0 10" 
+                                Date="{x:Bind Admin.Date, Mode=TwoWay}"/>
 
             <graphControls:AadLogin x:Name="Login"
                                     Grid.Column="2"
@@ -38,7 +41,7 @@
 
         <ListView Grid.Row="1"
                   Margin="-10 0 0 0"
-                  ItemsSource="{x:Bind AdminManager.Logs}"
+                  ItemsSource="{x:Bind Admin.Logs}"
                   SelectionMode="None">
             <ListView.ItemTemplate>
                 <DataTemplate x:DataType="data:Log">
