@@ -55,21 +55,7 @@ namespace YouthCenterSignIn.Logic.Data
 
         public abstract Task ShowMessage(string message, Exception ex = null);
 
-        public async Task<bool> AddPerson(Person person)
-        {
-            //TODO write test
-            var newId = await AddPersonToData(person);
-            if (newId != null)
-            {
-                person.Id = newId;
-
-                Person.ClearPeopleCache();
-                return true;
-            }
-
-            return false;
-        }
-        protected abstract Task<string> AddPersonToData(Person person);
+        public abstract Task<string> SavePerson(Person person);
 
         public abstract Task<List<Person>> GetPeople();
 

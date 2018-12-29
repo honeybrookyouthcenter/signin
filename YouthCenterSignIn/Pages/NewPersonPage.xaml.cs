@@ -54,12 +54,24 @@ namespace YouthCenterSignIn.Pages
                 return;
             }
 
-            var addSucceeded = await DataProvider.Current.AddPerson(NewPerson);
-            var parent = (Frame)Parent;
-            parent.GoBack(new SlideNavigationTransitionInfo());
+            try
+            {
+                await NewPerson.Save();
 
-            if (addSucceeded)
+                var parent = (Frame)Parent;
+                GoBack();
                 parent.Navigate(typeof(PersonPage), NewPerson);
+            }
+            catch (Exception ex)
+            {
+                await DataProvider.Current.ShowMessage("Couldn't save the person!", ex);
+                GoBack();
+            }
+        }
+
+        void GoBack()
+        {
+            ((Frame)Parent).GoBack(new SlideNavigationTransitionInfo());
         }
     }
 }

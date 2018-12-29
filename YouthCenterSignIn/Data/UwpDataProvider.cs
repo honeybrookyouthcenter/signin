@@ -1,21 +1,18 @@
-﻿
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Windows.ApplicationModel.Contacts;
 using Windows.ApplicationModel.Core;
 using Windows.Storage;
 using Windows.UI.Core;
 using Windows.UI.Popups;
 using YouthCenterSignIn.Logic.Data;
+using MsG = Microsoft.Graph;
 
 namespace YouthCenterSignIn
 {
     public class UwpDataProvider : DataProvider
     {
-        internal Graph Graph { get; } = new Graph();
-
         public override async Task ShowMessage(string message = null, Exception exception = null)
         {
             if (!string.IsNullOrWhiteSpace(message))
@@ -34,38 +31,31 @@ namespace YouthCenterSignIn
 
         #region People
 
-        public override async Task<List<Person>> GetPeople()
-        {
-            if (!Graph.IsAuthenticated)
-            {
-                await ShowAuthenticationMessage();
-                return new List<Person>();
-            }
-
-            var contactStore = await ContactManager.RequestStoreAsync(ContactStoreAccessType.AllContactsReadWrite);
-
-            return (await (await GetContactList(contactStore)).GetContactReader().ReadBatchAsync()).Contacts
-                .Select(c => ContactToPerson(c))
-                .Where(c => c != null)
-                .ToList();
-        }
+        internal Graph Graph { get; } = new Graph();
 
         internal async Task ShowAuthenticationMessage()
         {
             await ShowMessage("Please login to a Microsoft account on the logs page.");
         }
 
-        Person ContactToPerson(Contact contact)
+        public override async Task<List<Person>> GetPeople()
+        {
+            var contacts = await Graph.GetContacts();
+
+            return contacts.Select(c => ContactToPerson(c))
+                .Where(c => c != null)
+                .ToList();
+        }
+
+        Person ContactToPerson(MsG.Contact contact)
         {
             try
             {
                 string id = contact.Id;
-                string firstName = contact.FirstName;
-                string lastName = contact.LastName;
-                DateTimeOffset date = contact.ImportantDates.FirstOrDefault(d => d.Kind == ContactDateKind.Birthday).ToDateTimeOffset();
-                Address address = contact.Addresses.FirstOrDefault().ToFullAddress();
+                string firstName = contact.GivenName;
+                string lastName = contact.Surname;
 
-                return new Person(id, firstName, lastName, date, address);
+                return new Person(id, firstName, lastName);
             }
             catch (Exception ex)
             {
@@ -74,12 +64,12 @@ namespace YouthCenterSignIn
             }
         }
 
-        protected override async Task<string> AddPersonToData(Person person)
+        public override async Task<string> SavePerson(Person person)
         {
             try
             {
                 var contact = PersonToContact(person);
-                await SaveContact(contact);
+                await Graph.SaveContact(contact);
                 return contact.Id;
             }
             catch (Exception ex)
@@ -89,43 +79,22 @@ namespace YouthCenterSignIn
             }
         }
 
-        Contact PersonToContact(Person person)
+        MsG.Contact PersonToContact(Person person)
         {
-            var contact = new Contact
+            var contact = new MsG.Contact
             {
-                FirstName = person.FirstName,
-                LastName = person.LastName,
-                Notes = person.Guardian?.ToString()
+                GivenName = person.FirstName,
+                Surname = person.LastName,
+                PersonalNotes = person.Guardian?.ToString(),
+                HomePhones = new List<string>
+                {
+                    person.Guardian?.PhoneNumber
+                },
+                HomeAddress = person.Address.ToContactAddress(),
+                Birthday = person.BirthDate,
             };
 
-            if (!string.IsNullOrWhiteSpace(person.Guardian?.PhoneNumber))
-                contact.Phones.Add(new ContactPhone() { Kind = ContactPhoneKind.Mobile, Number = person.Guardian?.PhoneNumber });
-            contact.Addresses.Add(person.Address.ToContactAddress());
-            contact.ImportantDates.Add(person.BirthDate.ToContactDate());
-
             return contact;
-        }
-
-        async Task SaveContact(Contact contact)
-        {
-            var contactStore = await ContactManager.RequestStoreAsync(ContactStoreAccessType.AppContactsReadWrite);
-            ContactList contactList = await GetContactList(contactStore);
-            await contactList.SaveContactAsync(contact);
-        }
-
-        async Task<ContactList> GetContactList(ContactStore contactStore)
-        {
-            const string contactListName = "Youth Center";
-
-            var contactLists = await contactStore.FindContactListsAsync();
-            var contactList = contactLists.FirstOrDefault(l => l.DisplayName == contactListName);
-            if (contactList == null)
-            {
-                contactList = await contactStore.CreateContactListAsync(contactListName);
-                await contactList.SaveAsync();
-            }
-
-            return contactList;
         }
 
         #endregion
@@ -187,45 +156,23 @@ namespace YouthCenterSignIn
 
     static class ContactExtensions
     {
-        #region Dates
-
-        public static DateTimeOffset ToDateTimeOffset(this ContactDate contactDate)
-        {
-            if (contactDate == null || contactDate.Year == null || contactDate.Month == null || contactDate.Day == null)
-                return default(DateTimeOffset);
-
-            return new DateTimeOffset(new DateTime(contactDate.Year.Value, Convert.ToInt32(contactDate.Month.Value), Convert.ToInt32(contactDate.Day.Value)));
-        }
-
-        public static ContactDate ToContactDate(this DateTimeOffset dateTimeOffset)
-        {
-            return new ContactDate()
-            {
-                Year = dateTimeOffset.Year,
-                Month = Convert.ToUInt32(dateTimeOffset.Month),
-                Day = Convert.ToUInt32(dateTimeOffset.Day)
-            };
-        }
-
-        #endregion
-
         #region Addresses
 
-        public static Address ToFullAddress(this ContactAddress address)
+        public static Address ToFullAddress(this MsG.PhysicalAddress address)
         {
             if (address == null)
                 return null;
 
-            return new Address(address.StreetAddress, city: address.Locality, state: address.Region);
+            return new Address(address.Street, city: address.City, state: address.State);
         }
 
-        public static ContactAddress ToContactAddress(this Address address)
+        public static MsG.PhysicalAddress ToContactAddress(this Address address)
         {
-            return new ContactAddress()
+            return new MsG.PhysicalAddress()
             {
-                StreetAddress = address.StreetAddress,
-                Locality = address.City,
-                Region = address.State
+                Street = address.StreetAddress,
+                City = address.City,
+                State = address.State
             };
         }
 

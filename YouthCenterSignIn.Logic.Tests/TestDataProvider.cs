@@ -60,16 +60,16 @@ namespace YouthCenterSignIn.Logic.Tests
                 guardian: null)
         };
 
-        protected override Task<string> AddPersonToData(Person person)
-        {
-            People.Add(person);
-
-            return Task.FromResult(person.Id);
-        }
-
         public override Task<List<Person>> GetPeople()
         {
             return Task.FromResult(People);
+        }
+
+        public override Task<string> SavePerson(Person person)
+        {
+            People.Add(person);
+
+            return Task.FromResult(Guid.NewGuid().ToString());
         }
 
         #endregion

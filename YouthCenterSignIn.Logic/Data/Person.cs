@@ -32,12 +32,12 @@ namespace YouthCenterSignIn.Logic.Data
 
         public Person() { }
 
-        public Person(string id, string firstName, string lastName, DateTimeOffset birthDate, Address address, Guardian guardian = null) : this()
+        public Person(string id, string firstName, string lastName, DateTimeOffset? birthDate = null, Address address = null, Guardian guardian = null) : this()
         {
             Id = id;
             FirstName = firstName;
             LastName = lastName;
-            BirthDate = birthDate;
+            BirthDate = birthDate ?? DateTime.Now;
             Address = address;
             Guardian = guardian;
         }
@@ -86,6 +86,21 @@ namespace YouthCenterSignIn.Logic.Data
 
         public string FullName => $"{FirstName} {LastName}";
 
+        public async Task Save()
+        {
+            if (!IsValid(out string personIssues))
+                throw new InvalidOperationException(personIssues);
+
+            string guardianIssues = null;
+            if (Guardian?.IsValid(out guardianIssues) != true)
+                throw new InvalidOperationException(guardianIssues ?? "There must be a guardian to save!");
+
+            var newId = await DataProvider.Current.SavePerson(this);
+
+            Id = newId ?? throw new Exception("Saving the person to the data store failed!");
+            ClearPeopleCache();
+        }
+
         public bool IsValid(out string issues)
         {
             issues = "";
@@ -112,8 +127,8 @@ namespace YouthCenterSignIn.Logic.Data
                 issues += ".\r\n";
             }
 
-            if (BirthDate.CompareTo(DateTimeOffset.Now.AddYears(-6)) > 0)
-                issues += "You have to be at least six to sign up.";
+            if (BirthDate.CompareTo(DateTimeOffset.Now.AddYears(-5)) > 0)
+                issues += "You have to be at least five to sign up.";
 
             return string.IsNullOrWhiteSpace(issues);
         }

@@ -28,10 +28,10 @@
                    Style="{ThemeResource HeaderTextBlockStyle}"
                    Text="Sign in logs" />
 
-            <CalendarDatePicker Grid.Row="1" VerticalAlignment="Bottom" Margin="30 0 0 10" Date="{x:Bind AdminManager.Date, Mode=TwoWay}"/>
+            <CalendarDatePicker Grid.Column="1" VerticalAlignment="Bottom" Margin="30 0 0 10" Date="{x:Bind AdminManager.Date, Mode=TwoWay}"/>
 
             <graphControls:AadLogin x:Name="Login"
-                                    Grid.Column="1"
+                                    Grid.Column="2"
                                     View="SmallProfilePhotoLeft"
                                     AllowSignInAsDifferentUser="False" />      
         </Grid>

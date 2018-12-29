@@ -47,7 +47,7 @@ namespace YouthCenterSignIn.Logic.Tests
             search.SearchTask.Wait();
             Assert.AreEqual(2, search.Count, "The search for peter should have found 2 people.");
 
-            Assert.AreEqual("Peter", search[0].FirstName, 
+            Assert.AreEqual("Peter", search[0].FirstName,
                 "Peter McKinnin should be before Merv Petersheim because the search starts with peter");
         }
     }
