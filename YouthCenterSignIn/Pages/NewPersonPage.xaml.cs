@@ -26,7 +26,7 @@ namespace YouthCenterSignIn.Pages
 
         private async void Cancel_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            MessageDialog message = new MessageDialog("Are you sure you want to cancel? You'll loose the information you entered.", "Cancel");
+            MessageDialog message = new MessageDialog("Are you sure you want to cancel? You'll loose any information you entered.", "Cancel");
             message.Commands.Add(new UICommand("Yes", (_) => ((Frame)Parent).GoBack()));
             message.Commands.Add(new UICommand("No"));
 
@@ -35,7 +35,7 @@ namespace YouthCenterSignIn.Pages
 
         async void Next_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            if (NewPerson.HasValidInfo(out var issues))
+            if (NewPerson.IsValid(out var issues))
                 VisualStateManager.GoToState(this, "GuardianInfo", true);
             else
                 await new MessageDialog(issues).ShowAsync();
@@ -48,16 +48,23 @@ namespace YouthCenterSignIn.Pages
 
         async void Done_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            if (!NewPerson.Guardian.HasValidInfo(out var issues))
+            if (!NewPerson.Guardian.IsValid(out var issues))
             {
                 await new MessageDialog(issues).ShowAsync();
                 return;
             }
 
-            await DataProvider.Current.AddPerson(NewPerson);
-            var parent = (Frame)Parent;
-            parent.GoBack(new SlideNavigationTransitionInfo());
-            parent.Navigate(typeof(PersonPage), NewPerson);
+            if (await NewPerson.Save())
+            {
+                var parent = (Frame)Parent;
+                GoBack();
+                parent.Navigate(typeof(PersonPage), NewPerson);
+            }
+        }
+
+        void GoBack()
+        {
+            ((Frame)Parent).GoBack(new SlideNavigationTransitionInfo());
         }
     }
 }

@@ -55,29 +55,9 @@ namespace YouthCenterSignIn.Logic.Data
 
         public abstract Task ShowMessage(string message, Exception ex = null);
 
-        public abstract Task<bool> AddPerson(Person person);
+        public abstract Task<string> SavePerson(Person person);
 
         public abstract Task<List<Person>> GetPeople();
-
-        public bool AuthenticateAdmin(string pin)
-        {
-            if (AdminPin == null)
-                AdminPin = "1234";
-
-            return pin == AdminPin;
-        }
-
-        string AdminPin
-        {
-            get => GetSetting<string>(nameof(AdminPin), StorageType.AppSetting).Result; //Waiting is ok because app settings don't need async
-            set
-            {
-                if (value.Length != 4)
-                    return;
-
-                var saveTask = SetSetting(nameof(AdminPin), value, StorageType.AppSetting);
-            }
-        }
     }
 
     public enum StorageType

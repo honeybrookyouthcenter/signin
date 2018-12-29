@@ -1,8 +1,6 @@
-﻿using System.ComponentModel;
-
-namespace YouthCenterSignIn.Logic.Data
+﻿namespace YouthCenterSignIn.Logic.Data
 {
-    public class Guardian : INotifyPropertyChanged
+    public class Guardian : NotifyBase
     {
         public Guardian()
         { }
@@ -35,41 +33,20 @@ namespace YouthCenterSignIn.Logic.Data
             set { email = value; OnPropertyChanged(); }
         }
 
-        public bool HasValidInfo(out string issues)
+        public bool IsValid(out string issues)
         {
-            issues = "";
+            issues = null;
+            if (string.IsNullOrWhiteSpace(Name))
+                issues += "name";
+            if (string.IsNullOrWhiteSpace(PhoneNumber))
+                issues += issues == null ? "phone number" : " and phone number";
 
-            return true; //TOOD
-        }
+            if (issues != null)
+                issues = $"Please enter your guardian's {issues}.";
 
-        public static Guardian FromText(string notes)
-        {
-            //TODO
-            string name = "";
-            string phoneNumber = "";
-            string email = "";
-
-            return new Guardian(name, phoneNumber, email);
+            return issues == null;
         }
 
         public override string ToString() => $"Guardian's Name: {Name}\r\nGuardian's Phone: {PhoneNumber}\r\nGuardian Email: {Email}";
-
-        #region Notify
-
-        /// <summary>
-        /// Property Changed event
-        /// </summary>
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        /// <summary>
-        /// Fire the PropertyChanged event
-        /// </summary>
-        /// <param name="propertyName">Name of the property that changed (defaults from CallerMemberName)</param>
-        protected void OnPropertyChanged([System.Runtime.CompilerServices.CallerMemberName] string propertyName = "")
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
-
-        #endregion
     }
 }

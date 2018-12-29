@@ -8,6 +8,7 @@
       xmlns:data="using:YouthCenterSignIn.Logic.Data"
       xmlns:local="using:YouthCenterSignIn.Pages"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      xmlns:graphControls="using:Microsoft.Toolkit.Uwp.UI.Controls.Graph"
       Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
       mc:Ignorable="d">
 
@@ -17,13 +18,59 @@
             <RowDefinition />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-        <TextBlock Margin="0 0 0 10"
-                   Style="{ThemeResource HeaderTextBlockStyle}"
-                   Text="Sign in logs" />
+        <Grid Margin="0 0 0 10">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock VerticalAlignment="Center"
+                       Style="{ThemeResource HeaderTextBlockStyle}"
+                       Text="Sign in logs" />
+
+            <CalendarDatePicker Grid.Column="1" 
+                                VerticalAlignment="Bottom" 
+                                Margin="30 0 0 10" 
+                                Date="{x:Bind Admin.Date, Mode=TwoWay}"/>
+
+            <CommandBar Grid.Column="2" 
+                        Background="Transparent"
+                        VerticalAlignment="Center">
+                <CommandBar.SecondaryCommands>
+                    <AppBarButton Label="Change admin pin" Icon="Edit" AllowFocusOnInteraction="True">
+                        <AppBarButton.Flyout>
+                            <Flyout x:Name="uiChangePinFlyout">
+                                <StackPanel Spacing="15">
+                                    <TextBlock TextWrapping="Wrap" 
+                                               Text="Change the pin to get to this page. Please talk to Merv before doing so."
+                                               Width="250"/>
+
+                                    <PasswordBox Name="uiCurrentPin" Header="Current pin"/>
+                                    <PasswordBox Name="uiNewPin" Header="New pin"/>
+                                    <PasswordBox Name="uiConfirmPin" Header="Confirm new pin"/>
+
+                                    <Button HorizontalAlignment="Right" 
+                                            Margin="0 10 0 0"
+                                            Click="ChangePin_Click" 
+                                            Content="Change"/>
+                                </StackPanel>
+                            </Flyout>
+                        </AppBarButton.Flyout>
+                    </AppBarButton>
+                </CommandBar.SecondaryCommands>
+            </CommandBar>
+            
+            <graphControls:AadLogin x:Name="Login"
+                                    Background="Transparent"
+                                    Grid.Column="3"
+                                    View="SmallProfilePhotoLeft"
+                                    AllowSignInAsDifferentUser="False" />      
+        </Grid>
 
         <ListView Grid.Row="1"
                   Margin="-10 0 0 0"
-                  ItemsSource="{x:Bind AdminManager.TodaysLogs}"
+                  ItemsSource="{x:Bind Admin.Logs}"
                   SelectionMode="None">
             <ListView.ItemTemplate>
                 <DataTemplate x:DataType="data:Log">

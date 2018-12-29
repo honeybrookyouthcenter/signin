@@ -28,15 +28,17 @@ namespace YouthCenterSignIn.Logic
 
         private async Task UpdateSearchResults()
         {
-            var search = SearchText.ToLower();
+            var search = SearchText?.ToLower();
             if (string.IsNullOrWhiteSpace(search))
             {
                 Items.Clear();
                 return;
             }
 
-            var results = (await Person.GetPeople()).Where(p => p.FullName.ToLower().Contains(search));
-            results.OrderByDescending(p => p.FullName.ToLower().StartsWith(search));
+            var results = (await Person.GetPeople())
+                .Where(p => p.FullName.ToLower().Contains(search))
+                .OrderByDescending(p => p.FullName.ToLower().StartsWith(search))
+                .Take(8);
 
             foreach (var person in Items.ToArray())
             {
@@ -51,9 +53,13 @@ namespace YouthCenterSignIn.Logic
             }
         }
 
+
+        public new event PropertyChangedEventHandler PropertyChanged;
         protected void OnPropertyChanged([System.Runtime.CompilerServices.CallerMemberName] string propertyName = "")
         {
-            OnPropertyChanged(new PropertyChangedEventArgs(propertyName));
+            PropertyChangedEventArgs args = new PropertyChangedEventArgs(propertyName);
+            base.OnPropertyChanged(args);
+            PropertyChanged?.Invoke(this, args);
         }
     }
 }

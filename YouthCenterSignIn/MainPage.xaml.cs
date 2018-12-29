@@ -1,19 +1,26 @@
-﻿using Windows.UI.Xaml.Controls;
+﻿using System.Threading.Tasks;
+using Windows.UI.Xaml.Controls;
 using YouthCenterSignIn.Pages;
-
-// The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
 
 namespace YouthCenterSignIn
 {
-    /// <summary>
-    /// An empty page that can be used on its own or navigated to within a Frame.
-    /// </summary>
     public sealed partial class MainPage : Page
     {
+        UwpDataProvider DataProvider => ((UwpDataProvider)Logic.Data.DataProvider.Current);
+
         public MainPage()
         {
-            this.InitializeComponent();
-            uiFrame.Navigate(typeof(HomePage));
+            InitializeComponent();
+
+            Loaded += MainPage_Loaded;
+        }
+
+        private async void MainPage_Loaded(object sender, Windows.UI.Xaml.RoutedEventArgs e)
+        {
+            if (await DataProvider.Graph.Login() && DataProvider.Graph.IsAuthenticated)
+                uiFrame.Navigate(typeof(HomePage));
+            else
+                await DataProvider.ShowAuthenticationMessage();
         }
     }
 }

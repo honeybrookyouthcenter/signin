@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace YouthCenterSignIn.Logic.Data
 {
-    public class Person : INotifyPropertyChanged
+    public class Person : NotifyBase
     {
         #region People
 
@@ -27,22 +26,23 @@ namespace YouthCenterSignIn.Logic.Data
             return peopleCache.OrderBy(p => p.FirstName).ThenBy(p => p.LastName);
         }
 
+        public static void ClearPeopleCache() => peopleCache = null;
+
         #endregion
 
         public Person() { }
 
-        public Person(string id, string firstName, string lastName, DateTimeOffset birthDate, string phoneNumber, string address, Guardian guardian)
+        public Person(string id, string firstName, string lastName, DateTimeOffset? birthDate = null, Address address = null, Guardian guardian = null) : this()
         {
             Id = id;
             FirstName = firstName;
             LastName = lastName;
-            BirthDate = birthDate;
-            PhoneNumber = phoneNumber;
+            BirthDate = birthDate ?? DateTime.Now;
             Address = address;
             Guardian = guardian;
         }
 
-        string id = Guid.NewGuid().ToString();
+        string id;
         public string Id
         {
             get => id;
@@ -70,15 +70,8 @@ namespace YouthCenterSignIn.Logic.Data
             set { birthDate = value; OnPropertyChanged(); }
         }
 
-        string phoneNumber;
-        public string PhoneNumber
-        {
-            get => phoneNumber;
-            set { phoneNumber = value; OnPropertyChanged(); }
-        }
-
-        string address;
-        public string Address
+        Address address = new Address();
+        public Address Address
         {
             get => address;
             set { address = value; OnPropertyChanged(); }
@@ -93,9 +86,31 @@ namespace YouthCenterSignIn.Logic.Data
 
         public string FullName => $"{FirstName} {LastName}";
 
-        public override string ToString() => $"{Id}: {FullName}";
+        public async Task<bool> Save()
+        {
+            try
+            {
+                if (!IsValid(out string personIssues))
+                    throw new InvalidOperationException(personIssues);
 
-        public bool HasValidInfo(out string issues)
+                string guardianIssues = null;
+                if (Guardian?.IsValid(out guardianIssues) != true)
+                    throw new InvalidOperationException(guardianIssues ?? "There must be a guardian to save!");
+
+                var newId = await DataProvider.Current.SavePerson(this);
+                Id = newId;
+
+                ClearPeopleCache();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                await DataProvider.Current.ShowMessage("Oops! Something went wrong while signing you up. Sorry about that...", ex);
+                return false;
+            }
+        }
+
+        public bool IsValid(out string issues)
         {
             issues = "";
 
@@ -104,7 +119,7 @@ namespace YouthCenterSignIn.Logic.Data
                 emptyFields.Add("first name");
             if (string.IsNullOrWhiteSpace(LastName))
                 emptyFields.Add("last name");
-            if (string.IsNullOrWhiteSpace(Address))
+            if (Address?.IsValid() != true)
                 emptyFields.Add("address");
 
             if (emptyFields.Any())
@@ -121,8 +136,8 @@ namespace YouthCenterSignIn.Logic.Data
                 issues += ".\r\n";
             }
 
-            if (BirthDate.CompareTo(DateTimeOffset.Now.AddYears(-6)) > 0)
-                issues += "You have to be at least six to sign up.";
+            if (BirthDate.CompareTo(DateTimeOffset.Now.AddYears(-5)) > 0)
+                issues += "You have to be at least five to sign up.";
 
             return string.IsNullOrWhiteSpace(issues);
         }
@@ -154,24 +169,6 @@ namespace YouthCenterSignIn.Logic.Data
                 await SignedInLog.SignOut();
 
             await RefreshSignedIn();
-        }
-
-        #endregion
-
-        #region Notify
-
-        /// <summary>
-        /// Property Changed event
-        /// </summary>
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        /// <summary>
-        /// Fire the PropertyChanged event
-        /// </summary>
-        /// <param name="propertyName">Name of the property that changed (defaults from CallerMemberName)</param>
-        protected void OnPropertyChanged([System.Runtime.CompilerServices.CallerMemberName] string propertyName = "")
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
         #endregion
