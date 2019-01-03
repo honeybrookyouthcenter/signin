@@ -1,5 +1,6 @@
 ﻿using Windows.UI.Xaml.Controls;
 using YouthCenterSignIn.Logic;
+using YouthCenterSignIn.Logic.Data;
 
 namespace YouthCenterSignIn.Pages
 {
@@ -21,6 +22,11 @@ namespace YouthCenterSignIn.Pages
         {
             if (Admin.ChangeAdminPin(uiCurrentPin.Password, uiNewPin.Password, uiConfirmPin.Password))
                 uiChangePinFlyout.Hide();
+        }
+
+        void AppBarButton_Click(object sender, Windows.UI.Xaml.RoutedEventArgs e)
+        {
+            Person.ClearPeopleCache();
         }
     }
 }

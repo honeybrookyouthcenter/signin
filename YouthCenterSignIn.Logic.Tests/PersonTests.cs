@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Linq;
+using System.Threading;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using YouthCenterSignIn.Logic.Data;
 
@@ -69,7 +71,7 @@ namespace YouthCenterSignIn.Logic.Tests
         }
 
         [TestMethod]
-        public void PersonSearch_SaveTest()
+        public void Person_SaveTest()
         {
             var ogPersonId = "An assigned id";
             var person = new Person()
@@ -98,6 +100,37 @@ namespace YouthCenterSignIn.Logic.Tests
 
             Assert.IsFalse(string.IsNullOrWhiteSpace(person.Id), "The id should have been assigned by the data provider");
             Assert.AreNotEqual(ogPersonId, person.Id, "The id should change to the value assigned by data provider");
+        }
+
+        [TestMethod]
+        public void Person_CacheTest()
+        {
+            var ogExperation = Person.cacheExpiration;
+            try
+            {
+                Person.cacheExpiration = new TimeSpan(0, 0, 0, 0, 500);
+                var people = Person.GetPeople(alwaysUseCache: false).Result;
+                var newPerson = new Person() { Id = Guid.NewGuid().ToString() };
+                DataProvider.People.Add(newPerson);
+
+                people = Person.GetPeople(alwaysUseCache: false).Result;
+                CollectionAssert.DoesNotContain(people.ToList(), newPerson,
+                    "It should be using the cache because the expiration is not up.");
+
+                Thread.Sleep(200);
+                people = Person.GetPeople(alwaysUseCache: false).Result;
+                CollectionAssert.DoesNotContain(people.ToList(), newPerson,
+                    "It should be using the cache because the expiration is not up.");
+
+                Thread.Sleep(350);
+                people = Person.GetPeople(alwaysUseCache: false).Result;
+                CollectionAssert.Contains(people.ToList(), newPerson,
+                    "It should have gotten the new person because the expiration was up.");
+            }
+            finally
+            {
+                Person.cacheExpiration = ogExperation;
+            }
         }
     }
 }

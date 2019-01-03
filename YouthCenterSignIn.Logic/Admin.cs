@@ -10,8 +10,8 @@ namespace YouthCenterSignIn.Logic
 
         public ObservableCollection<Log> Logs { get; } = new ObservableCollection<Log>();
 
-        DateTimeOffset date = DateTimeOffset.Now;
-        public DateTimeOffset Date
+        DateTimeOffset? date = DateTimeOffset.Now;
+        public DateTimeOffset? Date
         {
             get => date;
             set { date = value; GetLogs(); OnPropertyChanged(); }
@@ -31,9 +31,13 @@ namespace YouthCenterSignIn.Logic
         async void GetLogs()
         {
             Logs.Clear();
-            foreach (var log in await Log.GetLogs(Date))
+
+            if (Date != null)
             {
-                Logs.Add(log);
+                foreach (var log in await Log.GetLogs(Date.Value))
+                {
+                    Logs.Add(log);
+                }
             }
         }
 

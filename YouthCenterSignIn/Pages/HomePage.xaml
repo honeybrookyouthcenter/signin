@@ -51,20 +51,18 @@
                 </AutoSuggestBox>
 
                 <tk:DropShadowPanel Margin="0 30 0 0"
-                            Background="{ThemeResource SystemColorHighlightBrush}"
                                     ShadowOpacity=".5"
                                     OffsetX="3"
                                     OffsetY="3"
+                                    Tapped="SignUp_Tapped"
                                     BlurRadius="25"
                                     Visibility="{x:Bind PersonSearch.Count, Mode=OneWay, Converter={StaticResource CountToVisibility}}"
                                     RelativePanel.Below="uiName">
-                    <Button FontStyle="Italic"
-                            Background="{ThemeResource SystemColorHighlightBrush}"
-                            RequestedTheme="Dark"
-                            BorderThickness="0"
-                            Padding="10 7"
-                            Click="SignUp_Tapped"
-                            Content="New here? Sign up!" />
+                    <Border RequestedTheme="Dark" Background="{ThemeResource SystemColorHighlightBrush}">
+                        <TextBlock FontStyle="Italic"
+                            Margin="10 7"
+                            Text="New here? Sign up!" />
+                    </Border>
                 </tk:DropShadowPanel>
             </RelativePanel>
         </ScrollViewer>
@@ -74,23 +72,23 @@
                     Background="Transparent"
                     Margin="0 0 -48 0"
                     IsOpen="True">
-        <AppBarButton Opacity=".5"
+            <AppBarButton Opacity=".5"
                       AllowFocusOnInteraction="True"
                       Icon="List"
                       Label="Logs">
-            <AppBarButton.Flyout>
-                <Flyout>
-                    <StackPanel Margin="5 5 5 0">
-                        <PasswordBox Name="uiPin"
+                <AppBarButton.Flyout>
+                    <Flyout Opened="Admin_Opened">
+                        <StackPanel Margin="5 5 5 0">
+                            <PasswordBox Name="uiPin"
                                      Header="Enter the administrative PIN"
                                      InputScope="NumericPin"
                                      PasswordChanged="uiPin_PasswordChanged" />
 
-                        <TextBlock Name="uiPinMessages" Margin="0 10 0 0" />
-                    </StackPanel>
-                </Flyout>
-            </AppBarButton.Flyout>
-        </AppBarButton>
+                            <TextBlock Name="uiPinMessages" Margin="0 10 0 0" />
+                        </StackPanel>
+                    </Flyout>
+                </AppBarButton.Flyout>
+            </AppBarButton>
         </CommandBar>
     </Grid>
 </Page>

@@ -12,19 +12,19 @@ namespace YouthCenterSignIn.Pages
 
         public HomePage()
         {
-            var getTask = Person.GetPeople();
+            var getTask = Person.GetPeople(alwaysUseCache: false);
             InitializeComponent();
 
             Loaded += HomePage_Loaded;
         }
 
-        private void HomePage_Loaded(object sender, RoutedEventArgs e)
+        void HomePage_Loaded(object sender, RoutedEventArgs e)
         {
             uiName.Focus(FocusState.Keyboard);
             InputPane.GetForCurrentView().TryShow();
         }
 
-        private void uiPin_PasswordChanged(object sender, RoutedEventArgs e)
+        void uiPin_PasswordChanged(object sender, RoutedEventArgs e)
         {
             if (uiPin.Password.Length != 6)
                 return;
@@ -40,16 +40,21 @@ namespace YouthCenterSignIn.Pages
                 uiPinMessages.Text = "Wrong pin!";
         }
 
-        private void SignUp_Tapped(object sender, RoutedEventArgs e)
-        {
-            ((Frame)Parent).Navigate(typeof(NewPersonPage));
-        }
-
-        private void UiName_SuggestionChosen(AutoSuggestBox sender, AutoSuggestBoxSuggestionChosenEventArgs args)
+         void UiName_SuggestionChosen(AutoSuggestBox sender, AutoSuggestBoxSuggestionChosenEventArgs args)
         {
             var person = (Person)args.SelectedItem;
 
             ((Frame)Parent).Navigate(typeof(PersonPage), person);
+        }
+
+        void SignUp_Tapped(object sender, Windows.UI.Xaml.Input.TappedRoutedEventArgs e)
+        {
+            ((Frame)Parent).Navigate(typeof(NewPersonPage));
+        }
+
+        void Admin_Opened(object sender, object e)
+        {
+            InputPane.GetForCurrentView().TryShow();
         }
     }
 }

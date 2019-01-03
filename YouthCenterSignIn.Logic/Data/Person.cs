@@ -9,16 +9,23 @@ namespace YouthCenterSignIn.Logic.Data
     {
         #region People
 
+        public static TimeSpan cacheExpiration = new TimeSpan(2, 0, 0);
+        static DateTime? lastRefresh = null;
+
         static List<Person> peopleCache;
         static Task<List<Person>> getPeopleTask = null;
 
-        public static async Task<IEnumerable<Person>> GetPeople()
+        public static async Task<IEnumerable<Person>> GetPeople(bool alwaysUseCache = true)
         {
+            if (!alwaysUseCache && DateTime.Now - lastRefresh > cacheExpiration)
+                peopleCache = null;
+
             if (getPeopleTask != null && !getPeopleTask.IsCompleted)
                 await getPeopleTask;
 
             if (peopleCache == null)
             {
+                lastRefresh = DateTime.Now;
                 getPeopleTask = Task.Run(async () => peopleCache = await DataProvider.Current.GetPeople());
                 peopleCache = await getPeopleTask;
             }
@@ -90,6 +97,8 @@ namespace YouthCenterSignIn.Logic.Data
         {
             try
             {
+                IsSaving = true;
+
                 if (!IsValid(out string personIssues))
                     throw new InvalidOperationException(personIssues);
 
@@ -107,6 +116,10 @@ namespace YouthCenterSignIn.Logic.Data
             {
                 await DataProvider.Current.ShowMessage("Oops! Something went wrong while signing you up. Sorry about that...", ex);
                 return false;
+            }
+            finally
+            {
+                IsSaving = false;
             }
         }
 
@@ -158,6 +171,13 @@ namespace YouthCenterSignIn.Logic.Data
         }
 
         public bool SignedIn => SignedInLog != null;
+
+        bool isSaving;
+        public bool IsSaving
+        {
+            get => isSaving;
+            private set { isSaving = value; OnPropertyChanged(); }
+        }
 
         public async Task SignInOut()
         {

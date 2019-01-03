@@ -4,13 +4,18 @@
       xmlns:controls="using:YouthCenterSignIn.Controls"
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       xmlns:local="using:YouthCenterSignIn.Pages"
+      xmlns:tkc="using:Microsoft.Toolkit.Uwp.UI.Converters"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       x:Name="uiNewPersonPage"
       x:DefaultBindMode="TwoWay"
       Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
-      mc:Ignorable="d">
+      mc:Ignorable="d"
+      IsEnabled="{x:Bind NewPerson.IsSaving, Mode=OneWay, Converter={StaticResource ReverseBool}}">
+    <Page.Resources>
+        <tkc:BoolNegationConverter x:Key="ReverseBool" />
+    </Page.Resources>
 
-    <Grid>
+    <Grid VerticalAlignment="Top">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition />
@@ -24,7 +29,8 @@
                    Style="{ThemeResource HeaderTextBlockStyle}"
                    Text="Sign up" />
 
-        <StackPanel Grid.Column="1" Margin="30,30,00,0"
+        <StackPanel Grid.Column="1" 
+                    Margin="30,30,00,0"
                     Width="175">
             <controls:BigIconButton Name="uiNext"
                                     Margin="0 0 0 20"
@@ -53,7 +59,7 @@
                                     Visibility="Collapsed" />
         </StackPanel>
 
-        <ScrollViewer Grid.Row="1" Grid.ColumnSpan="2" x:DefaultBindMode="TwoWay">
+        <ScrollViewer Grid.Row="1" Grid.ColumnSpan="2" x:DefaultBindMode="TwoWay" Name="uiScroller">
             <Grid Margin="30,0,30,0">
                 <Grid.Resources>
                     <Style TargetType="TextBox">
@@ -87,9 +93,9 @@
                     </StackPanel.RenderTransform>
                     <TextBlock Style="{ThemeResource SubtitleTextBlockStyle}" Text="Some info about your guardian" />
 
-                    <TextBox Header="Guardian's full name" Text="{x:Bind NewPerson.Guardian.Name, UpdateSourceTrigger=PropertyChanged}" />
-                    <TextBox Header="Guardian's phone number" Text="{x:Bind NewPerson.Guardian.PhoneNumber, UpdateSourceTrigger=PropertyChanged}" />
-                    <TextBox Header="Guardian's email (optional)" Text="{x:Bind NewPerson.Guardian.Email, UpdateSourceTrigger=PropertyChanged}" />
+                    <TextBox InputScope="NameOrPhoneNumber" Name="uiGuardianName" Header="Guardian's full name" Text="{x:Bind NewPerson.Guardian.Name, UpdateSourceTrigger=PropertyChanged}" />
+                    <TextBox Header="Guardian's phone number" InputScope="TelephoneNumber" Text="{x:Bind NewPerson.Guardian.PhoneNumber, UpdateSourceTrigger=PropertyChanged}" />
+                    <TextBox Header="Guardian's email (optional)" InputScope="EmailNameOrAddress" Text="{x:Bind NewPerson.Guardian.Email, UpdateSourceTrigger=PropertyChanged}" />
                 </StackPanel>
             </Grid>
         </ScrollViewer>
