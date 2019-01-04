@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using YouthCenterSignIn.Logic.Data;
@@ -39,8 +40,8 @@ namespace YouthCenterSignIn.Logic.Tests
             admin.Date = DateTimeOffset.Now;
             Assert.AreEqual(todaysLogCount, admin.Logs.Count, "We signed a person in, so there should be logs.");
         }
-        private const string NewPin = "321321";
 
+        private const string NewPin = "321321";
         [TestMethod]
         public void Admin_Pin_ChangeTest()
         {
@@ -68,6 +69,7 @@ namespace YouthCenterSignIn.Logic.Tests
             }
 
         }
+
         [TestMethod]
         public void Admin_Pin_AuthenticateTest()
         {
@@ -75,6 +77,38 @@ namespace YouthCenterSignIn.Logic.Tests
 
             Assert.IsFalse(admin.Authenticate("1243"));
             Assert.IsTrue(admin.Authenticate(Admin.DefaultPin));
+        }
+
+        [TestMethod]
+        public void Admin_Logs_RefreshTest()
+        {
+            var admin = new Admin();
+            admin.Date = DateTime.Now;
+
+            var newLog = Log.NewBlankLog();
+            newLog.Guid = Guid.NewGuid();
+
+            DataProvider.SetSetting(Log.GetLogsFileNameForDate(admin.Date.Value), new List<Log> { newLog }, StorageType.LocalFile).Wait();
+            admin.Date = DateTime.Now; //make sure it uses the latest cache
+            Assert.IsNull(admin.Logs.FirstOrDefault(l => l.Guid == newLog.Guid),
+                "The logs should not contain this because it was added directly to the file.  It's not in the cache.");
+
+            admin.RefreshLogs();
+            Assert.IsNotNull(admin.Logs.FirstOrDefault(l => l.Guid == newLog.Guid),
+                "The logs should contain this because we did a hard refresh of the logs.");
+        }
+
+        [TestMethod]
+        public void Admin_Logs_CountTest()
+        {
+            Log.ClearCache();
+
+            var admin = new Admin();
+            var testPerson = GetTestPerson();
+            testPerson.SignInOut().Wait();
+            testPerson.SignInOut().Wait();
+
+            Assert.AreEqual(admin.Logs.Count, admin.LogsCount, "The log count should be the same as the list count.");
         }
     }
 }

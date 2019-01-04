@@ -91,10 +91,10 @@ namespace YouthCenterSignIn.Logic.Tests
 
         protected override Task SetJsonFileContent(string file, string json)
         {
-            if (JsonSettings.ContainsKey(file))
-                JsonSettings[file] = json;
+            if (JsonFiles.ContainsKey(file))
+                JsonFiles[file] = json;
             else
-                JsonSettings.Add(file, json);
+                JsonFiles.Add(file, json);
 
             return Task.CompletedTask;
         }

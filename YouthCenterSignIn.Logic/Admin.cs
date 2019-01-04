@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using YouthCenterSignIn.Logic.Data;
 
 namespace YouthCenterSignIn.Logic
@@ -17,11 +18,21 @@ namespace YouthCenterSignIn.Logic
             set { date = value; GetLogs(); OnPropertyChanged(); }
         }
 
+        int logsCount;
+        public int LogsCount
+        {
+            get => logsCount;
+            set { logsCount = value; OnPropertyChanged(); }
+        }
+
         public Admin()
         {
+            Logs.CollectionChanged += Logs_CollectionChanged;
             GetLogs();
             Log.LogsSaved += Log_LogsSaved;
         }
+
+        void Logs_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e) => LogsCount = Logs.Count;
 
         private void Log_LogsSaved(object sender, EventArgs e)
         {
@@ -39,6 +50,12 @@ namespace YouthCenterSignIn.Logic
                     Logs.Add(log);
                 }
             }
+        }
+
+        public void RefreshLogs()
+        {
+            Log.ClearCache();
+            GetLogs();
         }
 
         #region Authentication

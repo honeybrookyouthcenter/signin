@@ -12,6 +12,9 @@ namespace YouthCenterSignIn.Logic.Tests
         [TestMethod]
         public void Log_SignInOutTest()
         {
+            //Clear up any tests that might have run previously
+            Log.ClearCache();
+
             var person = GetTestPerson();
             Assert.IsFalse(person.SignedIn, "The person should not be signed in the first time.");
 
@@ -26,7 +29,7 @@ namespace YouthCenterSignIn.Logic.Tests
         public void Log_SortingTest()
         {
             //Clear up any tests that might have run previously
-            Log.Cache.Clear();
+            Log.ClearCache();
 
             var people = DataProvider.GetPeople().Result;
 

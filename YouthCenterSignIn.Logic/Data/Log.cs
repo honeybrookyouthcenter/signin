@@ -9,7 +9,9 @@ namespace YouthCenterSignIn.Logic.Data
     {
         #region Logs
 
-        public static Dictionary<string, IEnumerable<Log>> Cache { get; } = new Dictionary<string, IEnumerable<Log>>();
+        static Dictionary<string, IEnumerable<Log>> Cache { get; } = new Dictionary<string, IEnumerable<Log>>();
+
+        public static void ClearCache() => Cache.Clear();
 
         public static async Task<IEnumerable<Log>> GetLogs(DateTimeOffset date)
         {
@@ -54,7 +56,7 @@ namespace YouthCenterSignIn.Logic.Data
 
         #endregion
 
-        private static string GetLogsFileNameForDate(DateTimeOffset date)
+        public static string GetLogsFileNameForDate(DateTimeOffset date)
         {
             return $"{date.ToString("yyyy-MM-dd")}.json";
         }
@@ -79,6 +81,11 @@ namespace YouthCenterSignIn.Logic.Data
             await SaveLogs(logs);
 
             return log;
+        }
+
+        public static Log NewBlankLog()
+        {
+            return new Log();
         }
 
         public async Task SignOut()
