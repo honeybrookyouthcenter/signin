@@ -21,23 +21,10 @@ namespace YouthCenterSignIn.Pages
             InitializeComponent();
 
             var inputPane = InputPane.GetForCurrentView();
-            inputPane.Showing += NewPersonPage_Showing;
-            inputPane.Hiding += NewPersonPage_Hiding;
             if (inputPane.Visible)
                 ((FrameworkElement)Content).Margin = new Thickness(0, 0, 0, inputPane.OccludedRect.Height);
 
             VisualStateManager.GoToState(this, "PersonInfo", false);
-        }
-
-        private void NewPersonPage_Hiding(InputPane sender, InputPaneVisibilityEventArgs args)
-        {
-            ((FrameworkElement)Content).Margin = new Thickness(0);
-        }
-
-        private void NewPersonPage_Showing(InputPane sender, InputPaneVisibilityEventArgs args)
-        {
-            args.EnsuredFocusedElementInView = false;
-            ((FrameworkElement)Content).Margin = new Thickness(0, 0, 0, args.OccludedRect.Height);
         }
 
         public Person NewPerson { get; } = new Person() { Guardian = new Guardian() };
