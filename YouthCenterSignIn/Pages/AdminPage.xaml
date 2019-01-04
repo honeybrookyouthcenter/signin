@@ -15,11 +15,13 @@
     <Grid Margin="30">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
             <RowDefinition />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
         <Grid Margin="0 0 0 10">
             <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition/>
                 <ColumnDefinition Width="Auto"/>
@@ -34,7 +36,14 @@
                                 Margin="30 0 0 10" 
                                 Date="{x:Bind Admin.Date, Mode=TwoWay}"/>
 
-            <CommandBar Grid.Column="2" 
+            <SymbolIcon Symbol="Refresh" 
+                        Tapped="Refresh_Tapped" 
+                        Grid.Column="2" 
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Bottom"
+                        Margin="30 0 0 15" />
+
+            <CommandBar Grid.Column="3" 
                         Background="Transparent"
                         VerticalAlignment="Center">
                 <CommandBar.SecondaryCommands>
@@ -64,12 +73,16 @@
             
             <graphControls:AadLogin x:Name="Login"
                                     Background="Transparent"
-                                    Grid.Column="3"
+                                    Grid.Column="4"
                                     View="SmallProfilePhotoLeft"
                                     AllowSignInAsDifferentUser="False" />      
         </Grid>
 
-        <ListView Grid.Row="1"
+        <TextBlock Grid.Row="1" Margin="0 0 0 10" Style="{ThemeResource SubtitleTextBlockStyle}">
+           <Run Text="Total: "/><Run Text="{x:Bind Admin.LogsCount, Mode=OneWay}"/>
+        </TextBlock>
+        
+        <ListView Grid.Row="2"
                   Margin="-10 0 0 0"
                   ItemsSource="{x:Bind Admin.Logs}"
                   SelectionMode="None">
@@ -102,7 +115,7 @@
             </ListView.ItemTemplate>
         </ListView>
 
-        <controls:BigIconButton Grid.Row="2"
+        <controls:BigIconButton Grid.Row="3"
                                 Icon=""
                                 Label="Back"
                                 Tapped="Back_Tapped" />

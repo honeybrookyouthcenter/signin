@@ -28,5 +28,10 @@ namespace YouthCenterSignIn.Pages
         {
             Person.ClearPeopleCache();
         }
+
+        void Refresh_Tapped(object sender, Windows.UI.Xaml.Input.TappedRoutedEventArgs e)
+        {
+            Admin.RefreshLogs();
+        }
     }
 }
