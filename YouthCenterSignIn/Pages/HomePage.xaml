@@ -37,7 +37,7 @@
                                 FontSize="25"
                                 FontWeight="Light"
                                 Padding="0 0 0 6"
-                                PlaceholderText="Type your name"
+                                PlaceholderText="Type your name to sign in or out"
                                 SuggestionChosen="UiName_SuggestionChosen"
                                 ItemsSource="{x:Bind PersonSearch}"
                                 RelativePanel.Below="uiWelcome"
