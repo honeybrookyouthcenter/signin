@@ -21,7 +21,7 @@
             <RowDefinition />
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition/>
+            <ColumnDefinition Width="Auto"/>
             <ColumnDefinition Width="Auto"/>
         </Grid.ColumnDefinitions>
 
@@ -29,9 +29,8 @@
                    Style="{ThemeResource HeaderTextBlockStyle}"
                    Text="Sign up" />
 
-        <StackPanel Grid.Column="1" 
-                    Margin="30,30,00,0"
-                    Width="175">
+        <StackPanel Grid.Column="1"
+                    Margin="175,50,0,-30">
             <controls:BigIconButton Name="uiNext"
                                     Margin="0 0 0 20"
                                     Icon=""
@@ -59,7 +58,7 @@
                                     Visibility="Collapsed" />
         </StackPanel>
 
-        <ScrollViewer Grid.Row="1" Grid.ColumnSpan="2" x:DefaultBindMode="TwoWay" Name="uiScroller">
+        <ScrollViewer Grid.Row="1" Grid.ColumnSpan="2" x:DefaultBindMode="TwoWay" Name="uiScroller" HorizontalAlignment="Left">
             <Grid Margin="30,0,30,0">
                 <Grid.Resources>
                     <Style TargetType="TextBox">
@@ -91,7 +90,7 @@
                     <StackPanel.RenderTransform>
                         <CompositeTransform />
                     </StackPanel.RenderTransform>
-                    <TextBlock Style="{ThemeResource SubtitleTextBlockStyle}" Text="Some info about your guardian" />
+                    <TextBlock Style="{ThemeResource SubtitleTextBlockStyle}" HorizontalAlignment="Left" Text="Some info about your guardian" />
 
                     <TextBox InputScope="NameOrPhoneNumber" Name="uiGuardianName" Header="Guardian's full name" Text="{x:Bind NewPerson.Guardian.Name, UpdateSourceTrigger=PropertyChanged}" />
                     <TextBox Header="Guardian's phone number" InputScope="TelephoneNumber" Text="{x:Bind NewPerson.Guardian.PhoneNumber, UpdateSourceTrigger=PropertyChanged}" />

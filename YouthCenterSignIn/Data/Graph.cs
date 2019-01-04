@@ -28,7 +28,18 @@ namespace YouthCenterSignIn
 
         public GraphServiceClient Provider => MicrosoftGraphService.Instance.GraphProvider;
 
-        public async Task<bool> Login() => await MicrosoftGraphService.Instance.TryLoginAsync();
+        public async Task<bool> Login()
+        {
+            try
+            {
+                return await MicrosoftGraphService.Instance.TryLoginAsync();
+            }
+            catch (Exception ex)
+            {
+                await DataProvider.Current.ShowMessage("Could not log in.  Check your internet connection.", ex);
+                return false;
+            }
+        }
 
         #region Contacts
 
