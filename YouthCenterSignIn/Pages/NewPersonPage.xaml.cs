@@ -1,5 +1,6 @@
 ﻿using System;
 using Windows.UI.Popups;
+using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
@@ -19,7 +20,24 @@ namespace YouthCenterSignIn.Pages
         {
             InitializeComponent();
 
+            var inputPane = InputPane.GetForCurrentView();
+            inputPane.Showing += NewPersonPage_Showing;
+            inputPane.Hiding += NewPersonPage_Hiding;
+            if (inputPane.Visible)
+                ((FrameworkElement)Content).Margin = new Thickness(0, 0, 0, inputPane.OccludedRect.Height);
+
             VisualStateManager.GoToState(this, "PersonInfo", false);
+        }
+
+        private void NewPersonPage_Hiding(InputPane sender, InputPaneVisibilityEventArgs args)
+        {
+            ((FrameworkElement)Content).Margin = new Thickness(0);
+        }
+
+        private void NewPersonPage_Showing(InputPane sender, InputPaneVisibilityEventArgs args)
+        {
+            args.EnsuredFocusedElementInView = false;
+            ((FrameworkElement)Content).Margin = new Thickness(0, 0, 0, args.OccludedRect.Height);
         }
 
         public Person NewPerson { get; } = new Person() { Guardian = new Guardian() };
@@ -36,9 +54,15 @@ namespace YouthCenterSignIn.Pages
         async void Next_Tapped(object sender, TappedRoutedEventArgs e)
         {
             if (NewPerson.IsValid(out var issues))
+            {
                 VisualStateManager.GoToState(this, "GuardianInfo", true);
+                uiScroller.ChangeView(0, 0, null);
+                uiGuardianName.Focus(FocusState.Keyboard);
+            }
             else
+            {
                 await new MessageDialog(issues).ShowAsync();
+            }
         }
 
         private void Back_Tapped(object sender, TappedRoutedEventArgs e)

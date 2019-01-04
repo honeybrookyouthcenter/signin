@@ -19,7 +19,7 @@ namespace YouthCenterSignIn.Logic.Data
                 var logs = await DataProvider.Current.GetSetting<List<Log>>(file, StorageType.LocalFile) ?? new List<Log>();
 
                 if (!Cache.ContainsKey(file))
-                    Cache.Add(file, logs.OrderBy(l => !l.SignedIn).ThenBy(l => l.PersonName));
+                    Cache.Add(file, logs.OrderBy(l => l.PersonName));
             }
 
             return Cache[file];

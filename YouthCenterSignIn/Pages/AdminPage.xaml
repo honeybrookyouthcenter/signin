@@ -58,6 +58,7 @@
                             </Flyout>
                         </AppBarButton.Flyout>
                     </AppBarButton>
+                    <AppBarButton Label="Refresh list of people" Icon="Refresh" Click="AppBarButton_Click" />
                 </CommandBar.SecondaryCommands>
             </CommandBar>
             

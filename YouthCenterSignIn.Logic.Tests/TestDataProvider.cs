@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using YouthCenterSignIn.Logic.Data;
 
@@ -14,7 +15,7 @@ namespace YouthCenterSignIn.Logic.Tests
 
         #region People
 
-        List<Person> People { get; } = new List<Person>
+        internal List<Person> People { get; } = new List<Person>
         {
             new Person(
                 id: "ESHJAM",
@@ -62,7 +63,7 @@ namespace YouthCenterSignIn.Logic.Tests
 
         public override Task<List<Person>> GetPeople()
         {
-            return Task.FromResult(People);
+            return Task.FromResult(People.ToList());
         }
 
         public override Task<string> SavePerson(Person person)
