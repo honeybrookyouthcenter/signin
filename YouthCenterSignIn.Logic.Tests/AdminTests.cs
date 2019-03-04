@@ -16,16 +16,23 @@ namespace YouthCenterSignIn.Logic.Tests
 
             var admin = new Admin();
             var originalLogs = admin.Logs.Count;
+            var originalSignedIn = admin.TotalPeopleSignedIn;
+            var originalTotal = admin.TotalPeople;
 
             person.SignInOut().Wait();
             Assert.IsTrue(person.SignedIn, "After signing in, the person should be signed in.");
             Assert.AreEqual(originalLogs + 1, admin.Logs.Count, "We signed a person in, so there should be logs.");
+            Assert.AreEqual(originalSignedIn + 1, admin.TotalPeopleSignedIn, "The signed in people should go up when someone signs in.");
+            Assert.AreEqual(originalTotal + 1, admin.TotalPeople, "The total people should go up when someone signs in.");
 
             person.SignInOut().Wait();
             Assert.IsFalse(admin.Logs.Last().SignedIn, "The last log should be signed out.");
+            Assert.AreEqual(originalSignedIn, admin.TotalPeopleSignedIn, "The signed in people should go down when someone signs out.");
 
             person.SignInOut().Wait();
             person.SignInOut().Wait();
+            Assert.AreEqual(originalLogs + 2, admin.Logs.Count, "We signed a person in, so there should be more logs.");
+            Assert.AreEqual(originalTotal + 1, admin.TotalPeople, "The total people should not go up when someone that had previously signed in signs in.");
 
             var todaysLogCount = admin.Logs.Count;
             var yesterday = DateTime.Today.AddDays(-1);
@@ -108,7 +115,7 @@ namespace YouthCenterSignIn.Logic.Tests
             testPerson.SignInOut().Wait();
             testPerson.SignInOut().Wait();
 
-            Assert.AreEqual(admin.Logs.Count, admin.LogsCount, "The log count should be the same as the list count.");
+            Assert.AreEqual(admin.Logs.Count, admin.TotalPeople, "The log count should be the same as the list count.");
         }
     }
 }

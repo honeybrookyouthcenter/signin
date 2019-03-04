@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using YouthCenterSignIn.Logic.Data;
@@ -19,10 +18,20 @@ namespace YouthCenterSignIn.Logic.Tests
             Assert.IsFalse(person.SignedIn, "The person should not be signed in the first time.");
 
             person.SignInOut().Wait();
+            var log = person.SignedInLog;
             Assert.IsTrue(person.SignedIn, "The person should not be signed in the first time.");
+            Assert.AreEqual(DateTime.Now.ToString("h:mm tt"),
+                log.SignInTimeString,
+                "The string should be the time signed in.");
+            Assert.AreEqual("",
+                log.SignOutTimeString,
+                "The string should be the time signed in.");
 
             person.SignInOut().Wait();
             Assert.IsFalse(person.SignedIn, "The person should not be signed in the first time.");
+            Assert.AreEqual(DateTime.Now.ToString("h:mm tt"),
+                log.SignOutTimeString,
+                "The string should be the time signed in.");
         }
 
         [TestMethod]

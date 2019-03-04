@@ -38,7 +38,7 @@ namespace YouthCenterSignIn.Logic
             var results = (await Person.GetPeople())
                 .Where(p => p.FullName.ToLower().Contains(search))
                 .OrderByDescending(p => p.FullName.ToLower().StartsWith(search))
-                .Take(8);
+                .Take(5);
 
             foreach (var person in Items.ToArray())
             {

@@ -181,14 +181,21 @@ namespace YouthCenterSignIn.Logic.Data
 
         public async Task SignInOut()
         {
-            await RefreshSignedIn();
+            try
+            {
+                await RefreshSignedIn();
 
-            if (SignedInLog == null)
-                SignedInLog = await Log.New(this);
-            else
-                await SignedInLog.SignOut();
+                if (SignedInLog == null)
+                    SignedInLog = await Log.New(this);
+                else
+                    await SignedInLog.SignOut();
 
-            await RefreshSignedIn();
+                await RefreshSignedIn();
+            }
+            catch (Exception ex)
+            {
+                await DataProvider.Current.ShowMessage($"Oops, something went wrong. Try again later.\r\n{ex.GetBaseException().Message}");
+            }
         }
 
         #endregion
