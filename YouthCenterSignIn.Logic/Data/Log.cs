@@ -115,7 +115,11 @@ namespace YouthCenterSignIn.Logic.Data
 
         public DateTime SignInTime { get; set; }
 
+        public string SignInTimeString => SignInTime.ToString("h:mm tt", null);
+
         public DateTime? SignOutTime { get; set; }
+
+        public string SignOutTimeString => SignOutTime?.ToString("h:mm tt", null) ?? "";
 
         public bool SignedIn => SignOutTime == null;
     }
