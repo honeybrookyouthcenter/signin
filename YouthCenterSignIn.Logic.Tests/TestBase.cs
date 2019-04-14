@@ -15,11 +15,11 @@ namespace YouthCenterSignIn.Logic.Tests
             Data.DataProvider.Current = new TestDataProvider();
         }
 
-        protected Person GetTestPerson()
+        protected Person GetTestPerson(string searchKey = "James")
         {
             var search = new PersonSearch
             {
-                SearchText = "James"
+                SearchText = searchKey
             };
 
             search.SearchTask.Wait();

@@ -1,15 +1,19 @@
-﻿namespace YouthCenterSignIn.Logic.Data
+﻿using System;
+using System.Text.RegularExpressions;
+
+namespace YouthCenterSignIn.Logic.Data
 {
     public class Guardian : NotifyBase
     {
         public Guardian()
         { }
 
-        public Guardian(string name, string phoneNumber, string email = null)
+        public Guardian(string name, string phoneNumber, string email = null, DateTime? lastUpdated = null)
         {
             Name = name;
             PhoneNumber = phoneNumber;
             Email = email;
+            LastUpdated = lastUpdated;
         }
 
         string name;
@@ -33,6 +37,10 @@
             set { email = value; OnPropertyChanged(); }
         }
 
+        public DateTime? LastUpdated { get; set; }
+
+        public bool IsInfoExpired => LastUpdated > DateTime.Today.AddMonths(-3);
+
         public bool IsValid(out string issues)
         {
             issues = null;
@@ -47,6 +55,55 @@
             return issues == null;
         }
 
-        public override string ToString() => $"Guardian's Name: {Name}\r\nGuardian's Phone: {PhoneNumber}\r\nGuardian Email: {Email}";
+        const string NameLabel = "Guardian's Name: ";
+        const string PhoneLabel = "Guardian's Phone: ";
+        const string EmailLabel = "Guardian Email: ";
+        const string LastUpdatedLabel = "Last updated: ";
+
+        readonly static Regex NameRegex = new Regex(GetLabelExpression(NameLabel), RegexOptions.Compiled);
+        readonly static Regex PhoneRegex = new Regex(GetLabelExpression(PhoneLabel), RegexOptions.Compiled);
+        readonly static Regex EmailRegex = new Regex(GetLabelExpression(EmailLabel), RegexOptions.Compiled);
+        readonly static Regex LastUpdatedRegex = new Regex(GetLabelExpression(LastUpdatedLabel), RegexOptions.Compiled);
+
+        static string GetLabelExpression(string label) => $@"(?<={label}).*";
+
+        public override string ToString()
+        {
+            LastUpdated = DateTime.Today;
+
+            return $"{NameLabel}{Name}\r\n" +
+                   $"{PhoneLabel}{PhoneNumber}\r\n" +
+                   $"{EmailLabel}{Email}\r\n" +
+                   $"{LastUpdatedLabel}{LastUpdated?.ToLongDateString()}";
+        }
+
+        public static Guardian FromNotes(string notes)
+        {
+            if (notes == null)
+                notes = "";
+
+            string GetMatch(Regex regex) => regex.Match(notes).Value.Trim();
+
+            var name = GetMatch(NameRegex);
+            var phone = GetMatch(PhoneRegex);
+            var email = GetMatch(EmailRegex);
+
+            var lastUpdatedString = GetMatch(LastUpdatedRegex);
+            var lastUpdated = ParseDateTime(lastUpdatedString);
+
+            return new Guardian(name, phone, email, lastUpdated);
+        }
+
+        static DateTime? ParseDateTime(string lastUpdatedString)
+        {
+            try
+            {
+                return DateTime.Parse(lastUpdatedString);
+            }
+            catch
+            {
+                return null;
+            }
+        }
     }
 }

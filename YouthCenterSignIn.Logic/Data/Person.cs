@@ -39,14 +39,17 @@ namespace YouthCenterSignIn.Logic.Data
 
         public Person() { }
 
-        public Person(string id, string firstName, string lastName, DateTimeOffset? birthDate = null, Address address = null, Guardian guardian = null) : this()
+        public Person(string id, string firstName, string lastName, string notes, DateTimeOffset? birthDate = null, Address address = null) : this()
         {
             Id = id;
             FirstName = firstName;
             LastName = lastName;
+            Notes = notes;
+
             BirthDate = birthDate ?? DateTime.Now;
             Address = address;
-            Guardian = guardian;
+
+            UpdateFromNotes();
         }
 
         string id;
@@ -91,6 +94,13 @@ namespace YouthCenterSignIn.Logic.Data
             set { guardian = value; OnPropertyChanged(); }
         }
 
+        string notes;
+        public string Notes
+        {
+            get => notes;
+            set { notes = value; OnPropertyChanged(); }
+        }
+
         public string FullName => $"{FirstName} {LastName}";
 
         public async Task<bool> Save()
@@ -105,6 +115,8 @@ namespace YouthCenterSignIn.Logic.Data
                 string guardianIssues = null;
                 if (Guardian?.IsValid(out guardianIssues) != true)
                     throw new InvalidOperationException(guardianIssues ?? "There must be a guardian to save!");
+
+                UpdateNotes();
 
                 var newId = await DataProvider.Current.SavePerson(this);
                 Id = newId;
@@ -153,6 +165,19 @@ namespace YouthCenterSignIn.Logic.Data
                 issues += "You have to be at least five to sign up.";
 
             return string.IsNullOrWhiteSpace(issues);
+        }
+
+        public bool IsInfoExpired => Guardian.IsInfoExpired;
+
+        void UpdateFromNotes()
+        {
+            Guardian = Guardian.FromNotes(Notes);
+            Notes += $"\r\nLast updated: {DateTime.Today.ToLongDateString()}";
+        }
+
+        void UpdateNotes()
+        {
+            Notes = Guardian?.ToString();
         }
 
         #region Signed in

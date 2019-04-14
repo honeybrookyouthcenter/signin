@@ -1,4 +1,5 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using System;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using YouthCenterSignIn.Logic.Data;
 
 namespace YouthCenterSignIn.Logic.Tests
@@ -31,7 +32,6 @@ namespace YouthCenterSignIn.Logic.Tests
             Assert.IsTrue(guardian.ToString().Contains("610 883 2281"), "The guardian text should contain the phone.");
         }
 
-
         [TestMethod]
         public void Guardian_ToString_ComplexTest()
         {
@@ -39,6 +39,63 @@ namespace YouthCenterSignIn.Logic.Tests
             Assert.IsTrue(guardian.ToString().Contains("Glenn Esh"), "The guardian text should contain the name.");
             Assert.IsTrue(guardian.ToString().Contains("(717) 629-0658"), "The guardian text should contain the phone.");
             Assert.IsTrue(guardian.ToString().Contains("gesh@eshcom.com"), "The guardian text should contain the email.");
+            Assert.IsTrue(guardian.ToString().Contains(DateTime.Today.ToLongDateString()), "The guardian text should contain the last time saved.");
+        }
+
+        [TestMethod]
+        public void Guardian_FromNotesTest()
+        {
+            var guardian = new Guardian("James Esh", "6108832281", "jamesesh@live.com");
+            AssertNotesAreEqual(guardian, guardian.ToString());
+        }
+
+        [TestMethod]
+        public void Guardian_FromNotes_ComplexTest()
+        {
+            var guardian = new Guardian("Glenn :: Esh", "(717) 629-0658", "jamesesh@live.com");
+            AssertNotesAreEqual(guardian, guardian.ToString());
+        }
+
+        [TestMethod]
+        public void Guardian_FromNotes_NoEmailTest()
+        {
+            var guardian = new Guardian("James Esh", "6108832281");
+            AssertNotesAreEqual(guardian, guardian.ToString());
+        }
+
+        [TestMethod]
+        public void Guardian_FromNotes_EmptyNotesTest()
+        {
+            var gaurdian = new Guardian("", "");
+            AssertNotesAreEqual(gaurdian, "");
+        }
+
+        [TestMethod]
+        public void Guardian_FromNotes_NullNotesTest()
+        {
+            var gaurdian = new Guardian("", "");
+            AssertNotesAreEqual(gaurdian, null);
+        }
+
+        [TestMethod]
+        public void Guardian_FromNotes_BadNotesTest()
+        {
+            var gaurdian = new Guardian("", "");
+            AssertNotesAreEqual(gaurdian, $"sdlkfjsl lksdf\r\n{new Guardian().ToString()}sdlfj");
+            AssertNotesAreEqual(gaurdian, $"sdlkfjsl lksdf\r\nsdlfj:: =sd+\r\n\tsdfskj");
+        }
+
+        void AssertNotesAreEqual(Guardian original, string notes)
+        {
+            var guardianFromNotes = Guardian.FromNotes(notes);
+
+            void AssertFieldNotAffected(string expected, string actual) =>
+                Assert.AreEqual(expected ?? "", actual, "Saving and reading should not affect it.");
+
+            AssertFieldNotAffected(original.Name, guardianFromNotes.Name);
+            AssertFieldNotAffected(original.PhoneNumber, guardianFromNotes.PhoneNumber);
+            AssertFieldNotAffected(original.Email, guardianFromNotes.Email);
+            AssertFieldNotAffected(original.LastUpdated.ToString(), guardianFromNotes.LastUpdated.ToString());
         }
     }
 }

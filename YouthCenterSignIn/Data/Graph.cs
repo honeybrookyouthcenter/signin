@@ -49,7 +49,10 @@ namespace YouthCenterSignIn
             }
 
             var contacts = new List<Contact>();
-            var currentRequest = Provider.Me.Contacts.Request().Select("id,givenName,surname,birthday,homeAddress");
+            var currentRequest = Provider.Me.Contacts
+                .Request()
+                .Select("id,givenName,surname,birthday,homeAddress,personalNotes");
+
             while (currentRequest != null)
             {
                 var nextContacts = await currentRequest.GetAsync();
@@ -72,6 +75,21 @@ namespace YouthCenterSignIn
             catch (Exception ex)
             {
                 throw new Exception($"Contact save failed!", ex);
+            }
+        }
+
+        public async Task<Contact> UpdateContact(Contact contact)
+        {
+            try
+            {
+                if (!IsAuthenticated)
+                    throw new InvalidOperationException("You must be logged in to save a contact!");
+
+                return await Provider.Me.Contacts[contact.Id].Request().UpdateAsync(contact);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Contact update failed!", ex);
             }
         }
 

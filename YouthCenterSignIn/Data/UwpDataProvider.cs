@@ -55,12 +55,13 @@ namespace YouthCenterSignIn
                 string id = contact.Id;
                 string firstName = contact.GivenName;
                 string lastName = contact.Surname;
+                string notes = contact.PersonalNotes;
 
-                return new Person(id, firstName, lastName);
+                return new Person(id, firstName, lastName, notes);
             }
             catch (Exception ex)
             {
-                var reportTask = ShowMessage(exception: ex);
+                _ = ShowMessage(exception: ex);
                 return null;
             }
         }
@@ -78,7 +79,7 @@ namespace YouthCenterSignIn
             {
                 GivenName = person.FirstName,
                 Surname = person.LastName,
-                PersonalNotes = person.Guardian?.ToString(),
+                PersonalNotes = person.Notes,
                 HomePhones = new List<string>
                 {
                     person.Guardian?.PhoneNumber
