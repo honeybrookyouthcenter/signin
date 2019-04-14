@@ -98,6 +98,9 @@ namespace YouthCenterSignIn.Logic.Data
         {
             try
             {
+                if (string.IsNullOrWhiteSpace(lastUpdatedString))
+                    return null;
+
                 return DateTime.Parse(lastUpdatedString);
             }
             catch
