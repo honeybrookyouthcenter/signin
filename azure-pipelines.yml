@@ -1,0 +1,25 @@
+# Universal Windows Platform
+# Build a Universal Windows Platform project using Visual Studio.
+
+trigger:
+- develop
+
+pool:
+  vmImage: 'windows-latest'
+
+variables:
+  solution: 'YouthCenterSignIn.sln'
+
+steps:
+- task: NuGetToolInstaller@0
+
+- task: NuGetCommand@2
+  inputs:
+    restoreSolution: '$(solution)'
+
+- task: VSBuild@1
+  inputs:
+    platform: 'x86'
+    solution: '$(solution)'
+    configuration: 'Debug'
+    msbuildArgs: '-v:quiet'
