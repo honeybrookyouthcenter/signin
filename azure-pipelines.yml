@@ -11,15 +11,15 @@ variables:
   solution: 'YouthCenterSignIn.sln'
 
 steps:
-- task: NuGetToolInstaller@0
-
-- task: NuGetCommand@2
-  inputs:
-    restoreSolution: '$(solution)'
-
 - task: VSBuild@1
   inputs:
+    solution: 'YouthCenterSignIn.sln'
     platform: 'x86'
-    solution: '$(solution)'
     configuration: 'Debug'
-    msbuildArgs: '-v:quiet'
+    clean: true
+    restoreNugetPackages: true
+
+- task: DotNetCoreCLI@2
+  inputs:
+    command: 'test'
+    projects: 'YouthCenterSignIn.Logic.Tests\YouthCenterSignIn.Logic.Tests.csproj'
