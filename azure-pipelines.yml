@@ -1,5 +1,6 @@
 variables:
   solution: 'YouthCenterSignIn.sln'
+  platform: 'x86'
 
 trigger:
   branches:
@@ -24,7 +25,7 @@ stages:
       - task: VSBuild@1
         inputs:
           solution: 'YouthCenterSignIn.sln'
-          platform: 'x86'
+          platform: $(platform)
           configuration: 'Debug'
           clean: true
 
@@ -68,10 +69,10 @@ stages:
       - task: VSBuild@1
         displayName: 'Release build'
         inputs:
-          solution: '$(solution)'
-          platform: 'x86'
+          solution: $(solution)
+          platform: $(platform)
           configuration: 'Release'
-          msbuildArgs: '/p:AppxBundlePlatforms="Release" /p:AppxPackageDir="$(Pipeline.Workspace)/AppxPackages/" /p:AppxBundle=Always /p:UapAppxPackageBuildMode=StoreUpload -v:quiet'
+          msbuildArgs: '/p:AppxBundlePlatforms="$(platform)" /p:AppxPackageDir="$(Pipeline.Workspace)/AppxPackages/" /p:AppxBundle=Always /p:UapAppxPackageBuildMode=StoreUpload -v:quiet'
       - task: PublishPipelineArtifact@1
         displayName: 'Publish release package'
         inputs:
