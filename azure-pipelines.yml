@@ -9,27 +9,21 @@ trigger:
 
 stages:
   - stage: UnitTests
-    displayName: 'Unit tests'
+    displayName: 'Run unit tests'
     jobs:
     - job: UnitTestsJob
       pool:
         vmImage: 'windows-latest'
 
       steps:
-      - task: NuGetToolInstaller@1
-      - task: NuGetCommand@2
+      - task: DotNetCoreCLI@2
+        displayName: 'Build unit tests'
         inputs:
-          command: 'restore'
-          restoreSolution: '$(solution)'
-
-      - task: VSBuild@1
-        inputs:
-          solution: 'YouthCenterSignIn.sln'
-          platform: $(platform)
-          configuration: 'Debug'
-          clean: true
+          command: 'build'
+          projects: 'YouthCenterSignIn.Logic.Tests/YouthCenterSignIn.Logic.Tests.csproj'
 
       - task: DotNetCoreCLI@2
+        displayName: 'Run unit tests'
         inputs:
           command: 'test'
           projects: 'YouthCenterSignIn.Logic.Tests/YouthCenterSignIn.Logic.Tests.csproj'
