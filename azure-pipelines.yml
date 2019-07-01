@@ -8,6 +8,7 @@ trigger:
 
 stages:
   - stage: UnitTests
+    dependsOn: []
     jobs:
     - job: UnitTestsJob
       pool:
@@ -34,6 +35,7 @@ stages:
 
 
   - stage: ReleaseBuild
+    dependsOn: []
     jobs:
     - job: ReleaseBuildJob
       pool:
