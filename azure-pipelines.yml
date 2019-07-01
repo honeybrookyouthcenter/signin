@@ -26,7 +26,6 @@ steps:
     platform: 'x86'
     configuration: 'Debug'
     clean: true
-    restoreNugetPackages: true
 
 - task: DotNetCoreCLI@2
   inputs:
