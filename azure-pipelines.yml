@@ -1,33 +1,59 @@
-# Universal Windows Platform
-# Build a Universal Windows Platform project using Visual Studio.
-
-trigger:
-- develop
-
-pool:
-  vmImage: 'windows-latest'
-
 variables:
   solution: 'YouthCenterSignIn.sln'
 
-steps:
-- task: NuGetToolInstaller@1
+trigger:
+  branches:
+    include:
+    - '*'  
 
-- task: NuGetCommand@2
-  inputs:
-    command: 'restore'
-    restoreSolution: '$(solution)'
-    feedsToUse: 'select'
-    verbosityRestore: 'Normal'
+stages:
+  - stage: Unit Tests
+    jobs:
+    - job: UnitTestJob
+      pool:
+        vmImage: 'windows-latest'
 
-- task: VSBuild@1
-  inputs:
-    solution: 'YouthCenterSignIn.sln'
-    platform: 'x86'
-    configuration: 'Debug'
-    clean: true
+      steps:
+      - task: NuGetToolInstaller@1
+      - task: NuGetCommand@2
+        inputs:
+          command: 'restore'
+          restoreSolution: '$(solution)'
 
-- task: DotNetCoreCLI@2
-  inputs:
-    command: 'test'
-    projects: 'YouthCenterSignIn.Logic.Tests\YouthCenterSignIn.Logic.Tests.csproj'
+      - task: VSBuild@1
+        inputs:
+          solution: 'YouthCenterSignIn.sln'
+          platform: 'x86'
+          configuration: 'Debug'
+          clean: true
+
+      - task: DotNetCoreCLI@2
+        inputs:
+          command: 'test'
+          projects: 'YouthCenterSignIn.Logic.Tests\YouthCenterSignIn.Logic.Tests.csproj'
+
+
+  - stage: Release Build
+    jobs:
+    - job: UnitTestJob
+      pool:
+        vmImage: 'windows-latest'
+
+      steps:
+      - task: NuGetToolInstaller@1
+      - task: NuGetCommand@2
+        inputs:
+          command: 'restore'
+          restoreSolution: '$(solution)'
+      - task: VSBuild@1
+        inputs:
+           solution: '$(solution)'
+           platform: 'x86'
+           configuration: 'Release'
+           msbuildArgs: '/p:AppxBundlePlatforms="$(BuildPlatform)" /p:AppxPackageDir="$(Build.ArtifactStagingDirectory)\AppxPackages\\" /p:AppxBundle=Always /p:UapAppxPackageBuildMode=StoreUpload -v:quiet'
+
+
+  - stage: Deploy
+    dependsOn: 
+    - 'Release Build'
+    - 'Unit Tests'
