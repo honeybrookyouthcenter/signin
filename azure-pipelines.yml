@@ -8,6 +8,7 @@ trigger:
 
 stages:
   - stage: UnitTests
+    displayName: 'Unit tests'
     jobs:
     - job: UnitTestsJob
       pool:
@@ -30,10 +31,11 @@ stages:
       - task: DotNetCoreCLI@2
         inputs:
           command: 'test'
-          projects: 'YouthCenterSignIn.Logic.Tests\YouthCenterSignIn.Logic.Tests.csproj'
+          projects: 'YouthCenterSignIn.Logic.Tests/YouthCenterSignIn.Logic.Tests.csproj'
 
 
   - stage: ReleaseBuild
+    displayName: 'Release build'
     condition: and(succeeded(), eq(variables['build.sourceBranch'], 'refs/heads/master'))
     jobs:
     - job: ReleaseBuildJob
@@ -46,12 +48,35 @@ stages:
         inputs:
           command: 'restore'
           restoreSolution: '$(solution)'
+
+      - powershell: |
+          $projectfolder = "$(Build.SourcesDirectory)\YouthCenterSignIn"
+          $buildId= "$(Build.BuildId)"
+          
+          $manifestfile = Get-Item -Path "$projectFolder\Package.appxmanifest"
+            
+          $manifestXml = New-Object -TypeName System.Xml.XmlDocument
+          $manifestXml.Load($manifestfile.Fullname)
+          
+          $currentVersion = [Version]$manifestXml.Package.Identity.Version
+          $updatedVersion = [Version]($currentVersion.Major.ToString() + '.' + $currentVersion.Minor + '.' + $buildId + '.' + '0')
+          
+          $manifestXml.Package.Identity.Version = [String]$updatedVersion
+          $manifestXml.save($manifestfile.FullName)
+        displayName: 'Update version'
+
       - task: VSBuild@1
+        displayName: 'Release build'
         inputs:
-           solution: '$(solution)'
-           platform: 'x86'
-           configuration: 'Release'
-           msbuildArgs: '/p:AppxBundlePlatforms="$(BuildPlatform)" /p:AppxPackageDir="$(Build.ArtifactStagingDirectory)\AppxPackages\\" /p:AppxBundle=Always /p:UapAppxPackageBuildMode=StoreUpload -v:quiet'
+          solution: '$(solution)'
+          platform: 'x86'
+          configuration: 'Release'
+          msbuildArgs: '/p:AppxBundlePlatforms="$(BuildPlatform)" /p:AppxPackageDir="$(Pipeline.Workspace)/AppxPackages/" /p:AppxBundle=Always /p:UapAppxPackageBuildMode=StoreUpload -v:quiet'
+      - task: PublishPipelineArtifact@1
+        displayName: 'Publish release package'
+        inputs:
+          targetPath: '$(Pipeline.Workspace)/AppxPackages'
+          artifact: 'package'
 
 
   - stage: Deploy
@@ -62,8 +87,20 @@ stages:
         vmImage: 'windows-latest'
 
       steps:
-      - task: NuGetToolInstaller@1
-      - task: NuGetCommand@2
+      - task: DownloadPipelineArtifact@2
         inputs:
-          command: 'restore'
-          restoreSolution: '$(solution)'
+          artifactName: 'package'
+          buildType: 'current'
+          targetPath: '$(Pipeline.Workspace)/package'
+
+      # - task: store-publish@0
+      #   displayName: 'Publish to store'
+      #   inputs:
+      #     serviceEndpoint: 'James Esh Dev Center'
+      #     appId: '9N3VPVF4F0L4'
+      #     packagePath: '$(Pipeline.Workspace)/package/YouthCenterSignIn_*_bundle.appxupload'
+      #     force: false
+      #     skipPolling: false
+      #     deletePackages: true
+      #     numberOfPackagesToKeep: '1'
+
