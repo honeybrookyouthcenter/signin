@@ -7,7 +7,7 @@ trigger:
     - '*'  
 
 stages:
-  - stage: Unit Tests
+  - stage: UnitTests
     jobs:
     - job: UnitTestJob
       pool:
@@ -33,7 +33,7 @@ stages:
           projects: 'YouthCenterSignIn.Logic.Tests\YouthCenterSignIn.Logic.Tests.csproj'
 
 
-  - stage: Release Build
+  - stage: ReleaseBuild
     jobs:
     - job: UnitTestJob
       pool:
@@ -55,5 +55,5 @@ stages:
 
   - stage: Deploy
     dependsOn: 
-    - 'Release Build'
-    - 'Unit Tests'
+    - UnitTests
+    - ReleaseBuild
