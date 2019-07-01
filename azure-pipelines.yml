@@ -9,7 +9,7 @@ trigger:
 stages:
   - stage: UnitTests
     jobs:
-    - job: UnitTestJob
+    - job: UnitTestsJob
       pool:
         vmImage: 'windows-latest'
 
@@ -35,7 +35,7 @@ stages:
 
   - stage: ReleaseBuild
     jobs:
-    - job: UnitTestJob
+    - job: ReleaseBuildJob
       pool:
         vmImage: 'windows-latest'
 
@@ -57,3 +57,14 @@ stages:
     dependsOn: 
     - UnitTests
     - ReleaseBuild
+    jobs:
+    - job: DeployJob
+      pool:
+        vmImage: 'windows-latest'
+
+      steps:
+      - task: NuGetToolInstaller@1
+      - task: NuGetCommand@2
+        inputs:
+          command: 'restore'
+          restoreSolution: '$(solution)'
