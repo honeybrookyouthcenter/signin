@@ -1,6 +1,5 @@
 variables:
   solution: 'YouthCenterSignIn.sln'
-  platform: 'x86'
 
 trigger:
   branches:
@@ -64,9 +63,9 @@ stages:
         displayName: 'Release build'
         inputs:
           solution: $(solution)
-          platform: $(platform)
+          platform: x86
           configuration: 'Release'
-          msbuildArgs: '/p:AppxBundlePlatforms="$(platform)" /p:AppxPackageDir="$(Pipeline.Workspace)/AppxPackages/" /p:AppxBundle=Always /p:UapAppxPackageBuildMode=StoreUpload -v:quiet'
+          msbuildArgs: '/p:AppxBundlePlatforms="x86" /p:AppxPackageDir="$(Pipeline.Workspace)/AppxPackages/" /p:AppxBundle=Always /p:UapAppxPackageBuildMode=StoreUpload -v:quiet'
       - task: PublishPipelineArtifact@1
         displayName: 'Publish release package'
         inputs:
