@@ -11,6 +11,15 @@ variables:
   solution: 'YouthCenterSignIn.sln'
 
 steps:
+- task: NuGetToolInstaller@1
+
+- task: NuGetCommand@2
+  inputs:
+    command: 'restore'
+    restoreSolution: '$(solution)'
+    feedsToUse: 'select'
+    verbosityRestore: 'Normal'
+
 - task: VSBuild@1
   inputs:
     solution: 'YouthCenterSignIn.sln'
