@@ -71,7 +71,7 @@ stages:
           solution: '$(solution)'
           platform: 'x86'
           configuration: 'Release'
-          msbuildArgs: '/p:AppxBundlePlatforms="$(BuildPlatform)" /p:AppxPackageDir="$(Pipeline.Workspace)/AppxPackages/" /p:AppxBundle=Always /p:UapAppxPackageBuildMode=StoreUpload -v:quiet'
+          msbuildArgs: '/p:AppxBundlePlatforms="Release" /p:AppxPackageDir="$(Pipeline.Workspace)/AppxPackages/" /p:AppxBundle=Always /p:UapAppxPackageBuildMode=StoreUpload -v:quiet'
       - task: PublishPipelineArtifact@1
         displayName: 'Publish release package'
         inputs:
