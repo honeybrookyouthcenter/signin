@@ -8,7 +8,6 @@ trigger:
 
 stages:
   - stage: UnitTests
-    dependsOn: []
     jobs:
     - job: UnitTestsJob
       pool:
@@ -35,7 +34,7 @@ stages:
 
 
   - stage: ReleaseBuild
-    dependsOn: []
+    condition: and(succeeded(), eq(variables['build.sourceBranch'], 'refs/heads/master'))
     jobs:
     - job: ReleaseBuildJob
       pool:
@@ -56,9 +55,7 @@ stages:
 
 
   - stage: Deploy
-    dependsOn: 
-    - UnitTests
-    - ReleaseBuild
+    condition: and(succeeded(), eq(variables['build.sourceBranch'], 'refs/heads/master'))
     jobs:
     - job: DeployJob
       pool:
