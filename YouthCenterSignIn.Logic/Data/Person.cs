@@ -33,13 +33,27 @@ namespace YouthCenterSignIn.Logic.Data
             return peopleCache.OrderBy(p => p.FirstName).ThenBy(p => p.LastName);
         }
 
+        public void Clear()
+        {
+            if (Guardian == null)
+                Guardian = new Guardian();
+            else
+                Guardian.Clear();
+
+            if (Address == null)
+                Address = new Address();
+            else
+                Address.Clear();
+        }
+
         public static void ClearPeopleCache() => peopleCache = null;
 
         #endregion
 
         public Person() { }
 
-        public Person(string id, string firstName, string lastName, string notes, DateTimeOffset? birthDate = null, Address address = null) : this()
+        public Person(string id, string firstName, string lastName, string notes, DateTimeOffset? birthDate = null, Address address = null)
+            : this()
         {
             Id = id;
             FirstName = firstName;
@@ -113,8 +127,13 @@ namespace YouthCenterSignIn.Logic.Data
                     throw new InvalidOperationException(personIssues);
 
                 string guardianIssues = null;
-                if (Guardian?.IsValid(out guardianIssues) != true)
-                    throw new InvalidOperationException(guardianIssues ?? "There must be a guardian to save!");
+                if (Guardian != null)
+                {
+                    if (!Guardian.IsValid(out guardianIssues))
+                        throw new InvalidOperationException(guardianIssues ?? "There must be a guardian to save!");
+
+                    Guardian.LastUpdated = DateTime.Today;
+                }
 
                 UpdateNotes();
 
@@ -172,7 +191,6 @@ namespace YouthCenterSignIn.Logic.Data
         void UpdateFromNotes()
         {
             Guardian = Guardian.FromNotes(Notes);
-            Notes += $"\r\nLast updated: {DateTime.Today.ToLongDateString()}";
         }
 
         void UpdateNotes()
@@ -204,10 +222,13 @@ namespace YouthCenterSignIn.Logic.Data
             private set { isSaving = value; OnPropertyChanged(); }
         }
 
-        public async Task SignInOut()
+        public async Task<SignInOutResult> SignInOut()
         {
             try
             {
+                if (IsInfoExpired)
+                    return SignInOutResult.InfoExpired;
+
                 await RefreshSignedIn();
 
                 if (SignedInLog == null)
@@ -216,13 +237,23 @@ namespace YouthCenterSignIn.Logic.Data
                     await SignedInLog.SignOut();
 
                 await RefreshSignedIn();
+
+                return SignInOutResult.Success;
             }
             catch (Exception ex)
             {
                 await DataProvider.Current.ShowMessage($"Oops, something went wrong. Try again later.\r\n{ex.GetBaseException().Message}");
+                return SignInOutResult.Failed;
             }
         }
 
         #endregion
+    }
+
+    public enum SignInOutResult
+    {
+        Success,
+        Failed,
+        InfoExpired
     }
 }

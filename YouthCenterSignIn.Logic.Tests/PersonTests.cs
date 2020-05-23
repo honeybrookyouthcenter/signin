@@ -93,11 +93,17 @@ namespace YouthCenterSignIn.Logic.Tests
             person.Guardian = new Guardian();
             Assert.ThrowsExceptionAsync<Exception>(async () => await person.Save(),
                 "The guardian is invalid, so the save should fail.");
+            Assert.IsFalse(person.Guardian.ToString().Contains(DateTime.Today.ToLongDateString()),
+                "The last update time should have been updated.");
+            Assert.IsNull(person.Guardian.LastUpdated, "The save didn't succeed yet, last updated should be blank.");
 
             person.Guardian.Name = "Jane Doe";
             person.Guardian.PhoneNumber = "717-334-3334";
             person.Save().Wait();
 
+            Assert.AreEqual(DateTime.Today, person.Guardian.LastUpdated, "The last update time should have been updated.");
+            Assert.IsTrue(person.Guardian.ToString().Contains(DateTime.Today.ToLongDateString()), 
+                "The last update time should have been updated.");
             Assert.IsFalse(string.IsNullOrWhiteSpace(person.Id), "The id should have been assigned by the data provider");
             Assert.AreNotEqual(ogPersonId, person.Id, "The id should change to the value assigned by data provider");
         }
@@ -131,6 +137,23 @@ namespace YouthCenterSignIn.Logic.Tests
             {
                 Person.cacheExpiration = ogExperation;
             }
+        }
+
+        [TestMethod]
+        public void Person_ClearTest()
+        {
+            var person = new Person("TEST", "Jeremy", "Esh",
+                new Guardian("Jen Esh", "7174551047", "f@gaj.com").ToString(),
+                address: new Address("52 Evergreen", "Gordonville", "PA"));
+            person.Clear();
+
+            Assert.AreEqual("", person.Guardian.Name);
+            Assert.AreEqual("", person.Guardian.PhoneNumber);
+            Assert.AreEqual("", person.Guardian.Email);
+
+            Assert.AreEqual("", person.Address.StreetAddress);
+            Assert.AreEqual("", person.Address.City);
+            Assert.AreEqual("", person.Address.State);
         }
     }
 }

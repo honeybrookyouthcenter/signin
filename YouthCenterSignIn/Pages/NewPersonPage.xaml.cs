@@ -44,7 +44,7 @@ namespace YouthCenterSignIn.Pages
             {
                 VisualStateManager.GoToState(this, "GuardianInfo", true);
                 uiScroller.ChangeView(0, 0, null);
-                uiGuardianName.Focus(FocusState.Keyboard);
+                uiGuardian.Focus();
             }
             else
             {

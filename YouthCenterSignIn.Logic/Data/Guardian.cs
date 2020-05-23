@@ -39,7 +39,7 @@ namespace YouthCenterSignIn.Logic.Data
 
         public DateTime? LastUpdated { get; set; }
 
-        public bool IsInfoExpired => LastUpdated > DateTime.Today.AddMonths(-3);
+        public bool IsInfoExpired => LastUpdated == null || LastUpdated < DateTime.Today.AddMonths(-3);
 
         public bool IsValid(out string issues)
         {
@@ -53,6 +53,13 @@ namespace YouthCenterSignIn.Logic.Data
                 issues = $"Please enter your guardian's {issues}.";
 
             return issues == null;
+        }
+
+        internal void Clear()
+        {
+            Name = "";
+            PhoneNumber = "";
+            Email = "";
         }
 
         const string NameLabel = "Guardian's Name: ";
@@ -69,8 +76,6 @@ namespace YouthCenterSignIn.Logic.Data
 
         public override string ToString()
         {
-            LastUpdated = DateTime.Today;
-
             return $"{NameLabel}{Name}\r\n" +
                    $"{PhoneLabel}{PhoneNumber}\r\n" +
                    $"{EmailLabel}{Email}\r\n" +

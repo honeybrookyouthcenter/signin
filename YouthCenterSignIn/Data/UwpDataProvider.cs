@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Microsoft.AppCenter;
+using Microsoft.AppCenter.Crashes;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -25,7 +27,7 @@ namespace YouthCenterSignIn
 
             if (exception != null)
             {
-                //TODO add reporting
+                Crashes.TrackError(exception, new Dictionary<string, string> { { "Message", message } });
             }
         }
 

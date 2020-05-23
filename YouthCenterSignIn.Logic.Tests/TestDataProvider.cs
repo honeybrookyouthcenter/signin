@@ -21,7 +21,7 @@ namespace YouthCenterSignIn.Logic.Tests
                 id: "ESHJAM",
                 firstName: "James",
                 lastName: "Esh",
-                notes: new Guardian("Glenn Esh", "(717) 629-0658", "gesh@eshcom.com").ToString(),
+                notes: new Guardian("Glenn Esh", "(717) 629-0658", "gesh@eshcom.com", lastUpdated: DateTime.Now).ToString(),
                 birthDate: new DateTimeOffset(new DateTime(1999, 2, 23)),
                 address: new Address("52 Evergreen", "Gordonville", "PA")),
             new Person(
@@ -59,6 +59,20 @@ namespace YouthCenterSignIn.Logic.Tests
                 notes: "",
                 birthDate: new DateTimeOffset(new DateTime(1985, 7, 30)),
                 address: new Address("4610 Horseshoe Pike", "Seattle", "Washington")),
+            new Person(
+                id: "EXPIRED",
+                firstName: "Expired",
+                lastName: "Old",
+                notes: new Guardian("Old data", "073 3474", lastUpdated: DateTime.Now.AddMonths(-4)).ToString(),
+                birthDate: new DateTimeOffset(new DateTime(1985, 7, 30)),
+                address: new Address("Bug Free Rd", "Lewistown", "PA")),
+            new Person(
+                id: "NOTASKED",
+                firstName: "Not",
+                lastName: "Asked",
+                notes: new Guardian("Old data", "073 3474").ToString(),
+                birthDate: new DateTimeOffset(new DateTime(1985, 7, 30)),
+                address: new Address("123 Programmer Ln", "Jonestown", "Virgina")),
         };
 
         public override Task<List<Person>> GetPeople()

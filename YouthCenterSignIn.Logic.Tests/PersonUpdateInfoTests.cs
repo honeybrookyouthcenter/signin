@@ -7,24 +7,28 @@ namespace YouthCenterSignIn.Logic.Tests
     [TestClass]
     public class PersonUpdateInfoTests : TestBase
     {
+        [TestMethod]
         public void Person_UpdateInfo_IsInfoExpiredTest()
         {
             var expiredPerson = GetTestPerson("Expired");
             Assert.IsTrue(expiredPerson.IsInfoExpired, "This person's info is out of date and should be expired.");
         }
 
+        [TestMethod]
         public void Person_UpdateInfo_IsInfoExpired_NotAskedTest()
         {
-            var notAskedPerson = GetTestPerson("NotAsked");
+            var notAskedPerson = GetTestPerson("Not Asked");
             Assert.IsTrue(notAskedPerson.IsInfoExpired, "This person's was never checked and should be expired.");
         }
 
+        [TestMethod]
         public void Person_UpdateInfo_IsInfoExpired_UpToDateTest()
         {
             var upToDate = GetTestPerson();
             Assert.IsFalse(upToDate.IsInfoExpired, "This person's info is up to date.");
         }
 
+        [TestMethod]
         public void Person_UpdateInfo_IsInfoExpired_NewTest()
         {
             new Person()

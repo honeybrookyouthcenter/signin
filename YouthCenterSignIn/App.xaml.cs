@@ -1,8 +1,10 @@
-﻿using System;
+﻿using Microsoft.AppCenter;
+using Microsoft.AppCenter.Analytics;
+using Microsoft.AppCenter.Crashes;
+using System;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
 using Windows.System;
-using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Navigation;
@@ -22,6 +24,8 @@ namespace YouthCenterSignIn
         {
             this.InitializeComponent();
             this.Suspending += OnSuspending;
+
+            AppCenter.Start("3b071e34-fbe4-4dca-9683-eb96e9f74e85", typeof(Analytics), typeof(Crashes));
 
             Logic.Data.DataProvider.Current = new UwpDataProvider();
         }

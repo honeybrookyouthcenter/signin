@@ -1,4 +1,5 @@
-﻿using Windows.UI.Xaml.Controls;
+﻿using System;
+using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Navigation;
 using YouthCenterSignIn.Logic.Data;
 
@@ -23,9 +24,13 @@ namespace YouthCenterSignIn.Pages
 
         private async void SignInOut_Tapped(object sender, Windows.UI.Xaml.Input.TappedRoutedEventArgs e)
         {
-            await Person.SignInOut();
-            Close();
+            if (await Person.SignInOut() == SignInOutResult.InfoExpired)
+                AskForInfo();
+            else
+                Close();
         }
+
+        void AskForInfo() => ((Frame)Parent).Navigate(typeof(UpdatePersonPage), Person);
 
         void Close() => ((Frame)Parent).GoBack();
 

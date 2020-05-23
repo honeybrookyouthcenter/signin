@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 
 namespace YouthCenterSignIn.Logic.Data
 {
@@ -38,6 +39,13 @@ namespace YouthCenterSignIn.Logic.Data
         {
             string[] info = { StreetAddress, City, State };
             return info.All(i => !string.IsNullOrWhiteSpace(i));
+        }
+
+        internal void Clear()
+        {
+            StreetAddress = "";
+            City = "";
+            State = "";
         }
     }
 }

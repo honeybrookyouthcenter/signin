@@ -39,7 +39,6 @@ namespace YouthCenterSignIn.Logic.Tests
             Assert.IsTrue(guardian.ToString().Contains("Glenn Esh"), "The guardian text should contain the name.");
             Assert.IsTrue(guardian.ToString().Contains("(717) 629-0658"), "The guardian text should contain the phone.");
             Assert.IsTrue(guardian.ToString().Contains("gesh@eshcom.com"), "The guardian text should contain the email.");
-            Assert.IsTrue(guardian.ToString().Contains(DateTime.Today.ToLongDateString()), "The guardian text should contain the last time saved.");
         }
 
         [TestMethod]
@@ -89,13 +88,13 @@ namespace YouthCenterSignIn.Logic.Tests
         {
             var guardianFromNotes = Guardian.FromNotes(notes);
 
-            void AssertFieldNotAffected(string expected, string actual) =>
+            void AssertFieldEquals(string expected, string actual) =>
                 Assert.AreEqual(expected ?? "", actual, "Saving and reading should not affect it.");
 
-            AssertFieldNotAffected(original.Name, guardianFromNotes.Name);
-            AssertFieldNotAffected(original.PhoneNumber, guardianFromNotes.PhoneNumber);
-            AssertFieldNotAffected(original.Email, guardianFromNotes.Email);
-            AssertFieldNotAffected(original.LastUpdated.ToString(), guardianFromNotes.LastUpdated.ToString());
+            AssertFieldEquals(original.Name, guardianFromNotes.Name);
+            AssertFieldEquals(original.PhoneNumber, guardianFromNotes.PhoneNumber);
+            AssertFieldEquals(original.Email, guardianFromNotes.Email);
+            AssertFieldEquals(original.LastUpdated.ToString(), guardianFromNotes.LastUpdated.ToString());
         }
     }
 }
