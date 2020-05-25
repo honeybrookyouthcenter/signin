@@ -28,7 +28,7 @@ namespace YouthCenterSignIn.Logic.Tests
                 id: "ESHDER",
                 firstName: "Derek",
                 lastName: "Esh",
-                notes: new Guardian("Glenn Esh", "(717) 629-0658", "gesh@eshcom.com").ToString(),
+                notes: new Guardian("Glenn Esh", "(717) 629-0658", "gesh@eshcom.com", lastUpdated: DateTime.Now).ToString(),
                 birthDate: new DateTimeOffset(new DateTime(2006, 9, 24)),
                 address: new Address("52 Evergreen", "Gordonville", "PA")),
             new Person(
