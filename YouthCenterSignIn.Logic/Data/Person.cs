@@ -117,13 +117,14 @@ namespace YouthCenterSignIn.Logic.Data
 
         public string FullName => $"{FirstName} {LastName}";
 
-        public async Task<bool> Save()
+        public async Task<bool> Save(bool isUpdating = false)
         {
             try
             {
                 IsSaving = true;
 
-                if (!IsValid(out string personIssues))
+                //TODO test
+                if (!isUpdating && !IsValid(out string personIssues))
                     throw new InvalidOperationException(personIssues);
 
                 string guardianIssues = null;

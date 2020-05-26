@@ -32,13 +32,14 @@ namespace YouthCenterSignIn.Pages
 
         async void BigIconButton_Tapped(object sender, Windows.UI.Xaml.Input.TappedRoutedEventArgs e)
         {
-            if (!Person.IsValid(out var issues) || !Person.Guardian.IsValid(out issues))
+            string issues = "Enter a valid address.";
+            if (!Person.Address.IsValid() || !Person.Guardian.IsValid(out issues))
             {
                 await new MessageDialog(issues).ShowAsync();
                 return;
             }
 
-            if (await Person.Save())
+            if (await Person.Save(isUpdating: true))
                 GoBack();
         }
 

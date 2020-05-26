@@ -40,7 +40,7 @@ namespace YouthCenterSignIn.Pages
                 uiPinMessages.Text = "Wrong pin!";
         }
 
-         void UiName_SuggestionChosen(AutoSuggestBox sender, AutoSuggestBoxSuggestionChosenEventArgs args)
+        void UiName_SuggestionChosen(AutoSuggestBox sender, AutoSuggestBoxSuggestionChosenEventArgs args)
         {
             var person = (Person)args.SelectedItem;
 

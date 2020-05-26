@@ -71,24 +71,31 @@ namespace YouthCenterSignIn
         public override async Task<string> SavePerson(Person person)
         {
             var contact = PersonToContact(person);
-            var newContact = await Graph.SaveContact(contact);
-            return newContact.Id;
+            if (string.IsNullOrWhiteSpace(contact.Id))
+                return (await Graph.SaveContact(contact)).Id;
+            else
+                return (await Graph.UpdateContact(contact)).Id;
         }
 
         MsG.Contact PersonToContact(Person person)
         {
-            var contact = new MsG.Contact
+            var contact = new MsG.Contact();
+            if (string.IsNullOrWhiteSpace(person.Id))
             {
-                GivenName = person.FirstName,
-                Surname = person.LastName,
-                PersonalNotes = person.Notes,
-                HomePhones = new List<string>
-                {
-                    person.Guardian?.PhoneNumber
-                },
-                HomeAddress = person.Address.ToContactAddress(),
-                Birthday = person.BirthDate,
+                contact.GivenName = person.FirstName;
+                contact.Surname = person.LastName;
+                contact.Birthday = person.BirthDate;
+            }
+            else
+            {
+                contact.Id = person.Id;
+            }
+            contact.PersonalNotes = person.Notes;
+            contact.HomePhones = new List<string>
+            {
+                person.Guardian?.PhoneNumber
             };
+            contact.HomeAddress = person.Address.ToContactAddress();
 
             return contact;
         }
