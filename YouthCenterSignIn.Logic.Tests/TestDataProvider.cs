@@ -63,7 +63,7 @@ namespace YouthCenterSignIn.Logic.Tests
                 id: "EXPIRED",
                 firstName: "Expired",
                 lastName: "Old",
-                notes: new Guardian("Old data", "073 3474", lastUpdated: DateTime.Now.AddMonths(-4)).ToString(),
+                notes: new Guardian("Old data", "073 3474", lastUpdated: DateTime.Now.AddMonths(-7)).ToString(),
                 birthDate: new DateTimeOffset(new DateTime(1985, 7, 30)),
                 address: new Address("Bug Free Rd", "Lewistown", "PA")),
             new Person(
