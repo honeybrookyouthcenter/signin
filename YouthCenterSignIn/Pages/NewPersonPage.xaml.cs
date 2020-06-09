@@ -59,6 +59,9 @@ namespace YouthCenterSignIn.Pages
 
         async void Done_Tapped(object sender, TappedRoutedEventArgs e)
         {
+            if (!uiCovid.IsAgreed)
+                return;
+
             if (!NewPerson.Guardian.IsValid(out var issues))
             {
                 await new MessageDialog(issues).ShowAsync();
@@ -67,6 +70,8 @@ namespace YouthCenterSignIn.Pages
 
             if (await NewPerson.Save())
             {
+                await uiCovid.Save(NewPerson);
+
                 var parent = (Frame)Parent;
                 GoBack();
                 parent.Navigate(typeof(PersonPage), NewPerson);

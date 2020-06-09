@@ -39,7 +39,7 @@ namespace YouthCenterSignIn.Logic.Data
 
         public DateTime? LastUpdated { get; set; }
 
-        public bool IsInfoExpired => LastUpdated == null || LastUpdated < DateTime.Today.AddMonths(-3);
+        public bool IsInfoExpired => LastUpdated == null || LastUpdated < DateTime.Today.AddMonths(-6);
 
         public bool IsValid(out string issues)
         {

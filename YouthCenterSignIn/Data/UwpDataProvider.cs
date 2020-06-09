@@ -117,7 +117,7 @@ namespace YouthCenterSignIn
                 return null;
         }
 
-        private async Task<StorageFolder> GetRootFolder()
+        public async Task<StorageFolder> GetRootFolder()
         {
             try
             {

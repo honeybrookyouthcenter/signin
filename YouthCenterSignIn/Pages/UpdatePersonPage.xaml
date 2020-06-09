@@ -1,35 +1,54 @@
-﻿<Page
-    x:Class="YouthCenterSignIn.Pages.UpdatePersonPage"
-    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="using:YouthCenterSignIn.Pages"
-    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:controls="using:YouthCenterSignIn.Controls"
-    mc:Ignorable="d"
-    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+﻿<Page x:Class="YouthCenterSignIn.Pages.UpdatePersonPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:controls="using:YouthCenterSignIn.Controls"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:local="using:YouthCenterSignIn.Pages"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+      mc:Ignorable="d">
 
-    <Grid Margin="30">
+    <Grid Margin="30,20">
         <Grid.RowDefinitions>
-            <RowDefinition/>
-            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto" />
+            <RowDefinition />
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
         <StackPanel>
-            <TextBlock Text="Time to update your info!" Style="{ThemeResource SubheaderTextBlockStyle}" />
-            <TextBlock Margin="0 0 0 15" Text="It's been awhile since you updated your contact info, please reenter your info." FontWeight="SemiBold" />
-
-            <controls:AddressControl HorizontalAlignment="Left" Width="400" Margin="0 0 0 30" Address="{x:Bind Person.Address, Mode=OneWay}" />
-            <controls:GuardianControl HorizontalAlignment="Left" Width="400" Guardian="{x:Bind Person.Guardian, Mode=OneWay}" />
+            <TextBlock Style="{ThemeResource SubheaderTextBlockStyle}" Text="Time to update your info!" />
+            <TextBlock Margin="0,0,0,15"
+                       FontWeight="SemiBold"
+                       Text="It's been awhile since you updated your contact info, please reenter your info." />
         </StackPanel>
 
-        <StackPanel Grid.Row="1">
-            <CheckBox x:Name="uiAgree" Content="I agree to risks of exposure to COVID-19." />
-            <controls:BigIconButton Margin="0 20 0 0"
-                                Icon=""
-                                IsEnabled="{x:Bind uiAgree.IsChecked.Value, Mode=OneWay}"
-                                Tapped="BigIconButton_Tapped"
-                                IconForeground="{ThemeResource SignInForeground}"
-                                Label="Done" />
+        <ScrollViewer Grid.Row="1"
+                      Width="350"
+                      HorizontalAlignment="Left"
+                      ScrollViewer.VerticalScrollMode="Enabled"
+                      VerticalScrollBarVisibility="Visible">
+            <StackPanel Margin="0,0,20,0">
+                <controls:AddressControl Margin="0,0,0,30" Address="{x:Bind Person.Address, Mode=OneWay}" />
+                <controls:GuardianControl Guardian="{x:Bind Person.Guardian, Mode=OneWay}" />
+            </StackPanel>
+        </ScrollViewer>
+
+        <StackPanel Grid.Row="2">
+            <controls:CovidAgreement x:Name="uiCovid" Margin="0,10,0,20" />
+
+            <StackPanel Orientation="Horizontal">
+                <controls:BigIconButton Margin="0,0,50,0"
+                                        Icon=""
+                                        IconForeground="{ThemeResource SignInForeground}"
+                                        IsEnabled="{x:Bind uiCovid.IsAgreed, Mode=OneWay}"
+                                        Label="Done"
+                                        Tapped="Done_Tapped" />
+                <controls:BigIconButton Icon=""
+                                        IconForeground="{ThemeResource CancelForeground}"
+                                        Label="Cancel"
+                                        Opacity=".5"
+                                        Tapped="Cancel_Tapped" />
+            </StackPanel>
         </StackPanel>
     </Grid>
 </Page>

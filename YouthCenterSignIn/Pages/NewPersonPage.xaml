@@ -4,13 +4,13 @@
       xmlns:controls="using:YouthCenterSignIn.Controls"
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       xmlns:local="using:YouthCenterSignIn.Pages"
-      xmlns:tkc="using:Microsoft.Toolkit.Uwp.UI.Converters"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      xmlns:tkc="using:Microsoft.Toolkit.Uwp.UI.Converters"
       x:Name="uiNewPersonPage"
       x:DefaultBindMode="TwoWay"
       Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
-      mc:Ignorable="d"
-      IsEnabled="{x:Bind NewPerson.IsSaving, Mode=OneWay, Converter={StaticResource ReverseBool}}">
+      IsEnabled="{x:Bind NewPerson.IsSaving, Mode=OneWay, Converter={StaticResource ReverseBool}}"
+      mc:Ignorable="d">
     <Page.Resources>
         <tkc:BoolNegationConverter x:Key="ReverseBool" />
     </Page.Resources>
@@ -21,44 +21,19 @@
             <RowDefinition />
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="Auto"/>
-            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="Auto" />
         </Grid.ColumnDefinitions>
 
         <TextBlock Margin="30,30,30,10"
                    Style="{ThemeResource HeaderTextBlockStyle}"
                    Text="Sign up" />
 
-        <StackPanel Grid.Column="1"
-                    Margin="175,50,0,-30">
-            <controls:BigIconButton Name="uiNext"
-                                    Margin="0 0 0 20"
-                                    Icon=""
-                                    IconForeground="{ThemeResource SignInForeground}"
-                                    Label="Next"
-                                    Tapped="Next_Tapped" />
-            <controls:BigIconButton Name="uiDone"
-                                    Margin="0 0 0 20"
-                                    Icon=""
-                                    IconForeground="{ThemeResource SignInForeground}"
-                                    Label="Done"
-                                    Tapped="Done_Tapped"
-                                    Visibility="Collapsed" />
-
-            <controls:BigIconButton Name="uiCancel"
-                                    Icon=""
-                                    IconForeground="{ThemeResource CancelForeground}"
-                                    Label="Cancel"
-                                    Tapped="Cancel_Tapped" />
-            <controls:BigIconButton Name="uiBack"
-                                    Icon=""
-                                    IconForeground="Black"
-                                    Label="Back"
-                                    Tapped="Back_Tapped"
-                                    Visibility="Collapsed" />
-        </StackPanel>
-
-        <ScrollViewer Grid.Row="1" Grid.ColumnSpan="2" x:DefaultBindMode="TwoWay" Name="uiScroller" HorizontalAlignment="Left">
+        <ScrollViewer Name="uiScroller"
+                      Grid.Row="1"
+                      Grid.ColumnSpan="2"
+                      HorizontalAlignment="Left"
+                      x:DefaultBindMode="TwoWay">
             <Grid Margin="30,0,30,0">
                 <Grid.Resources>
                     <Style TargetType="TextBox">
@@ -79,7 +54,7 @@
                     <TextBox Header="Last name" Text="{x:Bind NewPerson.LastName, UpdateSourceTrigger=PropertyChanged}" />
                     <DatePicker Date="{Binding Path=NewPerson.BirthDate, ElementName=uiNewPersonPage, Mode=TwoWay}" Header="Birth date" />
 
-                    <controls:AddressControl Address="{x:Bind NewPerson.Address}"/>
+                    <controls:AddressControl Address="{x:Bind NewPerson.Address}" />
                 </StackPanel>
 
                 <StackPanel Name="uiGuardianInfo"
@@ -90,80 +65,113 @@
                     <StackPanel.RenderTransform>
                         <CompositeTransform />
                     </StackPanel.RenderTransform>
-                    <TextBlock Style="{ThemeResource SubtitleTextBlockStyle}" HorizontalAlignment="Left" Text="Some info about your guardian" />
+                    <TextBlock HorizontalAlignment="Left"
+                               Style="{ThemeResource SubtitleTextBlockStyle}"
+                               Text="Some info about your guardian" />
 
                     <controls:GuardianControl x:Name="uiGuardian" Guardian="{x:Bind NewPerson.Guardian}" />
+
+                    <controls:CovidAgreement x:Name="uiCovid" Margin="0,50,0,0" />
                 </StackPanel>
             </Grid>
         </ScrollViewer>
+
+        <StackPanel Grid.Column="1" Margin="175,50,0,-30">
+            <controls:BigIconButton Name="uiNext"
+                                    Margin="0,0,0,20"
+                                    Icon=""
+                                    IconForeground="{ThemeResource SignInForeground}"
+                                    Label="Next"
+                                    Tapped="Next_Tapped" />
+            <controls:BigIconButton Name="uiDone"
+                                    Margin="0,0,0,20"
+                                    Icon=""
+                                    IconForeground="{ThemeResource SignInForeground}"
+                                    IsEnabled="{x:Bind uiCovid.IsAgreed, Mode=OneWay}"
+                                    Label="Done"
+                                    Tapped="Done_Tapped"
+                                    Visibility="Collapsed" />
+
+            <controls:BigIconButton Name="uiCancel"
+                                    Icon=""
+                                    IconForeground="{ThemeResource CancelForeground}"
+                                    Label="Cancel"
+                                    Tapped="Cancel_Tapped" />
+            <controls:BigIconButton Name="uiBack"
+                                    Icon=""
+                                    IconForeground="Black"
+                                    Label="Back"
+                                    Tapped="Back_Tapped"
+                                    Visibility="Collapsed" />
+        </StackPanel>
 
         <VisualStateManager.VisualStateGroups>
             <VisualStateGroup>
                 <VisualStateGroup.Transitions>
                     <VisualTransition From="PersonInfo" To="GuardianInfo">
                         <Storyboard>
-                            <DoubleAnimation Duration="0:0:0.2"
+                            <DoubleAnimation Storyboard.TargetName="uiGuardianInfo"
+                                             Storyboard.TargetProperty="(UIElement.RenderTransform).(CompositeTransform.TranslateX)"
                                              From="50"
-                                             Storyboard.TargetName="uiGuardianInfo"
-                                             Storyboard.TargetProperty="(UIElement.RenderTransform).(CompositeTransform.TranslateX)"
-                                             To="0">
+                                             To="0"
+                                             Duration="0:0:0.2">
                                 <DoubleAnimation.EasingFunction>
                                     <CircleEase EasingMode="EaseInOut" />
                                 </DoubleAnimation.EasingFunction>
                             </DoubleAnimation>
-                            <DoubleAnimation Duration="0:0:0.2"
-                                             From="0"
-                                             Storyboard.TargetName="uiGuardianInfo"
+                            <DoubleAnimation Storyboard.TargetName="uiGuardianInfo"
                                              Storyboard.TargetProperty="Opacity"
-                                             To="1" />
+                                             From="0"
+                                             To="1"
+                                             Duration="0:0:0.2" />
 
-                            <DoubleAnimation Duration="0:0:0.2"
-                                             From="0"
-                                             Storyboard.TargetName="uiPersonInfo"
+                            <DoubleAnimation Storyboard.TargetName="uiPersonInfo"
                                              Storyboard.TargetProperty="(UIElement.RenderTransform).(CompositeTransform.TranslateX)"
-                                             To="-50">
+                                             From="0"
+                                             To="-50"
+                                             Duration="0:0:0.2">
                                 <DoubleAnimation.EasingFunction>
                                     <CircleEase EasingMode="EaseInOut" />
                                 </DoubleAnimation.EasingFunction>
                             </DoubleAnimation>
-                            <DoubleAnimation Duration="0:0:0.2"
-                                             From="1"
-                                             Storyboard.TargetName="uiPersonInfo"
+                            <DoubleAnimation Storyboard.TargetName="uiPersonInfo"
                                              Storyboard.TargetProperty="Opacity"
-                                             To="0" />
+                                             From="1"
+                                             To="0"
+                                             Duration="0:0:0.2" />
                         </Storyboard>
                     </VisualTransition>
                     <VisualTransition From="GuardianInfo" To="PersonInfo">
                         <Storyboard>
-                            <DoubleAnimation Duration="0:0:0.2"
+                            <DoubleAnimation Storyboard.TargetName="uiPersonInfo"
+                                             Storyboard.TargetProperty="(UIElement.RenderTransform).(CompositeTransform.TranslateX)"
                                              From="-50"
-                                             Storyboard.TargetName="uiPersonInfo"
-                                             Storyboard.TargetProperty="(UIElement.RenderTransform).(CompositeTransform.TranslateX)"
-                                             To="0">
+                                             To="0"
+                                             Duration="0:0:0.2">
                                 <DoubleAnimation.EasingFunction>
                                     <CircleEase EasingMode="EaseInOut" />
                                 </DoubleAnimation.EasingFunction>
                             </DoubleAnimation>
-                            <DoubleAnimation Duration="0:0:0.2"
-                                             From="0"
-                                             Storyboard.TargetName="uiPersonInfo"
+                            <DoubleAnimation Storyboard.TargetName="uiPersonInfo"
                                              Storyboard.TargetProperty="Opacity"
-                                             To="1" />
+                                             From="0"
+                                             To="1"
+                                             Duration="0:0:0.2" />
 
-                            <DoubleAnimation Duration="0:0:0.2"
-                                             From="0"
-                                             Storyboard.TargetName="uiGuardianInfo"
+                            <DoubleAnimation Storyboard.TargetName="uiGuardianInfo"
                                              Storyboard.TargetProperty="(UIElement.RenderTransform).(CompositeTransform.TranslateX)"
-                                             To="50">
+                                             From="0"
+                                             To="50"
+                                             Duration="0:0:0.2">
                                 <DoubleAnimation.EasingFunction>
                                     <CircleEase EasingMode="EaseInOut" />
                                 </DoubleAnimation.EasingFunction>
                             </DoubleAnimation>
-                            <DoubleAnimation Duration="0:0:0.2"
-                                             From="1"
-                                             Storyboard.TargetName="uiGuardianInfo"
+                            <DoubleAnimation Storyboard.TargetName="uiGuardianInfo"
                                              Storyboard.TargetProperty="Opacity"
-                                             To="0" />
+                                             From="1"
+                                             To="0"
+                                             Duration="0:0:0.2" />
                         </Storyboard>
                     </VisualTransition>
                 </VisualStateGroup.Transitions>

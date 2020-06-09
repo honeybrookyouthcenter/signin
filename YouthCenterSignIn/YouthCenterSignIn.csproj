@@ -109,6 +109,9 @@
     <Compile Include="Controls\BigIconButton.xaml.cs">
       <DependentUpon>BigIconButton.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Controls\CovidAgreement.xaml.cs">
+      <DependentUpon>CovidAgreement.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Controls\GuardianControl.xaml.cs">
       <DependentUpon>GuardianControl.xaml</DependentUpon>
     </Compile>
@@ -184,6 +187,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Controls\BigIconButton.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\CovidAgreement.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using Windows.UI.Popups;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media.Animation;
 using Windows.UI.Xaml.Navigation;
 using YouthCenterSignIn.Logic.Data;
@@ -30,8 +31,11 @@ namespace YouthCenterSignIn.Pages
             set { person = value; OnPropertyChanged(); }
         }
 
-        async void BigIconButton_Tapped(object sender, Windows.UI.Xaml.Input.TappedRoutedEventArgs e)
+        async void Done_Tapped(object sender, TappedRoutedEventArgs e)
         {
+            if (!uiCovid.IsAgreed)
+                return;
+
             string issues = "Enter a valid address.";
             if (!Person.Address.IsValid() || !Person.Guardian.IsValid(out issues))
             {
@@ -40,7 +44,16 @@ namespace YouthCenterSignIn.Pages
             }
 
             if (await Person.Save(isUpdating: true))
+            {
+                await uiCovid.Save(Person);
                 GoBack();
+            }
+        }
+
+        void Cancel_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            Person.Clear();
+            GoBack();
         }
 
         void GoBack() => ((Frame)Parent).GoBack(new SlideNavigationTransitionInfo());
