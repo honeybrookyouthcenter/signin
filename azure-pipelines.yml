@@ -66,12 +66,9 @@ stages:
           platform: x86
           configuration: 'Release'
           msbuildArgs: '/p:AppxBundlePlatforms="x86" /p:AppxPackageDir="$(Pipeline.Workspace)/AppxPackages/" /p:AppxBundle=Always /p:UapAppxPackageBuildMode=StoreUpload -v:quiet'
-      - task: PublishPipelineArtifact@1
-        displayName: 'Publish release package'
-        inputs:
-          targetPath: '$(Pipeline.Workspace)/AppxPackages'
-          artifact: 'package'
-
+      - publish: $(Pipeline.Workspace)/AppxPackages
+        artifact: package
+        displayName: 'Publish package'
 
   - stage: Deploy
     condition: and(succeeded(), eq(variables['build.sourceBranch'], 'refs/heads/master'))
@@ -79,22 +76,18 @@ stages:
     - job: DeployJob
       pool:
         vmImage: 'windows-latest'
-
       steps:
-      - task: DownloadPipelineArtifact@2
+      - download: current
+        displayName: 'Download package'
+        artifact: package
+      - task: store-publish@0
+        displayName: 'Publish to store'
         inputs:
-          artifactName: 'package'
-          buildType: 'current'
-          targetPath: '$(Pipeline.Workspace)/package'
-
-      # - task: store-publish@0
-      #   displayName: 'Publish to store'
-      #   inputs:
-      #     serviceEndpoint: 'James Esh Dev Center'
-      #     appId: '9N3VPVF4F0L4'
-      #     packagePath: '$(Pipeline.Workspace)/package/YouthCenterSignIn_*_bundle.appxupload'
-      #     force: false
-      #     skipPolling: false
-      #     deletePackages: true
-      #     numberOfPackagesToKeep: '1'
+          serviceEndpoint: 'James Esh Dev Center'
+          appId: '9N3VPVF4F0L4'
+          packagePath: '$(Pipeline.Workspace)/package/YouthCenterSignIn_*_bundle.appxupload'
+          force: false
+          skipPolling: false
+          deletePackages: true
+          numberOfPackagesToKeep: '1'
 
