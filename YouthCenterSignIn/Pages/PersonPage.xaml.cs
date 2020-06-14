@@ -22,12 +22,21 @@ namespace YouthCenterSignIn.Pages
 
         public Person Person { get; private set; }
 
-        private async void SignInOut_Tapped(object sender, Windows.UI.Xaml.Input.TappedRoutedEventArgs e)
+        async void SignInOut_Tapped(object sender, Windows.UI.Xaml.Input.TappedRoutedEventArgs e)
         {
-            if (await Person.SignInOut() == SignInOutResult.InfoExpired)
-                AskForInfo();
-            else
-                Close();
+            try
+            {
+                uiSignInOut.IsEnabled = false;
+
+                if (await Person.SignInOut() == SignInOutResult.InfoExpired)
+                    AskForInfo();
+                else
+                    Close();
+            }
+            finally
+            {
+                uiSignInOut.IsEnabled = true;
+            }
         }
 
         void AskForInfo() => ((Frame)Parent).Navigate(typeof(UpdatePersonPage), Person);

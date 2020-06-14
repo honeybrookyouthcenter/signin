@@ -23,7 +23,7 @@
                    Fill="Gray" />
 
         <StackPanel Margin="0 20 0 0" Orientation="Horizontal">
-            <controls:BigIconButton Tapped="SignInOut_Tapped">
+            <controls:BigIconButton x:Name="uiSignInOut" Tapped="SignInOut_Tapped">
                 <Interactivity:Interaction.Behaviors>
                     <Core:DataTriggerBehavior Binding="{x:Bind Person.SignedIn, Mode=OneWay}" Value="False">
                         <Core:ChangePropertyAction PropertyName="Label" Value="Sign in" />

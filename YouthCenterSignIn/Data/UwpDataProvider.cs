@@ -17,17 +17,15 @@ namespace YouthCenterSignIn
     {
         public override async Task ShowMessage(string message = null, Exception exception = null)
         {
+            if (exception != null)
+                Crashes.TrackError(exception, new Dictionary<string, string> { { "Message", message } });
+
             if (!string.IsNullOrWhiteSpace(message))
             {
                 await CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, async () =>
                 {
                     await new MessageDialog(message).ShowAsync();
                 });
-            }
-
-            if (exception != null)
-            {
-                Crashes.TrackError(exception, new Dictionary<string, string> { { "Message", message } });
             }
         }
 

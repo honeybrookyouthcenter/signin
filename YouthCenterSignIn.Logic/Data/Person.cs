@@ -121,8 +121,6 @@ namespace YouthCenterSignIn.Logic.Data
         {
             try
             {
-                IsSaving = true;
-
                 //TODO test
                 if (!isUpdating && !IsValid(out string personIssues))
                     throw new InvalidOperationException(personIssues);
@@ -148,10 +146,6 @@ namespace YouthCenterSignIn.Logic.Data
             {
                 await DataProvider.Current.ShowMessage("Oops! Something went wrong while signing you up. Sorry about that...", ex);
                 return false;
-            }
-            finally
-            {
-                IsSaving = false;
             }
         }
 
@@ -215,13 +209,6 @@ namespace YouthCenterSignIn.Logic.Data
         }
 
         public bool SignedIn => SignedInLog != null;
-
-        bool isSaving;
-        public bool IsSaving
-        {
-            get => isSaving;
-            private set { isSaving = value; OnPropertyChanged(); }
-        }
 
         public async Task<SignInOutResult> SignInOut()
         {

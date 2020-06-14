@@ -9,7 +9,6 @@
       x:Name="uiNewPersonPage"
       x:DefaultBindMode="TwoWay"
       Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
-      IsEnabled="{x:Bind NewPerson.IsSaving, Mode=OneWay, Converter={StaticResource ReverseBool}}"
       mc:Ignorable="d">
     <Page.Resources>
         <tkc:BoolNegationConverter x:Key="ReverseBool" />

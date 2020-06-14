@@ -59,22 +59,31 @@ namespace YouthCenterSignIn.Pages
 
         async void Done_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            if (!uiCovid.IsAgreed)
+            if (!uiCovid.IsAgreed || !IsEnabled)
                 return;
 
-            if (!NewPerson.Guardian.IsValid(out var issues))
+            try
             {
-                await new MessageDialog(issues).ShowAsync();
-                return;
+                IsEnabled = false;
+
+                if (!NewPerson.Guardian.IsValid(out var issues))
+                {
+                    await new MessageDialog(issues).ShowAsync();
+                    return;
+                }
+
+                if (await NewPerson.Save())
+                {
+                    await uiCovid.Save(NewPerson);
+
+                    var parent = (Frame)Parent;
+                    GoBack();
+                    parent.Navigate(typeof(PersonPage), NewPerson);
+                }
             }
-
-            if (await NewPerson.Save())
+            finally
             {
-                await uiCovid.Save(NewPerson);
-
-                var parent = (Frame)Parent;
-                GoBack();
-                parent.Navigate(typeof(PersonPage), NewPerson);
+                IsEnabled = true;
             }
         }
 

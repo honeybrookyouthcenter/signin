@@ -33,20 +33,29 @@ namespace YouthCenterSignIn.Pages
 
         async void Done_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            if (!uiCovid.IsAgreed)
+            if (!uiCovid.IsAgreed || !IsEnabled)
                 return;
 
-            string issues = "Enter a valid address.";
-            if (!Person.Address.IsValid() || !Person.Guardian.IsValid(out issues))
+            try
             {
-                await new MessageDialog(issues).ShowAsync();
-                return;
+                IsEnabled = false;
+
+                string issues = "Enter a valid address.";
+                if (!Person.Address.IsValid() || !Person.Guardian.IsValid(out issues))
+                {
+                    await new MessageDialog(issues).ShowAsync();
+                    return;
+                }
+
+                if (await Person.Save(isUpdating: true))
+                {
+                    await uiCovid.Save(Person);
+                    GoBack();
+                }
             }
-
-            if (await Person.Save(isUpdating: true))
+            finally
             {
-                await uiCovid.Save(Person);
-                GoBack();
+                IsEnabled = true;
             }
         }
 
@@ -56,7 +65,7 @@ namespace YouthCenterSignIn.Pages
             GoBack();
         }
 
-        void GoBack() => ((Frame)Parent).GoBack(new SlideNavigationTransitionInfo());
+        void GoBack() => ((Frame)Parent)?.GoBack(new SlideNavigationTransitionInfo());
 
         #region Notify
 
