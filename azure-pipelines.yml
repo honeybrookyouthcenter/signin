@@ -16,6 +16,9 @@ variables:
 
 name: $(versionMajor).$(versionMinor).$(versionPatch)
 
+pool:
+  vmImage: 'windows-latest'
+
 stages:
 - stage: UnitTests
   displayName: 'Run unit tests'
