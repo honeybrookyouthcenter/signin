@@ -56,7 +56,7 @@ stages:
         $manifestXml = New-Object -TypeName System.Xml.XmlDocument
         $manifestXml.Load($manifestfile.Fullname)
         
-        $updatedVersion = [Version]($(Build.BuildNumber) + '.0')
+        $updatedVersion = [Version]('$(Build.BuildNumber)' + '.0')
         
         $manifestXml.Package.Identity.Version = [String]$updatedVersion
         $manifestXml.save($manifestfile.FullName)
