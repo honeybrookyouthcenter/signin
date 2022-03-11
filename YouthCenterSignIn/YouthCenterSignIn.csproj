@@ -25,7 +25,7 @@
     <AppInstallerUri>https://onedrive.live.com/embed%3fcid=A01D9CF82243C1CC&amp;resid=A01D9CF82243C1CC%2521584458&amp;authkey=ANJZF--qdT2bqtk</AppInstallerUri>
     <AppInstallerUpdateFrequency>1</AppInstallerUpdateFrequency>
     <AppInstallerCheckForUpdateFrequency>Daily</AppInstallerCheckForUpdateFrequency>
-    <PackageCertificateThumbprint>54EDA6014486FB67126615F803316EE810DE4310</PackageCertificateThumbprint>
+    <PackageCertificateThumbprint>F336295FC8AE3A6F2347FC698C16E27026454E90</PackageCertificateThumbprint>
     <AppxPackageSigningEnabled>True</AppxPackageSigningEnabled>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
