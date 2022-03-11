@@ -10,6 +10,7 @@ namespace YouthCenterSignIn.Controls
         public BigIconButton()
         {
             InitializeComponent();
+            Background = new SolidColorBrush(Colors.Transparent);
         }
 
         /// <summary>

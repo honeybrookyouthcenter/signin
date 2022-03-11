@@ -121,7 +121,6 @@ namespace YouthCenterSignIn.Logic.Data
         {
             try
             {
-                //TODO test
                 if (!isUpdating && !IsValid(out string personIssues))
                     throw new InvalidOperationException(personIssues);
 
@@ -183,6 +182,8 @@ namespace YouthCenterSignIn.Logic.Data
 
         public bool IsInfoExpired => Guardian.IsInfoExpired;
 
+        public bool SkipNextExpire { get; set; }
+
         void UpdateFromNotes()
         {
             Guardian = Guardian.FromNotes(Notes);
@@ -215,7 +216,12 @@ namespace YouthCenterSignIn.Logic.Data
             try
             {
                 if (IsInfoExpired)
-                    return SignInOutResult.InfoExpired;
+                {
+                    if (SkipNextExpire)
+                        SkipNextExpire = false;
+                    else
+                        return SignInOutResult.InfoExpired;
+                }
 
                 await RefreshSignedIn();
 

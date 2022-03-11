@@ -33,7 +33,7 @@ namespace YouthCenterSignIn.Pages
 
         async void Done_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            if (!uiCovid.IsAgreed || !IsEnabled)
+            if (!IsEnabled)
                 return;
 
             try
@@ -48,10 +48,7 @@ namespace YouthCenterSignIn.Pages
                 }
 
                 if (await Person.Save(isUpdating: true))
-                {
-                    await uiCovid.Save(Person);
                     GoBack();
-                }
             }
             finally
             {
@@ -66,6 +63,26 @@ namespace YouthCenterSignIn.Pages
         }
 
         void GoBack() => ((Frame)Parent)?.GoBack(new SlideNavigationTransitionInfo());
+
+        async void NoInfo_Click(object sender, Windows.UI.Xaml.RoutedEventArgs e)
+        {
+            var question = new MessageDialog("If you don't have your info available right now, you can update it next time. Are you sure?")
+            {
+                Commands =
+                {
+                    new UICommand("Skip"),
+                    new UICommand("Cancel")
+                }
+            };
+
+            var answer = await question.ShowAsync();
+            if (answer?.Label == "Skip")
+            {
+                Person.SkipNextExpire = true;
+                Person.Clear();
+                GoBack();
+            }
+        }
 
         #region Notify
 

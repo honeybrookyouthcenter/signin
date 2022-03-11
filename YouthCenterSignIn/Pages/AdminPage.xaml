@@ -6,8 +6,7 @@
       xmlns:controls="using:YouthCenterSignIn.Controls"
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       xmlns:data="using:YouthCenterSignIn.Logic.Data"
-      xmlns:graphControls="using:Microsoft.Toolkit.Uwp.UI.Controls.Graph"
-      xmlns:local="using:YouthCenterSignIn.Pages"
+      xmlns:graphControls="using:CommunityToolkit.Graph.Uwp.Controls"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
       mc:Ignorable="d">
@@ -75,11 +74,8 @@
                 </CommandBar.SecondaryCommands>
             </CommandBar>
 
-            <graphControls:AadLogin x:Name="Login"
-                                    Grid.Column="4"
-                                    AllowSignInAsDifferentUser="False"
-                                    Background="Transparent"
-                                    View="SmallProfilePhotoLeft" />
+            <graphControls:LoginButton x:Name="Login"
+                                       Grid.Column="4" />
         </Grid>
 
         <TextBlock Grid.Row="1"

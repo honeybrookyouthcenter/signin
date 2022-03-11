@@ -1,39 +1,39 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using CommunityToolkit.Authentication;
+using CommunityToolkit.Graph.Extensions;
 using Microsoft.Graph;
-using Microsoft.Toolkit.Services.MicrosoftGraph;
 using YouthCenterSignIn.Logic.Data;
 
 namespace YouthCenterSignIn
 {
     class Graph
     {
-        const string AppId = "6cd2d40f-e8d2-46be-ad3f-ac087d4b5284";
         readonly string[] Scopes = { "User.Read", "Contacts.ReadWrite" };
 
         public Graph()
         {
-            MicrosoftGraphService instance = MicrosoftGraphService.Instance;
-            instance.AuthenticationModel = MicrosoftGraphEnums.AuthenticationModel.V2;
-            instance.Initialize(AppId,
-                MicrosoftGraphEnums.ServicesToInitialize.UserProfile,
-                Scopes);
+            ProviderManager.Instance.GlobalProvider = new WindowsProvider(Scopes);
         }
 
-        public bool IsAuthenticated => MicrosoftGraphService.Instance.IsAuthenticated;
+        public bool IsAuthenticated => ProviderManager.Instance.GlobalProvider.State == ProviderState.SignedIn;
 
-        public GraphServiceClient Provider => MicrosoftGraphService.Instance.GraphProvider;
+        public GraphServiceClient Client { get; private set; }
 
         public async Task<bool> Login()
         {
             try
             {
-                return await MicrosoftGraphService.Instance.TryLoginAsync();
+                if (string.IsNullOrEmpty(await ProviderManager.Instance.GlobalProvider.GetTokenAsync(silentOnly: false)))
+                    return false;
+
+                Client = ProviderManager.Instance.GlobalProvider.GetClient();
+                return true;
             }
             catch (Exception ex)
             {
-                await DataProvider.Current.ShowMessage("Could not log in.  Check your internet connection.", ex);
+                await DataProvider.Current.ShowMessage("Could not log in. Check the internet connection.", ex);
                 return false;
             }
         }
@@ -49,7 +49,7 @@ namespace YouthCenterSignIn
             }
 
             var contacts = new List<Contact>();
-            var currentRequest = Provider.Me.Contacts
+            var currentRequest = Client.Me.Contacts
                 .Request()
                 .Select("id,givenName,surname,birthday,homeAddress,personalNotes");
 
@@ -70,7 +70,7 @@ namespace YouthCenterSignIn
                 if (!IsAuthenticated)
                     throw new InvalidOperationException("You must be logged in to save a contact!");
 
-                return await Provider.Me.Contacts.Request().AddAsync(contact);
+                return await Client.Me.Contacts.Request().AddAsync(contact);
             }
             catch (Exception ex)
             {
@@ -85,7 +85,7 @@ namespace YouthCenterSignIn
                 if (!IsAuthenticated)
                     throw new InvalidOperationException("You must be logged in to save a contact!");
 
-                return await Provider.Me.Contacts[contact.Id].Request().UpdateAsync(contact);
+                return await Client.Me.Contacts[contact.Id].Request().UpdateAsync(contact);
             }
             catch (Exception ex)
             {

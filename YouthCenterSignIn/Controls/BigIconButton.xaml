@@ -6,20 +6,24 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              HorizontalAlignment="Left"
              VerticalAlignment="Top"
-             Background="Transparent"
+             x:DefaultBindMode="OneWay"
              mc:Ignorable="d">
 
-    <StackPanel Background="Transparent" Orientation="Horizontal">
+    <StackPanel Padding="{x:Bind Padding}"
+                Background="{x:Bind Background}"
+                CornerRadius="{x:Bind CornerRadius}"
+                Orientation="Horizontal">
         <TextBlock VerticalAlignment="Center"
                    FontFamily="Segoe MDL2 Assets"
                    FontSize="25"
-                   Foreground="{x:Bind IconForeground, Mode=OneWay}"
-                   Text="{x:Bind Icon, Mode=OneWay}" />
-        <TextBlock Margin="20 0 0 0"
+                   Foreground="{x:Bind IconForeground}"
+                   Text="{x:Bind Icon}" />
+        <TextBlock Margin="18 0 0 0"
                    VerticalAlignment="Center"
-                   LineHeight="30"
+                   FontSize="24"
+                   FontWeight="SemiLight"
+                   LineHeight="27"
                    LineStackingStrategy="BlockLineHeight"
-                   Style="{ThemeResource TitleTextBlockStyle}"
-                   Text="{x:Bind Label, Mode=OneWay}" />
+                   Text="{x:Bind Label}" />
     </StackPanel>
 </UserControl>

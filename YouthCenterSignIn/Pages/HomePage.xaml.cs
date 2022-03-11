@@ -1,6 +1,9 @@
 ﻿using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Documents;
+using Windows.UI.Xaml.Input;
+using YouthCenterSignIn.Controls;
 using YouthCenterSignIn.Logic;
 using YouthCenterSignIn.Logic.Data;
 
@@ -47,7 +50,7 @@ namespace YouthCenterSignIn.Pages
             ((Frame)Parent).Navigate(typeof(PersonPage), person);
         }
 
-        void SignUp_Tapped(object sender, Windows.UI.Xaml.Input.TappedRoutedEventArgs e)
+        void SignUp_Click(object sender, RoutedEventArgs e)
         {
             ((Frame)Parent).Navigate(typeof(NewPersonPage));
         }
@@ -55,6 +58,16 @@ namespace YouthCenterSignIn.Pages
         void Admin_Opened(object sender, object e)
         {
             InputPane.GetForCurrentView().TryShow();
+        }
+
+        void Rules_Click(Hyperlink sender, HyperlinkClickEventArgs args)
+        {
+            var dialog = new ContentDialog()
+            {
+                CloseButtonCommand = new StandardUICommand(StandardUICommandKind.Close),
+                Content = new RulesControl(),
+            };
+            _ = dialog.ShowAsync();
         }
     }
 }

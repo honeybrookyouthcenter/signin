@@ -13,82 +13,91 @@
     <Page.Resources>
         <converters:CountToVisibilityConverter x:Key="CountToVisibility" />
     </Page.Resources>
+
     <Grid>
-        <ScrollViewer>
-            <RelativePanel
-                Background="#AFFF"
-                Margin="100"
-                Padding="20"
-                       HorizontalAlignment="Left"
-                       VerticalAlignment="Top">
-                <StackPanel Name="uiWelcome"
-                            Margin="0 0 0 15">
-                    <TextBlock Style="{ThemeResource SubheaderTextBlockStyle}">
-                       Welcome to the
-                    </TextBlock>
-                    <TextBlock FontWeight="SemiBold" Style="{ThemeResource HeaderTextBlockStyle}">
-                       Honey Brook Youth Center!
-                    </TextBlock>
-                </StackPanel>
+        <tk:DropShadowPanel Margin="50 130 50 0"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Top"
+                            BlurRadius="50"
+                            ShadowOpacity=".3">
+            <RelativePanel Padding="36 26 50 36"
+                           HorizontalAlignment="Left"
+                           VerticalAlignment="Top"
+                           Background="#FFF"
+                           CornerRadius="15">
+                <TextBlock Name="uiWelcome"
+                           Style="{ThemeResource SubheaderTextBlockStyle}"
+                           Text="Welcome to the" />
+                <TextBlock Name="uiYouthCenter"
+                           Margin="0 -10 0 12"
+                           FontWeight="SemiBold"
+                           RelativePanel.Below="uiWelcome"
+                           Style="{ThemeResource HeaderTextBlockStyle}"
+                           Text="Honey Brook Youth Center!" />
                 <AutoSuggestBox Name="uiName"
                                 Width="350"
                                 HorizontalAlignment="Left"
-                                BorderThickness="0 0 0 2"
-                                FontSize="25"
-                                FontWeight="Light"
-                                Padding="0 0 0 6"
-                                PlaceholderText="Type your name to sign in or out"
-                                SuggestionChosen="UiName_SuggestionChosen"
+                                FontSize="18"
                                 ItemsSource="{x:Bind PersonSearch}"
-                                RelativePanel.Below="uiWelcome"
+                                PlaceholderText="Type your name to sign in or out"
+                                RelativePanel.Below="uiYouthCenter"
+                                SuggestionChosen="UiName_SuggestionChosen"
                                 Text="{x:Bind PersonSearch.SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
                     <AutoSuggestBox.ItemTemplate>
                         <DataTemplate x:DataType="data:Person">
-                            <TextBlock Style="{ThemeResource SubtitleTextBlockStyle}"
-                                       Text="{x:Bind FullName}" />
+                            <TextBlock Style="{ThemeResource SubtitleTextBlockStyle}" Text="{x:Bind FullName}" />
                         </DataTemplate>
                     </AutoSuggestBox.ItemTemplate>
                 </AutoSuggestBox>
 
-                <tk:DropShadowPanel Margin="0 30 0 0"
-                                    ShadowOpacity=".5"
-                                    OffsetX="3"
-                                    OffsetY="3"
-                                    Tapped="SignUp_Tapped"
-                                    BlurRadius="25"
-                                    Visibility="{x:Bind PersonSearch.Count, Mode=OneWay, Converter={StaticResource CountToVisibility}}"
-                                    RelativePanel.Below="uiName">
-                    <Border RequestedTheme="Dark" Background="{ThemeResource SystemColorHighlightBrush}">
-                        <TextBlock FontStyle="Italic"
-                            Margin="10 7"
-                            Text="New here? Sign up!" />
-                    </Border>
-                </tk:DropShadowPanel>
-            </RelativePanel>
-        </ScrollViewer>
+                <Button Margin="15 0 0 0"
+                        Padding="13 8"
+                        Click="SignUp_Click"
+                        Content="New here? Sign up!"
+                        IsTabStop="False"
+                        RelativePanel.AlignVerticalCenterWith="uiName"
+                        RelativePanel.RightOf="uiName"
+                        Style="{ThemeResource AccentButtonStyle}" />
 
-        <CommandBar HorizontalAlignment="Right"
-                    VerticalAlignment="Bottom"
-                    Background="Transparent"
-                    Margin="0 0 -48 0"
-                    IsOpen="True">
-            <AppBarButton Opacity=".5"
+                <TextBlock Name="uiSlogan"
+                           Margin="0 35 0 5"
+                           FontSize="17"
+                           FontStyle="Italic"
+                           FontWeight="SemiBold"
+                           Foreground="{ThemeResource SystemControlForegroundAccentBrush}"
+                           RelativePanel.Below="uiName"
+                           Style="{ThemeResource HeaderTextBlockStyle}"
+                           Text="Sharing Jesus. Giving Hope." />
+                <TextBlock FontStyle="Italic"
+                           FontSize="13"
+                           RelativePanel.Below="uiSlogan"
+                           Style="{ThemeResource CaptionTextBlockStyle}">
+                    <Run Text="Read" />
+                    <Hyperlink Click="Rules_Click" IsTabStop="False">what we're about</Hyperlink>
+                    <Run Text="here at the Youth Center." />
+                </TextBlock>
+            </RelativePanel>
+        </tk:DropShadowPanel>
+
+        <AppBarButton HorizontalAlignment="Right"
+                      VerticalAlignment="Bottom"
                       AllowFocusOnInteraction="True"
                       Icon="List"
-                      Label="Logs">
-                <AppBarButton.Flyout>
-                    <Flyout Opened="Admin_Opened">
-                        <StackPanel Margin="5 5 5 0">
-                            <PasswordBox Name="uiPin"
+                      IsTabStop="False"
+                      Label="Logs"
+                      Opacity=".5">
+            <AppBarButton.Flyout>
+                <Flyout Opened="Admin_Opened">
+                    <StackPanel Margin="5 5 5 0">
+                        <PasswordBox Name="uiPin"
                                      Header="Enter the administrative PIN"
                                      InputScope="NumericPin"
                                      PasswordChanged="uiPin_PasswordChanged" />
 
-                            <TextBlock Name="uiPinMessages" Margin="0 10 0 0" />
-                        </StackPanel>
-                    </Flyout>
-                </AppBarButton.Flyout>
-            </AppBarButton>
-        </CommandBar>
+                        <TextBlock Name="uiPinMessages" Margin="0 10 0 0" />
+                    </StackPanel>
+                </Flyout>
+            </AppBarButton.Flyout>
+        </AppBarButton>
     </Grid>
 </Page>

@@ -24,17 +24,13 @@ using YouthCenterSignIn.Logic.Data;
 
 namespace YouthCenterSignIn.Controls
 {
-    public sealed partial class CovidAgreement : StackPanel, INotifyPropertyChanged
+    public sealed partial class AgreementControl : StackPanel, INotifyPropertyChanged
     {
-        const string Agreement = @"
-By signing this agreement, I acknowledge the contagious nature of COVID-19 and voluntarily assume the risk that my child(ren) and I may be exposed to or infected by COVID-19 by attending the Honey Brook Youth Center and that such exposure or infection may result in personal injury, illness, permanent disability, and death. I understand that the risk of becoming exposed to or infected by COVID-19 at the Honey Brook Youth Center may result from the actions, omissions, or negligence of myself and others, including, but not limited to, Honey Brook Youth Center employees, volunteers, and program participants and their families.
-
-I voluntarily agree to assume all of the foregoing risks and accept sole responsibility for any injury to my child(ren) or myself (including, but not limited to, personal injury, disability, and death), illness, damage, loss, claim, liability, or expense, of any kind, that I or my child(ren) may experience or incur in connection with my child(ren)’s attendance at the Honey Brook Youth Center or participation in the Honey Brook Youth Center programming (“Claims”). On my behalf, and on behalf of my children, I hereby release, covenant not to sue, discharge, and hold harmless the Honey Brook Youth Center, its employees, agents, and representatives, of and from the Claims, including all liabilities, claims, actions, damages, costs or expenses of any kind arising out of or relating thereto. I understand and agree that this release includes any Claims based on the actions, omissions, or negligence of the Club, its employees, agents, and representatives, whether a COVID-19 infection occurs before, during, or after participation in any Honey Brook Youth Center program.
-";
+        const string Agreement = @"By signing this agreement, I voluntarily agree to assume all of the foregoing risks and accept sole responsibility for any injury to my child(ren) or myself (including, but not limited to, personal injury, disability, and death), illness, damage, loss, claim, liability, or expense, of any kind, that I or my child(ren) may experience or incur in connection with my child(ren)’s attendance at the Honey Brook Youth Center or participation in the Honey Brook Youth Center programming (“Claims”). On my behalf, and on behalf of my children, I hereby release, covenant not to sue, discharge, and hold harmless the Honey Brook Youth Center, its employees, agents, and representatives, of and from the Claims, including all liabilities, claims, actions, damages, costs or expenses of any kind arising out of or relating thereto. I understand and agree that this release includes any Claims based on the actions, omissions, or negligence of the Club, its employees, agents, and representatives, occurring before, during, or after participation in any Honey Brook Youth Center program.";
 
         public bool IsAgreed => (uiCheck.IsChecked ?? false) && uiCanvas.InkPresenter.StrokeContainer.GetStrokes().Any();
 
-        public CovidAgreement()
+        public AgreementControl()
         {
             InitializeComponent();
 

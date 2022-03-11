@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using YouthCenterSignIn.Logic.Data;
 
@@ -8,17 +9,23 @@ namespace YouthCenterSignIn.Logic.Tests
     public class PersonUpdateInfoTests : TestBase
     {
         [TestMethod]
-        public void Person_UpdateInfo_IsInfoExpiredTest()
+        public async Task Person_UpdateInfo_IsInfoExpiredTest()
         {
             var expiredPerson = GetTestPerson("Expired");
             Assert.IsTrue(expiredPerson.IsInfoExpired, "This person's info is out of date and should be expired.");
+            Assert.AreEqual(SignInOutResult.InfoExpired, await expiredPerson.SignInOut());
+
+            expiredPerson.SkipNextExpire = true;
+            Assert.AreEqual(SignInOutResult.Success, await expiredPerson.SignInOut(), "Should sign in since skipping");
+            Assert.IsFalse(expiredPerson.SkipNextExpire, "Should set back to false");
         }
 
         [TestMethod]
-        public void Person_UpdateInfo_IsInfoExpired_NotAskedTest()
+        public async Task Person_UpdateInfo_IsInfoExpired_NotAskedTest()
         {
             var notAskedPerson = GetTestPerson("Not Asked");
             Assert.IsTrue(notAskedPerson.IsInfoExpired, "This person's was never checked and should be expired.");
+            Assert.AreEqual(SignInOutResult.InfoExpired, await notAskedPerson.SignInOut());
         }
 
         [TestMethod]

@@ -35,6 +35,10 @@ namespace YouthCenterSignIn.Logic
                 return;
             }
 
+            await Task.Delay(500);
+            if (search != SearchText?.ToLower())
+                return;
+
             var results = (await Person.GetPeople())
                 .Where(p => p.FullName.ToLower().Contains(search))
                 .OrderByDescending(p => p.FullName.ToLower().StartsWith(search))
