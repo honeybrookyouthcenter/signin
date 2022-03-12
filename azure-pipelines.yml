@@ -71,24 +71,24 @@ stages:
     - publish: $(Pipeline.Workspace)/AppxPackages
       artifact: package
       displayName: 'Publish package'
-- stage: Deploy
-  condition: and(succeeded(), eq(variables['build.sourceBranch'], 'refs/heads/master'))
-  jobs:
-  - deployment: Deploy
-    environment: 'Store'
-    strategy:
-      runOnce:
-        deploy:
-          steps:
-          - download: current
-            displayName: 'Download package'
-            artifact: package
-          - task: store-publish@0
-            inputs:
-              serviceEndpoint: 'James Esh Dev Center'
-              appId: '9N3VPVF4F0L4'
-              packagePath: '$(Pipeline.Workspace)/package/YouthCenterSignIn_*_bundle.appxupload'
-              force: false
-              skipPolling: true
-              deletePackages: true
-              numberOfPackagesToKeep: '1'
+# - stage: Deploy
+#   condition: and(succeeded(), eq(variables['build.sourceBranch'], 'refs/heads/master'))
+#   jobs:
+#   - deployment: Deploy
+#     environment: 'Store'
+#     strategy:
+#       runOnce:
+#         deploy:
+#           steps:
+#           - download: current
+#             displayName: 'Download package'
+#             artifact: package
+#           - task: store-publish@0
+#             inputs:
+#               serviceEndpoint: 'James Esh Dev Center'
+#               appId: '9N3VPVF4F0L4'
+#               packagePath: '$(Pipeline.Workspace)/package/YouthCenterSignIn_*_bundle.appxupload'
+#               force: false
+#               skipPolling: true
+#               deletePackages: true
+#               numberOfPackagesToKeep: '1'
