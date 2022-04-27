@@ -1,0 +1,16 @@
+name: .\Run tests
+
+on:
+  push:
+    branches: [ master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v2
+    - name: Test
+      run: dotnet test YouthCenterSignIn.Logic.Tests/YouthCenterSignIn.Logic.Tests.csproj
