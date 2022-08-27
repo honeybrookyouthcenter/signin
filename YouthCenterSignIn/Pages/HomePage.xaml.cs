@@ -3,11 +3,11 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Documents;
 using Windows.UI.Xaml.Input;
-using YouthCenterSignIn.Controls;
-using YouthCenterSignIn.Logic;
-using YouthCenterSignIn.Logic.Data;
+using SignIn.Controls;
+using SignIn.Logic;
+using SignIn.Logic.Data;
 
-namespace YouthCenterSignIn.Pages
+namespace SignIn.Pages
 {
     public sealed partial class HomePage : Page
     {

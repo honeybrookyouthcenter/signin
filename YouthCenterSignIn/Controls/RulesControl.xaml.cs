@@ -1,6 +1,6 @@
 ﻿using Windows.UI.Xaml.Controls;
 
-namespace YouthCenterSignIn.Controls
+namespace SignIn.Controls
 {
     public sealed partial class RulesControl : UserControl
     {

@@ -1,9 +1,9 @@
 ﻿using System;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Navigation;
-using YouthCenterSignIn.Logic.Data;
+using SignIn.Logic.Data;
 
-namespace YouthCenterSignIn.Pages
+namespace SignIn.Pages
 {
     public sealed partial class PersonPage : Page
     {

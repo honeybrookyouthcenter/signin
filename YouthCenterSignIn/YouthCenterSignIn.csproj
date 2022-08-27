@@ -120,8 +120,6 @@
       <DependentUpon>RulesControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="Converters\NullOrEmptyConverter.cs" />
-    <Compile Include="Data\Graph.cs" />
-    <Compile Include="Data\UwpDataProvider.cs" />
     <Compile Include="MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>
@@ -263,7 +261,16 @@
       <Version>13.0.1</Version>
     </PackageReference>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <ProjectReference Include="..\SignIn.Logic\SignIn.Logic.csproj">
+      <Project>{b5d14f89-f546-43f4-abca-ba97899a7f11}</Project>
+      <Name>SignIn.Logic</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\SignIn.Uwp\SignIn.Uwp.csproj">
+      <Project>{0426fa56-412c-4902-b8f6-0477059083d2}</Project>
+      <Name>SignIn.Uwp</Name>
+    </ProjectReference>
+  </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>
   </PropertyGroup>

@@ -8,10 +8,12 @@ using Windows.ApplicationModel.Core;
 using Windows.Storage;
 using Windows.UI.Core;
 using Windows.UI.Popups;
-using YouthCenterSignIn.Logic.Data;
+using SignIn.Logic.Data;
 using MsG = Microsoft.Graph;
+using Windows.UI.Xaml;
+using Windows.System;
 
-namespace YouthCenterSignIn
+namespace SignIn.Uwp.Data
 {
     public class UwpDataProvider : DataProvider
     {
@@ -31,9 +33,9 @@ namespace YouthCenterSignIn
 
         #region People
 
-        internal Graph Graph { get; } = new Graph();
+        public Graph Graph { get; } = new Graph();
 
-        internal async Task ShowAuthenticationMessage()
+        public async Task ShowAuthenticationMessage()
         {
             await ShowMessage("Please login to a Microsoft account on the logs page.");
         }
@@ -102,6 +104,8 @@ namespace YouthCenterSignIn
 
         #region Json
 
+        public User User { get; set; }
+
         protected override async Task<string> GetJsonFileContent(string fileName)
         {
             var rootFolder = await GetRootFolder();
@@ -119,7 +123,7 @@ namespace YouthCenterSignIn
         {
             try
             {
-                var userPath = UserDataPaths.GetForUser(App.User).Profile;
+                var userPath = UserDataPaths.GetForUser(User).Profile;
                 var userFolder = await StorageFolder.GetFolderFromPathAsync(userPath);
                 var oneDriveFolder = await userFolder.GetFolderAsync("OneDrive");
                 return await oneDriveFolder.CreateFolderAsync("Youth Center Sign In", CreationCollisionOption.OpenIfExists);

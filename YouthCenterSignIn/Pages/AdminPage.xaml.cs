@@ -1,8 +1,8 @@
 ﻿using Windows.UI.Xaml.Controls;
-using YouthCenterSignIn.Logic;
-using YouthCenterSignIn.Logic.Data;
+using SignIn.Logic;
+using SignIn.Logic.Data;
 
-namespace YouthCenterSignIn.Pages
+namespace SignIn.Pages
 {
     public sealed partial class AdminPage : Page
     {

@@ -20,9 +20,10 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Imaging;
 using Windows.UI.Xaml.Navigation;
-using YouthCenterSignIn.Logic.Data;
+using SignIn.Logic.Data;
+using SignIn.Uwp.Data;
 
-namespace YouthCenterSignIn.Controls
+namespace SignIn.Controls
 {
     public sealed partial class AgreementControl : StackPanel, INotifyPropertyChanged
     {

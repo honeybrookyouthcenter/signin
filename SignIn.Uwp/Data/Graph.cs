@@ -4,11 +4,11 @@ using System.Threading.Tasks;
 using CommunityToolkit.Authentication;
 using CommunityToolkit.Graph.Extensions;
 using Microsoft.Graph;
-using YouthCenterSignIn.Logic.Data;
+using SignIn.Logic.Data;
 
-namespace YouthCenterSignIn
+namespace SignIn.Uwp.Data
 {
-    class Graph
+    public class Graph
     {
         readonly string[] Scopes = { "User.Read", "Contacts.ReadWrite" };
 

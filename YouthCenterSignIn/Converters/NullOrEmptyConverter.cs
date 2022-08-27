@@ -2,7 +2,7 @@
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Data;
 
-namespace YouthCenterSignIn.Converters
+namespace SignIn.Converters
 {
     public class CountToVisibilityConverter : IValueConverter
     {

@@ -5,9 +5,9 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media.Animation;
 using Windows.UI.Xaml.Navigation;
-using YouthCenterSignIn.Logic.Data;
+using SignIn.Logic.Data;
 
-namespace YouthCenterSignIn.Pages
+namespace SignIn.Pages
 {
     public sealed partial class UpdatePersonPage : Page, INotifyPropertyChanged
     {

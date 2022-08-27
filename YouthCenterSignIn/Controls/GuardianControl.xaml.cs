@@ -1,8 +1,8 @@
 ﻿using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using YouthCenterSignIn.Logic.Data;
+using SignIn.Logic.Data;
 
-namespace YouthCenterSignIn.Controls
+namespace SignIn.Controls
 {
     public sealed partial class GuardianControl : UserControl
     {
