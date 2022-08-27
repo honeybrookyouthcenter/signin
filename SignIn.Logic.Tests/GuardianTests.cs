@@ -1,8 +1,8 @@
 ﻿using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using YouthCenterSignIn.Logic.Data;
+using SignIn.Logic.Data;
 
-namespace YouthCenterSignIn.Logic.Tests
+namespace SignIn.Logic.Tests
 {
     [TestClass]
     public class GuardianTests

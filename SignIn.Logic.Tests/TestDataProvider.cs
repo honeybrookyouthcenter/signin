@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using YouthCenterSignIn.Logic.Data;
+using SignIn.Logic.Data;
 
-namespace YouthCenterSignIn.Logic.Tests
+namespace SignIn.Logic.Tests
 {
     public class TestDataProvider : DataProvider
     {

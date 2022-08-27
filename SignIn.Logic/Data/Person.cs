@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace YouthCenterSignIn.Logic.Data
+namespace SignIn.Logic.Data
 {
     public class Person : NotifyBase
     {

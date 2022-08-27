@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel;
 
-namespace YouthCenterSignIn.Logic.Data
+namespace SignIn.Logic.Data
 {
     public class NotifyBase : INotifyPropertyChanged
     {

@@ -1,7 +1,6 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 
-namespace YouthCenterSignIn.Logic.Data
+namespace SignIn.Logic.Data
 {
     public class Address : NotifyBase
     {

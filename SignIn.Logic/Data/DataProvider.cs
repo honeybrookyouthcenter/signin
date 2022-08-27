@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 
-namespace YouthCenterSignIn.Logic.Data
+namespace SignIn.Logic.Data
 {
     public abstract class DataProvider
     {

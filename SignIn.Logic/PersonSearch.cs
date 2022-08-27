@@ -2,9 +2,9 @@
 using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
-using YouthCenterSignIn.Logic.Data;
+using SignIn.Logic.Data;
 
-namespace YouthCenterSignIn.Logic
+namespace SignIn.Logic
 {
     public class PersonSearch : ReadOnlyObservableCollection<Person>, INotifyPropertyChanged
     {

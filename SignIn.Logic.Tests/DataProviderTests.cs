@@ -1,6 +1,6 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace YouthCenterSignIn.Logic.Tests
+namespace SignIn.Logic.Tests
 {
     [TestClass]
     public class DataProviderTests : TestBase
