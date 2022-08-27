@@ -1,11 +1,11 @@
-﻿using Windows.UI.ViewManagement;
+﻿using SignIn.Logic;
+using SignIn.Logic.Data;
+using SignIn.Uwp.Controls;
+using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Documents;
 using Windows.UI.Xaml.Input;
-using HBCCSignIn.Controls;
-using HBCCSignIn.Logic;
-using HBCCSignIn.Logic.Data;
 
 namespace HBCCSignIn.Pages
 {

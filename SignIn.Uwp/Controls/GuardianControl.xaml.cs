@@ -1,8 +1,8 @@
 ﻿using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using HBCCSignIn.Logic.Data;
+using SignIn.Logic.Data;
 
-namespace HBCCSignIn.Controls
+namespace SignIn.Uwp.Controls
 {
     public sealed partial class GuardianControl : UserControl
     {

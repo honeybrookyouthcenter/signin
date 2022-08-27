@@ -3,9 +3,9 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Documents;
 using Windows.UI.Xaml.Input;
-using SignIn.Controls;
 using SignIn.Logic;
 using SignIn.Logic.Data;
+using SignIn.Uwp.Controls;
 
 namespace SignIn.Pages
 {

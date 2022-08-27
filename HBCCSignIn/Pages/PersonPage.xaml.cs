@@ -1,7 +1,6 @@
-﻿using System;
+﻿using SignIn.Logic.Data;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Navigation;
-using HBCCSignIn.Logic.Data;
 
 namespace HBCCSignIn.Pages
 {

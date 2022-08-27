@@ -3,9 +3,9 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:Core="using:Microsoft.Xaml.Interactions.Core"
       xmlns:Interactivity="using:Microsoft.Xaml.Interactivity"
-      xmlns:controls="using:HBCCSignIn.Controls"
+      xmlns:controls="using:SignIn.Uwp.Controls"
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-      xmlns:data="using:HBCCSignIn.Logic.Data"
+      xmlns:data="using:SignIn.Logic.Data"
       xmlns:graphControls="using:CommunityToolkit.Graph.Uwp.Controls"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
@@ -74,8 +74,7 @@
                 </CommandBar.SecondaryCommands>
             </CommandBar>
 
-            <graphControls:LoginButton x:Name="Login"
-                                       Grid.Column="4" />
+            <graphControls:LoginButton x:Name="Login" Grid.Column="4" />
         </Grid>
 
         <TextBlock Grid.Row="1"

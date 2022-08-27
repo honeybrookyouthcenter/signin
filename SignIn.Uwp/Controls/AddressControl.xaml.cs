@@ -12,11 +12,11 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
-using HBCCSignIn.Logic.Data;
+using SignIn.Logic.Data;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
-namespace HBCCSignIn.Controls
+namespace SignIn.Uwp.Controls
 {
     public sealed partial class AddressControl : UserControl
     {

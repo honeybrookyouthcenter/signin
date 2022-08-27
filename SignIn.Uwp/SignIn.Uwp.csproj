@@ -120,6 +120,22 @@
     <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Controls\AddressControl.xaml.cs">
+      <DependentUpon>AddressControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\AgreementControl.xaml.cs">
+      <DependentUpon>AgreementControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\BigIconButton.xaml.cs">
+      <DependentUpon>BigIconButton.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\GuardianControl.xaml.cs">
+      <DependentUpon>GuardianControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\RulesControl.xaml.cs">
+      <DependentUpon>RulesControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Converters\NullOrEmptyConverter.cs" />
     <Compile Include="Data\Graph.cs" />
     <Compile Include="Data\UwpDataProvider.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -162,6 +178,28 @@
       <Project>{B5D14F89-F546-43F4-ABCA-BA97899A7F11}</Project>
       <Name>SignIn.Logic</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Include="Controls\AddressControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Controls\AgreementControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Controls\BigIconButton.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Controls\GuardianControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Controls\RulesControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
   </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>

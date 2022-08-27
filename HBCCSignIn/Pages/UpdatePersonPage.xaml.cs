@@ -1,11 +1,11 @@
-﻿using System;
+﻿using SignIn.Logic.Data;
+using System;
 using System.ComponentModel;
 using Windows.UI.Popups;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media.Animation;
 using Windows.UI.Xaml.Navigation;
-using HBCCSignIn.Logic.Data;
 
 namespace HBCCSignIn.Pages
 {

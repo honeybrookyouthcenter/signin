@@ -20,9 +20,10 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Imaging;
 using Windows.UI.Xaml.Navigation;
-using HBCCSignIn.Logic.Data;
+using SignIn.Logic.Data;
+using SignIn.Uwp.Data;
 
-namespace HBCCSignIn.Controls
+namespace SignIn.Uwp.Controls
 {
     public sealed partial class AgreementControl : StackPanel, INotifyPropertyChanged
     {
@@ -62,7 +63,7 @@ namespace HBCCSignIn.Controls
 
         #region Save
 
-        internal async Task Save(Person person)
+        public async Task Save(Person person)
         {
             try
             {

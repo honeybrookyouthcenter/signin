@@ -1,12 +1,13 @@
 ﻿using System.Threading.Tasks;
 using Windows.UI.Xaml.Controls;
 using HBCCSignIn.Pages;
+using SignIn.Uwp.Data;
 
 namespace HBCCSignIn
 {
     public sealed partial class MainPage : Page
     {
-        UwpDataProvider DataProvider => ((UwpDataProvider)Logic.Data.DataProvider.Current);
+        UwpDataProvider DataProvider => ((UwpDataProvider)SignIn.Logic.Data.DataProvider.Current);
 
         public MainPage()
         {

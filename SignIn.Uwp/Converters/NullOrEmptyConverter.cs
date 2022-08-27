@@ -2,7 +2,7 @@
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Data;
 
-namespace HBCCSignIn.Converters
+namespace SignIn.Uwp.Converters
 {
     public class CountToVisibilityConverter : IValueConverter
     {

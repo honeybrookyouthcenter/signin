@@ -1,6 +1,7 @@
 ﻿using Microsoft.AppCenter;
 using Microsoft.AppCenter.Analytics;
 using Microsoft.AppCenter.Crashes;
+using SignIn.Uwp.Data;
 using System;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
@@ -25,9 +26,9 @@ namespace HBCCSignIn
             this.InitializeComponent();
             this.Suspending += OnSuspending;
 
-            AppCenter.Start("3b071e34-fbe4-4dca-9683-eb96e9f74e85", typeof(Analytics), typeof(Crashes));
+            AppCenter.Start("7fb91120-d998-421b-9599-13f576129f00", typeof(Analytics), typeof(Crashes));
 
-            Logic.Data.DataProvider.Current = new UwpDataProvider();
+            SignIn.Logic.Data.DataProvider.Current = new UwpDataProvider();
         }
 
         internal static User User { get; private set; }
@@ -39,7 +40,7 @@ namespace HBCCSignIn
         /// <param name="e">Details about the launch request and process.</param>
         protected override void OnLaunched(LaunchActivatedEventArgs e)
         {
-            User = e.User;
+            ((UwpDataProvider)SignIn.Logic.Data.DataProvider.Current).User = e.User;
 
             // Do not repeat app initialization when the Window already has content,
             // just ensure that the window is active

@@ -3,7 +3,7 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media;
 
-namespace HBCCSignIn.Controls
+namespace SignIn.Uwp.Controls
 {
     public sealed partial class BigIconButton : UserControl
     {
