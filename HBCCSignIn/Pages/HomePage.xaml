@@ -1,0 +1,103 @@
+﻿<Page x:Class="HBCCSignIn.Pages.HomePage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:controls="using:HBCCSignIn.Controls"
+      xmlns:converters="using:HBCCSignIn.Converters"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:data="using:HBCCSignIn.Logic.Data"
+      xmlns:local="using:HBCCSignIn.Pages"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      xmlns:tk="using:Microsoft.Toolkit.Uwp.UI.Controls"
+      Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+      mc:Ignorable="d">
+    <Page.Resources>
+        <converters:CountToVisibilityConverter x:Key="CountToVisibility" />
+    </Page.Resources>
+
+    <Grid>
+        <tk:DropShadowPanel Margin="50 130 50 0"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Top"
+                            BlurRadius="50"
+                            ShadowOpacity=".3">
+            <RelativePanel Padding="36 26 50 36"
+                           HorizontalAlignment="Left"
+                           VerticalAlignment="Top"
+                           Background="#FFF"
+                           CornerRadius="15">
+                <TextBlock Name="uiWelcome"
+                           Style="{ThemeResource SubheaderTextBlockStyle}"
+                           Text="Welcome to the" />
+                <TextBlock Name="uiYouthCenter"
+                           Margin="0 -10 0 12"
+                           FontWeight="SemiBold"
+                           RelativePanel.Below="uiWelcome"
+                           Style="{ThemeResource HeaderTextBlockStyle}"
+                           Text="Honey Brook Youth Center!" />
+                <AutoSuggestBox Name="uiName"
+                                Width="350"
+                                HorizontalAlignment="Left"
+                                FontSize="18"
+                                ItemsSource="{x:Bind PersonSearch}"
+                                PlaceholderText="Type your name to sign in or out"
+                                RelativePanel.Below="uiYouthCenter"
+                                SuggestionChosen="UiName_SuggestionChosen"
+                                Text="{x:Bind PersonSearch.SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                    <AutoSuggestBox.ItemTemplate>
+                        <DataTemplate x:DataType="data:Person">
+                            <TextBlock Style="{ThemeResource SubtitleTextBlockStyle}" Text="{x:Bind FullName}" />
+                        </DataTemplate>
+                    </AutoSuggestBox.ItemTemplate>
+                </AutoSuggestBox>
+
+                <Button Margin="15 0 0 0"
+                        Padding="13 8"
+                        Click="SignUp_Click"
+                        Content="New here? Sign up!"
+                        IsTabStop="False"
+                        RelativePanel.AlignVerticalCenterWith="uiName"
+                        RelativePanel.RightOf="uiName"
+                        Style="{ThemeResource AccentButtonStyle}" />
+
+                <TextBlock Name="uiSlogan"
+                           Margin="0 35 0 5"
+                           FontSize="17"
+                           FontStyle="Italic"
+                           FontWeight="SemiBold"
+                           Foreground="{ThemeResource SystemControlForegroundAccentBrush}"
+                           RelativePanel.Below="uiName"
+                           Style="{ThemeResource HeaderTextBlockStyle}"
+                           Text="Sharing Jesus. Giving Hope." />
+                <TextBlock FontStyle="Italic"
+                           FontSize="13"
+                           RelativePanel.Below="uiSlogan"
+                           Style="{ThemeResource CaptionTextBlockStyle}">
+                    <Run Text="Read" />
+                    <Hyperlink Click="Rules_Click" IsTabStop="False">what we're about</Hyperlink>
+                    <Run Text="here at the Youth Center." />
+                </TextBlock>
+            </RelativePanel>
+        </tk:DropShadowPanel>
+
+        <AppBarButton HorizontalAlignment="Right"
+                      VerticalAlignment="Bottom"
+                      AllowFocusOnInteraction="True"
+                      Icon="List"
+                      IsTabStop="False"
+                      Label="Logs"
+                      Opacity=".5">
+            <AppBarButton.Flyout>
+                <Flyout Opened="Admin_Opened">
+                    <StackPanel Margin="5 5 5 0">
+                        <PasswordBox Name="uiPin"
+                                     Header="Enter the administrative PIN"
+                                     InputScope="NumericPin"
+                                     PasswordChanged="uiPin_PasswordChanged" />
+
+                        <TextBlock Name="uiPinMessages" Margin="0 10 0 0" />
+                    </StackPanel>
+                </Flyout>
+            </AppBarButton.Flyout>
+        </AppBarButton>
+    </Grid>
+</Page>
