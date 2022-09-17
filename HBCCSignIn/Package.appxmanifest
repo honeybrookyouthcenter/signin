@@ -3,7 +3,7 @@
   <Identity Name="227JamesEsh.HBCCSignIn" Publisher="CN=0B248870-6AD0-4452-8147-D9A5B065C61D" Version="1.0.0.0" />
   <mp:PhoneIdentity PhoneProductId="a49062f9-58cd-40b2-83c2-230ba6e5a660" PhonePublisherId="00000000-0000-0000-0000-000000000000" />
   <Properties>
-    <DisplayName>Youth Center Sign In</DisplayName>
+    <DisplayName>HBCC Sign In</DisplayName>
     <PublisherDisplayName>James Esh</PublisherDisplayName>
     <Logo>Assets\StoreLogo.png</Logo>
   </Properties>

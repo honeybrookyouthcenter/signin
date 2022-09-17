@@ -241,6 +241,8 @@
     <Language Code="no-no" InMinimumRequirementSet="true" />
     <Language Code="nso" InMinimumRequirementSet="true" />
     <Language Code="nso-za" InMinimumRequirementSet="true" />
+    <Language Code="om" InMinimumRequirementSet="false" />
+    <Language Code="om-et" InMinimumRequirementSet="false" />
     <Language Code="or" InMinimumRequirementSet="true" />
     <Language Code="or-in" InMinimumRequirementSet="true" />
     <Language Code="pa" InMinimumRequirementSet="true" />
@@ -361,11 +363,12 @@
   <ProductReservedInfo>
     <MainPackageIdentityName>227JamesEsh.HBCCSignIn</MainPackageIdentityName>
     <ReservedNames>
-      <ReservedName>Youth Center Sign In</ReservedName>
+      <ReservedName>HBCC Sign In</ReservedName>
     </ReservedNames>
   </ProductReservedInfo>
   <AccountPackageIdentityNames>
     <MainPackageIdentityName>227JamesEsh.LanguageHelper</MainPackageIdentityName>
+    <MainPackageIdentityName>227JamesEsh.YouthCenterSignIn</MainPackageIdentityName>
   </AccountPackageIdentityNames>
-  <PackageInfoList LandingUrl="https://developer.microsoft.com/dashboard/Application?appId=9N3VPVF4F0L4" />
+  <PackageInfoList LandingUrl="https://developer.microsoft.com/dashboard/Application?appId=9NZVR31RLXQG" />
 </StoreAssociation>
