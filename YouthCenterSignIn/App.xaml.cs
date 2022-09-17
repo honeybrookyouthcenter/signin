@@ -1,15 +1,15 @@
 ﻿using Microsoft.AppCenter;
 using Microsoft.AppCenter.Analytics;
 using Microsoft.AppCenter.Crashes;
+using SignIn.Uwp.Data;
 using System;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
-using Windows.System;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Navigation;
 
-namespace YouthCenterSignIn
+namespace SignIn
 {
     /// <summary>
     /// Provides application-specific behavior to supplement the default Application class.
@@ -27,10 +27,8 @@ namespace YouthCenterSignIn
 
             AppCenter.Start("3b071e34-fbe4-4dca-9683-eb96e9f74e85", typeof(Analytics), typeof(Crashes));
 
-            Logic.Data.DataProvider.Current = new UwpDataProvider();
+            Logic.Data.DataProvider.Current = new UwpDataProvider() { AppName = "the Honey Brook Youth Center", ShortName = "Youth Center" };
         }
-
-        internal static User User { get; private set; }
 
         /// <summary>
         /// Invoked when the application is launched normally by the end user.  Other entry points
@@ -39,7 +37,7 @@ namespace YouthCenterSignIn
         /// <param name="e">Details about the launch request and process.</param>
         protected override void OnLaunched(LaunchActivatedEventArgs e)
         {
-            User = e.User;
+            ((UwpDataProvider)Logic.Data.DataProvider.Current).User = e.User;
 
             // Do not repeat app initialization when the Window already has content,
             // just ensure that the window is active

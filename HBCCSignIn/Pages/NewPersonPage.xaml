@@ -1,0 +1,201 @@
+﻿<Page x:Class="HBCCSignIn.Pages.NewPersonPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:controls="using:SignIn.Uwp.Controls"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      xmlns:tkc="using:Microsoft.Toolkit.Uwp.UI.Converters"
+      x:Name="uiNewPersonPage"
+      x:DefaultBindMode="TwoWay"
+      Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+      mc:Ignorable="d">
+    <Page.Resources>
+        <tkc:BoolNegationConverter x:Key="ReverseBool" />
+    </Page.Resources>
+
+    <Grid VerticalAlignment="Top">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition />
+            <ColumnDefinition Width="Auto" />
+        </Grid.ColumnDefinitions>
+
+        <TextBlock Margin="30,30,30,10"
+                   Style="{ThemeResource HeaderTextBlockStyle}"
+                   Text="Sign up" />
+
+        <ScrollViewer Name="uiScroller"
+                      Grid.Row="1"
+                      Grid.ColumnSpan="2"
+                      HorizontalAlignment="Left"
+                      x:DefaultBindMode="TwoWay">
+            <Grid Margin="30,0,30,0">
+                <Grid.Resources>
+                    <Style TargetType="TextBox">
+                        <Setter Property="HorizontalAlignment" Value="Left" />
+                        <Setter Property="MinWidth" Value="200" />
+                    </Style>
+                </Grid.Resources>
+                <StackPanel Name="uiPersonInfo"
+                            IsHitTestVisible="False"
+                            Opacity="0"
+                            RenderTransformOrigin="0.5,0.5"
+                            Spacing="15">
+                    <StackPanel.RenderTransform>
+                        <CompositeTransform />
+                    </StackPanel.RenderTransform>
+                    <TextBlock Style="{ThemeResource SubtitleTextBlockStyle}" Text="Some info about you" />
+                    <TextBox Header="First name" Text="{x:Bind NewPerson.FirstName, UpdateSourceTrigger=PropertyChanged}" />
+                    <TextBox Header="Last name" Text="{x:Bind NewPerson.LastName, UpdateSourceTrigger=PropertyChanged}" />
+                    <DatePicker Date="{Binding Path=NewPerson.BirthDate, ElementName=uiNewPersonPage, Mode=TwoWay}" Header="Birth date" />
+
+                    <controls:AddressControl Address="{x:Bind NewPerson.Address}" />
+                </StackPanel>
+
+                <StackPanel Name="uiGuardianInfo"
+                            IsHitTestVisible="False"
+                            Opacity="0"
+                            RenderTransformOrigin="0.5,0.5"
+                            Spacing="15">
+                    <StackPanel.RenderTransform>
+                        <CompositeTransform />
+                    </StackPanel.RenderTransform>
+                    <TextBlock HorizontalAlignment="Left"
+                               Style="{ThemeResource SubtitleTextBlockStyle}"
+                               Text="Some info about your guardian" />
+
+                    <controls:GuardianControl x:Name="uiGuardian" Guardian="{x:Bind NewPerson.Guardian}" />
+
+                    <controls:AgreementControl x:Name="uiCovid" Margin="0,50,0,0" />
+                </StackPanel>
+            </Grid>
+        </ScrollViewer>
+
+        <StackPanel Grid.Column="1" Margin="0,50,50,-10">
+            <controls:BigIconButton Name="uiNext"
+                                    Margin="0,0,0,20"
+                                    Icon=""
+                                    IconForeground="{ThemeResource SignInForeground}"
+                                    Label="Next"
+                                    Tapped="Next_Tapped" />
+            <controls:BigIconButton Name="uiDone"
+                                    Margin="0,0,0,20"
+                                    Icon=""
+                                    IconForeground="{ThemeResource SignInForeground}"
+                                    IsEnabled="{x:Bind uiCovid.IsAgreed, Mode=OneWay}"
+                                    Label="Done"
+                                    Tapped="Done_Tapped"
+                                    Visibility="Collapsed" />
+
+            <controls:BigIconButton Name="uiCancel"
+                                    Icon=""
+                                    IconForeground="{ThemeResource CancelForeground}"
+                                    Label="Cancel"
+                                    Tapped="Cancel_Tapped" />
+            <controls:BigIconButton Name="uiBack"
+                                    Icon=""
+                                    IconForeground="Black"
+                                    Label="Back"
+                                    Tapped="Back_Tapped"
+                                    Visibility="Collapsed" />
+        </StackPanel>
+
+        <VisualStateManager.VisualStateGroups>
+            <VisualStateGroup>
+                <VisualStateGroup.Transitions>
+                    <VisualTransition From="PersonInfo" To="GuardianInfo">
+                        <Storyboard>
+                            <DoubleAnimation Storyboard.TargetName="uiGuardianInfo"
+                                             Storyboard.TargetProperty="(UIElement.RenderTransform).(CompositeTransform.TranslateX)"
+                                             From="50"
+                                             To="0"
+                                             Duration="0:0:0.2">
+                                <DoubleAnimation.EasingFunction>
+                                    <CircleEase EasingMode="EaseInOut" />
+                                </DoubleAnimation.EasingFunction>
+                            </DoubleAnimation>
+                            <DoubleAnimation Storyboard.TargetName="uiGuardianInfo"
+                                             Storyboard.TargetProperty="Opacity"
+                                             From="0"
+                                             To="1"
+                                             Duration="0:0:0.2" />
+
+                            <DoubleAnimation Storyboard.TargetName="uiPersonInfo"
+                                             Storyboard.TargetProperty="(UIElement.RenderTransform).(CompositeTransform.TranslateX)"
+                                             From="0"
+                                             To="-50"
+                                             Duration="0:0:0.2">
+                                <DoubleAnimation.EasingFunction>
+                                    <CircleEase EasingMode="EaseInOut" />
+                                </DoubleAnimation.EasingFunction>
+                            </DoubleAnimation>
+                            <DoubleAnimation Storyboard.TargetName="uiPersonInfo"
+                                             Storyboard.TargetProperty="Opacity"
+                                             From="1"
+                                             To="0"
+                                             Duration="0:0:0.2" />
+                        </Storyboard>
+                    </VisualTransition>
+                    <VisualTransition From="GuardianInfo" To="PersonInfo">
+                        <Storyboard>
+                            <DoubleAnimation Storyboard.TargetName="uiPersonInfo"
+                                             Storyboard.TargetProperty="(UIElement.RenderTransform).(CompositeTransform.TranslateX)"
+                                             From="-50"
+                                             To="0"
+                                             Duration="0:0:0.2">
+                                <DoubleAnimation.EasingFunction>
+                                    <CircleEase EasingMode="EaseInOut" />
+                                </DoubleAnimation.EasingFunction>
+                            </DoubleAnimation>
+                            <DoubleAnimation Storyboard.TargetName="uiPersonInfo"
+                                             Storyboard.TargetProperty="Opacity"
+                                             From="0"
+                                             To="1"
+                                             Duration="0:0:0.2" />
+
+                            <DoubleAnimation Storyboard.TargetName="uiGuardianInfo"
+                                             Storyboard.TargetProperty="(UIElement.RenderTransform).(CompositeTransform.TranslateX)"
+                                             From="0"
+                                             To="50"
+                                             Duration="0:0:0.2">
+                                <DoubleAnimation.EasingFunction>
+                                    <CircleEase EasingMode="EaseInOut" />
+                                </DoubleAnimation.EasingFunction>
+                            </DoubleAnimation>
+                            <DoubleAnimation Storyboard.TargetName="uiGuardianInfo"
+                                             Storyboard.TargetProperty="Opacity"
+                                             From="1"
+                                             To="0"
+                                             Duration="0:0:0.2" />
+                        </Storyboard>
+                    </VisualTransition>
+                </VisualStateGroup.Transitions>
+                <VisualState x:Name="PersonInfo">
+                    <VisualState.Setters>
+                        <Setter Target="uiBack.Visibility" Value="Collapsed" />
+                        <Setter Target="uiCancel.Visibility" Value="Visible" />
+
+                        <Setter Target="uiPersonInfo.IsHitTestVisible" Value="True" />
+                        <Setter Target="uiPersonInfo.Opacity" Value="1" />
+                    </VisualState.Setters>
+                    <Storyboard />
+                </VisualState>
+                <VisualState x:Name="GuardianInfo">
+                    <VisualState.Setters>
+                        <Setter Target="uiCancel.Visibility" Value="Collapsed" />
+                        <Setter Target="uiNext.Visibility" Value="Collapsed" />
+                        <Setter Target="uiBack.Visibility" Value="Visible" />
+                        <Setter Target="uiDone.Visibility" Value="Visible" />
+
+                        <Setter Target="uiGuardianInfo.IsHitTestVisible" Value="True" />
+                        <Setter Target="uiGuardianInfo.Opacity" Value="1" />
+                    </VisualState.Setters>
+                    <Storyboard />
+                </VisualState>
+            </VisualStateGroup>
+        </VisualStateManager.VisualStateGroups>
+    </Grid>
+</Page>

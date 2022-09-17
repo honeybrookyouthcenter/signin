@@ -19,14 +19,18 @@
     <WindowsXamlEnableOverview>true</WindowsXamlEnableOverview>
     <PackageCertificateKeyFile>YouthCenterSignIn_TemporaryKey.pfx</PackageCertificateKeyFile>
     <GenerateAppInstallerFile>False</GenerateAppInstallerFile>
-    <AppxAutoIncrementPackageRevision>False</AppxAutoIncrementPackageRevision>
+    <AppxAutoIncrementPackageRevision>True</AppxAutoIncrementPackageRevision>
     <AppxBundle>Always</AppxBundle>
-    <AppxBundlePlatforms>x86</AppxBundlePlatforms>
+    <AppxBundlePlatforms>x86|x64|arm</AppxBundlePlatforms>
     <AppInstallerUri>https://onedrive.live.com/embed%3fcid=A01D9CF82243C1CC&amp;resid=A01D9CF82243C1CC%2521584458&amp;authkey=ANJZF--qdT2bqtk</AppInstallerUri>
     <AppInstallerUpdateFrequency>1</AppInstallerUpdateFrequency>
     <AppInstallerCheckForUpdateFrequency>Daily</AppInstallerCheckForUpdateFrequency>
-    <PackageCertificateThumbprint>F336295FC8AE3A6F2347FC698C16E27026454E90</PackageCertificateThumbprint>
+    <PackageCertificateThumbprint>
+    </PackageCertificateThumbprint>
     <AppxPackageSigningEnabled>True</AppxPackageSigningEnabled>
+    <AppxPackageSigningTimestampDigestAlgorithm>SHA256</AppxPackageSigningTimestampDigestAlgorithm>
+    <GenerateTestArtifacts>False</GenerateTestArtifacts>
+    <HoursBetweenUpdateChecks>24</HoursBetweenUpdateChecks>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
     <DebugSymbols>true</DebugSymbols>
@@ -104,29 +108,11 @@
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Controls\AddressControl.xaml.cs">
-      <DependentUpon>AddressControl.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Controls\BigIconButton.xaml.cs">
-      <DependentUpon>BigIconButton.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Controls\AgreementControl.xaml.cs">
-      <DependentUpon>AgreementControl.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Controls\GuardianControl.xaml.cs">
-      <DependentUpon>GuardianControl.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Controls\RulesControl.xaml.cs">
       <DependentUpon>RulesControl.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Converters\NullOrEmptyConverter.cs" />
-    <Compile Include="Data\Graph.cs" />
-    <Compile Include="Data\UwpDataProvider.cs" />
     <Compile Include="MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Pages\AdminPage.xaml.cs">
-      <DependentUpon>AdminPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="Pages\HomePage.xaml.cs">
       <DependentUpon>HomePage.xaml</DependentUpon>
@@ -136,9 +122,6 @@
     </Compile>
     <Compile Include="Pages\PersonPage.xaml.cs">
       <DependentUpon>PersonPage.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Pages\UpdatePersonPage.xaml.cs">
-      <DependentUpon>UpdatePersonPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -186,47 +169,23 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Page Include="Controls\AddressControl.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Controls\BigIconButton.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Controls\AgreementControl.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Controls\GuardianControl.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="Controls\RulesControl.xaml">
-      <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
     <Page Include="MainPage.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Pages\AdminPage.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Pages\HomePage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Pages\NewPersonPage.xaml">
-      <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
     <Page Include="Pages\PersonPage.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Pages\UpdatePersonPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -264,12 +223,15 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\YouthCenterSignIn.Logic\YouthCenterSignIn.Logic.csproj">
-      <Project>{b44bd472-94dd-4afd-adce-d7e426020a75}</Project>
-      <Name>YouthCenterSignIn.Logic</Name>
+    <ProjectReference Include="..\SignIn.Logic\SignIn.Logic.csproj">
+      <Project>{b5d14f89-f546-43f4-abca-ba97899a7f11}</Project>
+      <Name>SignIn.Logic</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\SignIn.Uwp\SignIn.Uwp.csproj">
+      <Project>{0426fa56-412c-4902-b8f6-0477059083d2}</Project>
+      <Name>SignIn.Uwp</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>
   </PropertyGroup>

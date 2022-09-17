@@ -10,4 +10,4 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v2
     - name: Test
-      run: dotnet test YouthCenterSignIn.Logic.Tests/YouthCenterSignIn.Logic.Tests.csproj
+      run: dotnet test SignIn.Logic.Tests/SignIn.Logic.Tests.csproj

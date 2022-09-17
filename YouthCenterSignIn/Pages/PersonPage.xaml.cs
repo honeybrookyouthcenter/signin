@@ -1,9 +1,11 @@
 ﻿using System;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Navigation;
-using YouthCenterSignIn.Logic.Data;
+using SignIn.Logic.Data;
+using SignIn.Uwp.Pages;
+using Windows.UI.Xaml.Input;
 
-namespace YouthCenterSignIn.Pages
+namespace SignIn.Pages
 {
     public sealed partial class PersonPage : Page
     {
@@ -41,11 +43,8 @@ namespace YouthCenterSignIn.Pages
 
         void AskForInfo() => ((Frame)Parent).Navigate(typeof(UpdatePersonPage), Person);
 
-        void Close() => ((Frame)Parent).GoBack();
+        void Close() => ((Frame)Parent)?.GoBack();
 
-        private void Cancel_Tapped(object sender, Windows.UI.Xaml.Input.TappedRoutedEventArgs e)
-        {
-            Close();
-        }
+        void Cancel_Tapped(object sender, TappedRoutedEventArgs e) => Close();
     }
 }

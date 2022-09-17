@@ -1,13 +1,14 @@
-﻿using Windows.UI.ViewManagement;
+﻿using SignIn.Logic;
+using SignIn.Logic.Data;
+using SignIn.Uwp.Pages;
+using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Documents;
 using Windows.UI.Xaml.Input;
 using YouthCenterSignIn.Controls;
-using YouthCenterSignIn.Logic;
-using YouthCenterSignIn.Logic.Data;
 
-namespace YouthCenterSignIn.Pages
+namespace SignIn.Pages
 {
     public sealed partial class HomePage : Page
     {
@@ -47,12 +48,12 @@ namespace YouthCenterSignIn.Pages
         {
             var person = (Person)args.SelectedItem;
 
-            ((Frame)Parent).Navigate(typeof(PersonPage), person);
+            ((Frame)Parent)?.Navigate(typeof(PersonPage), person);
         }
 
         void SignUp_Click(object sender, RoutedEventArgs e)
         {
-            ((Frame)Parent).Navigate(typeof(NewPersonPage));
+            ((Frame)Parent)?.Navigate(typeof(NewPersonPage));
         }
 
         void Admin_Opened(object sender, object e)

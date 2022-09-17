@@ -5,11 +5,11 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media.Animation;
-using YouthCenterSignIn.Logic.Data;
+using SignIn.Logic.Data;
 
 // The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=234238
 
-namespace YouthCenterSignIn.Pages
+namespace SignIn.Pages
 {
     /// <summary>
     /// An empty page that can be used on its own or navigated to within a Frame.

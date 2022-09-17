@@ -1,8 +1,9 @@
 ﻿using System.Threading.Tasks;
 using Windows.UI.Xaml.Controls;
-using YouthCenterSignIn.Pages;
+using SignIn.Pages;
+using SignIn.Uwp.Data;
 
-namespace YouthCenterSignIn
+namespace SignIn
 {
     public sealed partial class MainPage : Page
     {
