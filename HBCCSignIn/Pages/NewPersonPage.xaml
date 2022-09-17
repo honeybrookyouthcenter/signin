@@ -71,17 +71,6 @@
 
                     <controls:AgreementControl x:Name="uiCovid" Margin="0,50,0,0" />
                 </StackPanel>
-
-                <controls:RulesControl Name="uiRules"
-                                       Width="400"
-                                       HorizontalAlignment="Left"
-                                       IsHitTestVisible="False"
-                                       Opacity="0"
-                                       RenderTransformOrigin="0.5,0.5">
-                    <controls:RulesControl.RenderTransform>
-                        <CompositeTransform />
-                    </controls:RulesControl.RenderTransform>
-                </controls:RulesControl>
             </Grid>
         </ScrollViewer>
 
@@ -183,73 +172,6 @@
                                              Duration="0:0:0.2" />
                         </Storyboard>
                     </VisualTransition>
-
-                    <VisualTransition From="GuardianInfo" To="Rules">
-                        <Storyboard>
-                            <DoubleAnimation Storyboard.TargetName="uiRules"
-                                             Storyboard.TargetProperty="(UIElement.RenderTransform).(CompositeTransform.TranslateX)"
-                                             From="50"
-                                             To="0"
-                                             Duration="0:0:0.2">
-                                <DoubleAnimation.EasingFunction>
-                                    <CircleEase EasingMode="EaseInOut" />
-                                </DoubleAnimation.EasingFunction>
-                            </DoubleAnimation>
-                            <DoubleAnimation Storyboard.TargetName="uiRules"
-                                             Storyboard.TargetProperty="Opacity"
-                                             From="0"
-                                             To="1"
-                                             Duration="0:0:0.2" />
-
-                            <DoubleAnimation Storyboard.TargetName="uiGuardianInfo"
-                                             Storyboard.TargetProperty="(UIElement.RenderTransform).(CompositeTransform.TranslateX)"
-                                             From="0"
-                                             To="-50"
-                                             Duration="0:0:0.2">
-                                <DoubleAnimation.EasingFunction>
-                                    <CircleEase EasingMode="EaseInOut" />
-                                </DoubleAnimation.EasingFunction>
-                            </DoubleAnimation>
-                            <DoubleAnimation Storyboard.TargetName="uiGuardianInfo"
-                                             Storyboard.TargetProperty="Opacity"
-                                             From="1"
-                                             To="0"
-                                             Duration="0:0:0.2" />
-                        </Storyboard>
-                    </VisualTransition>
-                    <VisualTransition From="Rules" To="GuardianInfo">
-                        <Storyboard>
-                            <DoubleAnimation Storyboard.TargetName="uiGuardianInfo"
-                                             Storyboard.TargetProperty="(UIElement.RenderTransform).(CompositeTransform.TranslateX)"
-                                             From="-50"
-                                             To="0"
-                                             Duration="0:0:0.2">
-                                <DoubleAnimation.EasingFunction>
-                                    <CircleEase EasingMode="EaseInOut" />
-                                </DoubleAnimation.EasingFunction>
-                            </DoubleAnimation>
-                            <DoubleAnimation Storyboard.TargetName="uiGuardianInfo"
-                                             Storyboard.TargetProperty="Opacity"
-                                             From="0"
-                                             To="1"
-                                             Duration="0:0:0.2" />
-
-                            <DoubleAnimation Storyboard.TargetName="uiRules"
-                                             Storyboard.TargetProperty="(UIElement.RenderTransform).(CompositeTransform.TranslateX)"
-                                             From="0"
-                                             To="50"
-                                             Duration="0:0:0.2">
-                                <DoubleAnimation.EasingFunction>
-                                    <CircleEase EasingMode="EaseInOut" />
-                                </DoubleAnimation.EasingFunction>
-                            </DoubleAnimation>
-                            <DoubleAnimation Storyboard.TargetName="uiRules"
-                                             Storyboard.TargetProperty="Opacity"
-                                             From="1"
-                                             To="0"
-                                             Duration="0:0:0.2" />
-                        </Storyboard>
-                    </VisualTransition>
                 </VisualStateGroup.Transitions>
                 <VisualState x:Name="PersonInfo">
                     <VisualState.Setters>
@@ -264,23 +186,12 @@
                 <VisualState x:Name="GuardianInfo">
                     <VisualState.Setters>
                         <Setter Target="uiCancel.Visibility" Value="Collapsed" />
-                        <Setter Target="uiNext.Visibility" Value="Visible" />
-                        <Setter Target="uiBack.Visibility" Value="Visible" />
-
-                        <Setter Target="uiGuardianInfo.IsHitTestVisible" Value="True" />
-                        <Setter Target="uiGuardianInfo.Opacity" Value="1" />
-                    </VisualState.Setters>
-                    <Storyboard />
-                </VisualState>
-                <VisualState x:Name="Rules">
-                    <VisualState.Setters>
-                        <Setter Target="uiCancel.Visibility" Value="Collapsed" />
                         <Setter Target="uiNext.Visibility" Value="Collapsed" />
                         <Setter Target="uiBack.Visibility" Value="Visible" />
                         <Setter Target="uiDone.Visibility" Value="Visible" />
 
-                        <Setter Target="uiRules.IsHitTestVisible" Value="True" />
-                        <Setter Target="uiRules.Opacity" Value="1" />
+                        <Setter Target="uiGuardianInfo.IsHitTestVisible" Value="True" />
+                        <Setter Target="uiGuardianInfo.Opacity" Value="1" />
                     </VisualState.Setters>
                     <Storyboard />
                 </VisualState>

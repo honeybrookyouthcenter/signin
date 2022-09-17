@@ -5,6 +5,7 @@
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       xmlns:tkc="using:Microsoft.Toolkit.Uwp.UI.Converters"
+      xmlns:yccontrols="using:YouthCenterSignIn.Controls"
       x:Name="uiNewPersonPage"
       x:DefaultBindMode="TwoWay"
       Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
@@ -72,16 +73,16 @@
                     <controls:AgreementControl x:Name="uiCovid" Margin="0,50,0,0" />
                 </StackPanel>
 
-                <controls:RulesControl Name="uiRules"
-                                       Width="400"
-                                       HorizontalAlignment="Left"
-                                       IsHitTestVisible="False"
-                                       Opacity="0"
-                                       RenderTransformOrigin="0.5,0.5">
-                    <controls:RulesControl.RenderTransform>
+                <yccontrols:RulesControl Name="uiRules"
+                                         Width="400"
+                                         HorizontalAlignment="Left"
+                                         IsHitTestVisible="False"
+                                         Opacity="0"
+                                         RenderTransformOrigin="0.5,0.5">
+                    <yccontrols:RulesControl.RenderTransform>
                         <CompositeTransform />
-                    </controls:RulesControl.RenderTransform>
-                </controls:RulesControl>
+                    </yccontrols:RulesControl.RenderTransform>
+                </yccontrols:RulesControl>
             </Grid>
         </ScrollViewer>
 

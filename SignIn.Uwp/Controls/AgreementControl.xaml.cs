@@ -1,12 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using SignIn.Logic.Data;
+using SignIn.Uwp.Data;
+using System;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
 using Windows.Graphics.Display;
 using Windows.Graphics.Imaging;
 using Windows.Storage;
@@ -14,20 +13,14 @@ using Windows.UI.Core;
 using Windows.UI.Input.Inking;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Imaging;
-using Windows.UI.Xaml.Navigation;
-using SignIn.Logic.Data;
-using SignIn.Uwp.Data;
 
 namespace SignIn.Uwp.Controls
 {
     public sealed partial class AgreementControl : StackPanel, INotifyPropertyChanged
     {
-        const string Agreement = @"By signing this agreement, I voluntarily agree to assume all of the foregoing risks and accept sole responsibility for any injury to my child(ren) or myself (including, but not limited to, personal injury, disability, and death), illness, damage, loss, claim, liability, or expense, of any kind, that I or my child(ren) may experience or incur in connection with my child(ren)’s attendance at the Honey Brook Youth Center or participation in the Honey Brook Youth Center programming (“Claims”). On my behalf, and on behalf of my children, I hereby release, covenant not to sue, discharge, and hold harmless the Honey Brook Youth Center, its employees, agents, and representatives, of and from the Claims, including all liabilities, claims, actions, damages, costs or expenses of any kind arising out of or relating thereto. I understand and agree that this release includes any Claims based on the actions, omissions, or negligence of the Club, its employees, agents, and representatives, occurring before, during, or after participation in any Honey Brook Youth Center program.";
+        string Agreement => $@"By signing this agreement, I voluntarily agree to assume all of the foregoing risks and accept sole responsibility for any injury to my child(ren) or myself (including, but not limited to, personal injury, disability, and death), illness, damage, loss, claim, liability, or expense, of any kind, that I or my child(ren) may experience or incur in connection with my child(ren)’s attendance at {DataProvider.Current.AppName} or participation in {DataProvider.Current.AppName} programming (“Claims”). On my behalf, and on behalf of my children, I hereby release, covenant not to sue, discharge, and hold harmless {DataProvider.Current.AppName}, its employees, agents, and representatives, of and from the Claims, including all liabilities, claims, actions, damages, costs or expenses of any kind arising out of or relating thereto. I understand and agree that this release includes any Claims based on the actions, omissions, or negligence of {DataProvider.Current.AppName}, its employees, agents, and representatives, occurring before, during, or after participation in any of {DataProvider.Current.AppName} programs.";
 
         public bool IsAgreed => (uiCheck.IsChecked ?? false) && uiCanvas.InkPresenter.StrokeContainer.GetStrokes().Any();
 

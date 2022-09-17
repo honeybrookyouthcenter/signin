@@ -2,6 +2,7 @@
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Navigation;
 using SignIn.Logic.Data;
+using SignIn.Uwp.Pages;
 
 namespace SignIn.Pages
 {

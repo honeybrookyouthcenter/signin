@@ -7,7 +7,7 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media.Animation;
 using Windows.UI.Xaml.Navigation;
 
-namespace HBCCSignIn.Pages
+namespace SignIn.Uwp.Pages
 {
     public sealed partial class UpdatePersonPage : Page, INotifyPropertyChanged
     {

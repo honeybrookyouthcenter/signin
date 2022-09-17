@@ -7,13 +7,8 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media.Animation;
 
-// The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=234238
-
 namespace HBCCSignIn.Pages
 {
-    /// <summary>
-    /// An empty page that can be used on its own or navigated to within a Frame.
-    /// </summary>
     public sealed partial class NewPersonPage : Page
     {
         public NewPersonPage()
@@ -53,17 +48,6 @@ namespace HBCCSignIn.Pages
                     await new MessageDialog(issues).ShowAsync();
                 }
             }
-            else if (state == PageState.Guardian)
-            {
-                if (NewPerson.Guardian.IsValid(out var issues) && uiCovid.IsAgreed)
-                {
-                    GoToState(PageState.Rules);
-                }
-                else
-                {
-                    await new MessageDialog(issues ?? "Please review the agreement").ShowAsync();
-                }
-            }
         }
 
         private void Back_Tapped(object sender, TappedRoutedEventArgs e)
@@ -99,7 +83,7 @@ namespace HBCCSignIn.Pages
             }
         }
 
-        enum PageState { Person = 0, Guardian = 1, Rules = 2 }
+        enum PageState { Person = 0, Guardian = 1 }
         PageState state = PageState.Person;
         void GoToState(PageState state)
         {
@@ -112,9 +96,6 @@ namespace HBCCSignIn.Pages
                     break;
                 case PageState.Guardian:
                     visualState = "GuardianInfo";
-                    break;
-                case PageState.Rules:
-                    visualState = "Rules";
                     break;
             }
 

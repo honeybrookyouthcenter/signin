@@ -1,11 +1,12 @@
-﻿using Windows.UI.ViewManagement;
+﻿using SignIn.Logic;
+using SignIn.Logic.Data;
+using SignIn.Uwp.Pages;
+using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Documents;
 using Windows.UI.Xaml.Input;
-using SignIn.Logic;
-using SignIn.Logic.Data;
-using SignIn.Uwp.Controls;
+using YouthCenterSignIn.Controls;
 
 namespace SignIn.Pages
 {

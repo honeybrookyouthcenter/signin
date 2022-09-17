@@ -119,19 +119,24 @@ namespace SignIn.Uwp.Data
                 return null;
         }
 
+        StorageFolder rootFolderCache;
         public async Task<StorageFolder> GetRootFolder()
         {
             try
             {
-                var userPath = UserDataPaths.GetForUser(User).Profile;
-                var userFolder = await StorageFolder.GetFolderFromPathAsync(userPath);
-                var oneDriveFolder = await userFolder.GetFolderAsync("OneDrive");
-                return await oneDriveFolder.CreateFolderAsync("Youth Center Sign In", CreationCollisionOption.OpenIfExists);
+                if (rootFolderCache == null)
+                {
+                    var userPath = UserDataPaths.GetForUser(User).Profile;
+                    var userFolder = await StorageFolder.GetFolderFromPathAsync(userPath);
+                    var oneDriveFolder = await userFolder.GetFolderAsync("OneDrive");
+                    rootFolderCache = await oneDriveFolder.CreateFolderAsync($"{ShortName} Sign In", CreationCollisionOption.OpenIfExists);
+                }
+                return rootFolderCache;
             }
             catch (UnauthorizedAccessException)
             {
                 await ShowMessage("Could not access the folder, please give permission to the app.");
-                await Windows.System.Launcher.LaunchUriAsync(new Uri("ms-settings:privacy-broadfilesystemaccess"));
+                await Launcher.LaunchUriAsync(new Uri("ms-settings:privacy-broadfilesystemaccess"));
                 return null;
             }
         }

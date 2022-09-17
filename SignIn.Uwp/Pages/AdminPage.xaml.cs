@@ -1,8 +1,8 @@
-﻿using Windows.UI.Xaml.Controls;
-using SignIn.Logic;
+﻿using SignIn.Logic;
 using SignIn.Logic.Data;
+using Windows.UI.Xaml.Controls;
 
-namespace SignIn.Pages
+namespace SignIn.Uwp.Pages
 {
     public sealed partial class AdminPage : Page
     {

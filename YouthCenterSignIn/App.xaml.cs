@@ -27,7 +27,7 @@ namespace SignIn
 
             AppCenter.Start("3b071e34-fbe4-4dca-9683-eb96e9f74e85", typeof(Analytics), typeof(Crashes));
 
-            Logic.Data.DataProvider.Current = new UwpDataProvider();
+            Logic.Data.DataProvider.Current = new UwpDataProvider() { AppName = "the Honey Brook Youth Center", ShortName = "Youth Center" };
         }
 
         /// <summary>

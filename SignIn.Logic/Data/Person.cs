@@ -242,6 +242,8 @@ namespace SignIn.Logic.Data
         }
 
         #endregion
+
+        public override string ToString() => FullName;
     }
 
     public enum SignInOutResult

@@ -24,7 +24,7 @@
                 <TextBlock Margin="1 0 0 0"
                            FontSize="40"
                            Style="{ThemeResource HeaderTextBlockStyle}">
-                    <Run Text="Hey " /><Run Text="{x:Bind Person.FirstName}" /><Run Text=", welcome to the Youth Center!" />
+                    <Run Text="Hey " /><Run Text="{x:Bind Person.FirstName}" /><Run Text=", welcome to Honey Brook Church!" />
                 </TextBlock>
             </Border>
 

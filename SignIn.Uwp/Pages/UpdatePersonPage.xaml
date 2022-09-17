@@ -1,4 +1,4 @@
-﻿<Page x:Class="SignIn.Pages.UpdatePersonPage"
+﻿<Page x:Class="SignIn.Uwp.Pages.UpdatePersonPage"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:controls="using:SignIn.Uwp.Controls"

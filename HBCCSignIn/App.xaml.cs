@@ -28,7 +28,7 @@ namespace HBCCSignIn
 
             AppCenter.Start("7fb91120-d998-421b-9599-13f576129f00", typeof(Analytics), typeof(Crashes));
 
-            SignIn.Logic.Data.DataProvider.Current = new UwpDataProvider();
+            SignIn.Logic.Data.DataProvider.Current = new UwpDataProvider() { AppName = "Honey Brook Community Church", ShortName = "HBCC" };
         }
 
         internal static User User { get; private set; }

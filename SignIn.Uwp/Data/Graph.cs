@@ -42,25 +42,28 @@ namespace SignIn.Uwp.Data
 
         public async Task<IEnumerable<Contact>> GetContacts()
         {
-            if (!IsAuthenticated)
+            return await Task.Run(async () =>
             {
-                await ((UwpDataProvider)DataProvider.Current).ShowAuthenticationMessage();
-                return new List<Contact>();
-            }
+                if (!IsAuthenticated)
+                {
+                    await ((UwpDataProvider)DataProvider.Current).ShowAuthenticationMessage();
+                    return new List<Contact>();
+                }
 
-            var contacts = new List<Contact>();
-            var currentRequest = Client.Me.Contacts
-                .Request()
-                .Select("id,givenName,surname,birthday,homeAddress,personalNotes");
+                var contacts = new List<Contact>();
+                var currentRequest = Client.Me.Contacts
+                    .Request()
+                    .Select("id,givenName,surname,birthday,homeAddress,personalNotes");
 
-            while (currentRequest != null)
-            {
-                var nextContacts = await currentRequest.GetAsync();
-                contacts.AddRange(nextContacts);
-                currentRequest = nextContacts.NextPageRequest;
-            }
+                while (currentRequest != null)
+                {
+                    var nextContacts = await currentRequest.GetAsync();
+                    contacts.AddRange(nextContacts);
+                    currentRequest = nextContacts.NextPageRequest;
+                }
 
-            return contacts;
+                return contacts;
+            });
         }
 
         public async Task<Contact> SaveContact(Contact contact)

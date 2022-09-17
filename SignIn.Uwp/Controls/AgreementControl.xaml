@@ -2,7 +2,7 @@
             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-            xmlns:local="using:SignIn.Uwp.Controls"
+            xmlns:data="using:SignIn.Logic.Data"
             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
             Width="500"
             HorizontalAlignment="Left"
@@ -14,7 +14,7 @@
                   VerticalAlignment="Top"
                   Checked="uiCheck_Checked" />
         <TextBlock Width="350" TextWrapping="Wrap">
-            <Run Text="I agree to the " /><Hyperlink Click="Terms_Click">terms and conditions</Hyperlink><Run Text=" of leaving my child at the Honey Brook Youth Center." /></TextBlock>
+            <Run Text="I agree to the " /><Hyperlink Click="Terms_Click">terms and conditions</Hyperlink><Run Text=" of leaving my child at " /><Run Text="{x:Bind data:DataProvider.Current.AppName}" /></TextBlock>
     </StackPanel>
 
     <Grid>

@@ -1,6 +1,7 @@
 ﻿using SignIn.Logic;
 using SignIn.Logic.Data;
 using SignIn.Uwp.Controls;
+using SignIn.Uwp.Pages;
 using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -58,16 +59,6 @@ namespace HBCCSignIn.Pages
         void Admin_Opened(object sender, object e)
         {
             InputPane.GetForCurrentView().TryShow();
-        }
-
-        void Rules_Click(Hyperlink sender, HyperlinkClickEventArgs args)
-        {
-            var dialog = new ContentDialog()
-            {
-                CloseButtonCommand = new StandardUICommand(StandardUICommandKind.Close),
-                Content = new RulesControl(),
-            };
-            _ = dialog.ShowAsync();
         }
     }
 }

@@ -132,12 +132,15 @@
     <Compile Include="Controls\GuardianControl.xaml.cs">
       <DependentUpon>GuardianControl.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Controls\RulesControl.xaml.cs">
-      <DependentUpon>RulesControl.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Converters\NullOrEmptyConverter.cs" />
     <Compile Include="Data\Graph.cs" />
     <Compile Include="Data\UwpDataProvider.cs" />
+    <Compile Include="Pages\AdminPage.xaml.cs">
+      <DependentUpon>AdminPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\UpdatePersonPage.xaml.cs">
+      <DependentUpon>UpdatePersonPage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="Properties\SignIn.Uwp.rd.xml" />
   </ItemGroup>
@@ -196,7 +199,11 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="Controls\RulesControl.xaml">
+    <Page Include="Pages\AdminPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Pages\UpdatePersonPage.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>

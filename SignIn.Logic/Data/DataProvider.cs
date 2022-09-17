@@ -58,6 +58,10 @@ namespace SignIn.Logic.Data
         public abstract Task<string> SavePerson(Person person);
 
         public abstract Task<List<Person>> GetPeople();
+
+        public string AppName { get; set; }
+
+        public string ShortName { get; set; }
     }
 
     public enum StorageType
