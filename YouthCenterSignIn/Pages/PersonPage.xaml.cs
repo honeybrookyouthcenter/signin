@@ -3,6 +3,7 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Navigation;
 using SignIn.Logic.Data;
 using SignIn.Uwp.Pages;
+using Windows.UI.Xaml.Input;
 
 namespace SignIn.Pages
 {
@@ -42,11 +43,8 @@ namespace SignIn.Pages
 
         void AskForInfo() => ((Frame)Parent).Navigate(typeof(UpdatePersonPage), Person);
 
-        void Close() => ((Frame)Parent).GoBack();
+        void Close() => ((Frame)Parent)?.GoBack();
 
-        private void Cancel_Tapped(object sender, Windows.UI.Xaml.Input.TappedRoutedEventArgs e)
-        {
-            Close();
-        }
+        void Cancel_Tapped(object sender, TappedRoutedEventArgs e) => Close();
     }
 }

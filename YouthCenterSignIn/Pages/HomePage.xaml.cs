@@ -48,12 +48,12 @@ namespace SignIn.Pages
         {
             var person = (Person)args.SelectedItem;
 
-            ((Frame)Parent).Navigate(typeof(PersonPage), person);
+            ((Frame)Parent)?.Navigate(typeof(PersonPage), person);
         }
 
         void SignUp_Click(object sender, RoutedEventArgs e)
         {
-            ((Frame)Parent).Navigate(typeof(NewPersonPage));
+            ((Frame)Parent)?.Navigate(typeof(NewPersonPage));
         }
 
         void Admin_Opened(object sender, object e)
