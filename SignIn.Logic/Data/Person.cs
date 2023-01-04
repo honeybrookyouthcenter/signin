@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace SignIn.Logic.Data
@@ -61,6 +62,7 @@ namespace SignIn.Logic.Data
             Notes = notes;
 
             BirthDate = birthDate ?? DateTime.Now;
+            Grade = "";
             Address = address;
 
             UpdateFromNotes();
@@ -92,6 +94,25 @@ namespace SignIn.Logic.Data
         {
             get => birthDate;
             set { birthDate = value; OnPropertyChanged(); }
+        }
+
+        const string GradeLabel = "Grade: ";
+        readonly static Regex GradeRegex = new Regex(NoteParser.GetLabelExpression(GradeLabel), RegexOptions.Compiled);
+        public static readonly string[] grades = new[] { "Kindergarten", "1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th", "9th", "10th", "11th", "12th", "Finished" };
+        public string[] Grades => grades;
+
+        string grade;
+        public string Grade
+        {
+            get => grade;
+            set
+            {
+                if (value == grade)
+                    return;
+
+                grade = value;
+                OnPropertyChanged();
+            }
         }
 
         Address address = new Address();
@@ -133,7 +154,7 @@ namespace SignIn.Logic.Data
                     Guardian.LastUpdated = DateTime.Today;
                 }
 
-                UpdateNotes();
+                UpdateToNotes();
 
                 var newId = await DataProvider.Current.SavePerson(this);
                 Id = newId;
@@ -157,6 +178,8 @@ namespace SignIn.Logic.Data
                 emptyFields.Add("first name");
             if (string.IsNullOrWhiteSpace(LastName))
                 emptyFields.Add("last name");
+            if (string.IsNullOrWhiteSpace(Grade))
+                emptyFields.Add("grade");
             if (Address?.IsValid() != true)
                 emptyFields.Add("address");
 
@@ -186,12 +209,15 @@ namespace SignIn.Logic.Data
 
         void UpdateFromNotes()
         {
+            Grade = NoteParser.FromNotes(Notes, GradeRegex).FirstOrDefault() ?? "";
             Guardian = Guardian.FromNotes(Notes);
         }
 
-        void UpdateNotes()
+        void UpdateToNotes()
         {
-            Notes = Guardian?.ToString();
+            var grade = NoteParser.ToNotes((GradeLabel, Grade));
+            var guardianNotes = Guardian?.ToString();
+            Notes = NoteParser.JoinValues(new[] { grade, guardianNotes });
         }
 
         #region Signed in

@@ -44,6 +44,7 @@ namespace SignIn.Logic.Tests
                 LastName = "Info",
                 Address = new Address("123 Programmer St", "Geekville", "UT"),
                 BirthDate = DateTimeOffset.Now.AddYears(-10),
+                Grade = "1",
                 Guardian = new Guardian()
                 {
                     Name = "Correct Info",

@@ -88,6 +88,10 @@ namespace SignIn.Logic.Tests
 
             person.BirthDate = DateTimeOffset.Now.AddYears(-10);
             Assert.ThrowsExceptionAsync<Exception>(async () => await person.Save(),
+                "There is no grade, so the save should fail.");
+
+            person.Grade = "2";
+            Assert.ThrowsExceptionAsync<Exception>(async () => await person.Save(),
                 "There is no guardian, so the save should fail.");
 
             person.Guardian = new Guardian();
@@ -106,6 +110,8 @@ namespace SignIn.Logic.Tests
                 "The last update time should have been updated.");
             Assert.IsFalse(string.IsNullOrWhiteSpace(person.Id), "The id should have been assigned by the data provider");
             Assert.AreNotEqual(ogPersonId, person.Id, "The id should change to the value assigned by data provider");
+            Assert.IsTrue(person.Notes.Contains("Grade: 2"), "Grade should be saved");
+            Assert.IsTrue(person.Notes.Contains(DateTime.Today.ToLongDateString()), "The last update time should have been updated.");
         }
 
         [TestMethod]
@@ -154,6 +160,30 @@ namespace SignIn.Logic.Tests
             Assert.AreEqual("", person.Address.StreetAddress);
             Assert.AreEqual("", person.Address.City);
             Assert.AreEqual("", person.Address.State);
+        }
+
+        [TestMethod]
+        public void Parent_FromNotesTest()
+        {
+            var person = new Person()
+            {
+                Id = "MRJOE",
+                FirstName = "John",
+                LastName = "Doe",
+                Address = new Address("123 Programmer St", "Geekville", "UT"),
+                BirthDate = DateTimeOffset.Now.AddYears(-10),
+                Grade = "3",
+                Guardian = new Guardian("Sally Doe", "1234567890"),
+            };
+            person.Save().Wait();
+            Assert.IsTrue(person.Notes.Contains("Grade: 3"), "Should contain the grade");
+            Assert.IsTrue(person.Notes.Contains("Sally Doe"), "Should contain the guardian");
+
+            var reparsedPerson = new Person(person.Id, person.FirstName, person.LastName, person.Notes);
+            Assert.AreEqual(person.Grade, reparsedPerson.Grade, "Reparsing should yield thd same results");
+            Assert.AreEqual("3", reparsedPerson.Grade);
+            Assert.IsNotNull(reparsedPerson.Guardian);
+            Assert.AreEqual("Sally Doe", reparsedPerson.Guardian.Name);
         }
     }
 }
