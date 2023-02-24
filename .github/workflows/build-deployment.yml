@@ -1,4 +1,4 @@
-name: .\Build deployment
+name: Build deployment
 
 on:
   push:
@@ -9,7 +9,7 @@ env:
   version: 1.2.${{ github.run_number }}
 
 jobs:
-  test:
+  build:
     runs-on: windows-latest
     steps:
     - uses: actions/checkout@v3
