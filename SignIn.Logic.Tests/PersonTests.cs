@@ -15,16 +15,20 @@ namespace SignIn.Logic.Tests
             var person = new Person();
 
             Assert.IsFalse(person.IsValid(out string issues), "The person should not be valid when first created.");
-            Assert.AreEqual("Please enter your first name, last name and address.\r\nYou have to be at least five to sign up.",
-                issues, "The first name, last name and address are blank and there is an invalid date of birth.");
+            Assert.AreEqual("Please enter your first name, last name, grade and address.\r\nYou have to be at least five to sign up.",
+                issues, "The first name, last name, grade and address are blank and there is an invalid date of birth.");
 
             person.LastName = "Esh";
             Assert.IsFalse(person.IsValid(out issues), "The person should not be valid when first created.");
-            Assert.AreEqual("Please enter your first name and address.\r\nYou have to be at least five to sign up.",
-                issues, "The first name and address are blank and there is an invalid date of birth.");
+            Assert.AreEqual("Please enter your first name, grade and address.\r\nYou have to be at least five to sign up.",
+                issues, "The first name and address and grade are blank and there is an invalid date of birth.");
 
             person.BirthDate = new DateTimeOffset(new DateTime(1999, 2, 23));
             person.Address = new Address("52 Evergreen St", "Gordonville", "PA");
+            Assert.IsFalse(person.IsValid(out issues), "The person should not be valid when first created.");
+            Assert.AreEqual("Please enter your first name and grade.\r\n", issues, "The first name and grade is blank.");
+
+            person.Grade = "Kindergarten";
             Assert.IsFalse(person.IsValid(out issues), "The person should not be valid when first created.");
             Assert.AreEqual("Please enter your first name.\r\n", issues, "The first name is blank.");
 
@@ -40,6 +44,11 @@ namespace SignIn.Logic.Tests
 
             person.BirthDate = DateTimeOffset.Now.AddYears(-2);
             Assert.IsFalse(person.IsValid(out string issues), "The person should not be valid when first created.");
+            Assert.AreEqual("Please enter your grade and address.\r\nYou have to be at least five to sign up.",
+                issues, "The address is blank and there is an invalid date of birth.");
+
+            person.Grade = "3";
+            Assert.IsFalse(person.IsValid(out issues), "The person should not be valid when first created.");
             Assert.AreEqual("Please enter your address.\r\nYou have to be at least five to sign up.",
                 issues, "The address is blank and there is an invalid date of birth.");
 
