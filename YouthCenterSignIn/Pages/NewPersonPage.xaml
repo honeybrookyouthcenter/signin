@@ -3,6 +3,7 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:controls="using:SignIn.Uwp.Controls"
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:d1="using:SignIn.Logic.Data"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       xmlns:tkc="using:Microsoft.Toolkit.Uwp.UI.Converters"
       xmlns:yccontrols="using:YouthCenterSignIn.Controls"
@@ -52,6 +53,9 @@
                     <TextBox Header="First name" Text="{x:Bind NewPerson.FirstName, UpdateSourceTrigger=PropertyChanged}" />
                     <TextBox Header="Last name" Text="{x:Bind NewPerson.LastName, UpdateSourceTrigger=PropertyChanged}" />
                     <DatePicker Date="{Binding Path=NewPerson.BirthDate, ElementName=uiNewPersonPage, Mode=TwoWay}" Header="Birth date" />
+                    <ComboBox Header="Grade"
+                              ItemsSource="{x:Bind NewPerson.Grades, Mode=OneWay}"
+                              SelectedItem="{x:Bind NewPerson.Grade}" />
 
                     <controls:AddressControl Address="{x:Bind NewPerson.Address}" />
                 </StackPanel>

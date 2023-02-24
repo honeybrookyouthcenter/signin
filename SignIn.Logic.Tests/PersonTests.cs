@@ -15,16 +15,20 @@ namespace SignIn.Logic.Tests
             var person = new Person();
 
             Assert.IsFalse(person.IsValid(out string issues), "The person should not be valid when first created.");
-            Assert.AreEqual("Please enter your first name, last name and address.\r\nYou have to be at least five to sign up.",
-                issues, "The first name, last name and address are blank and there is an invalid date of birth.");
+            Assert.AreEqual("Please enter your first name, last name, grade and address.\r\nYou have to be at least five to sign up.",
+                issues, "The first name, last name, grade and address are blank and there is an invalid date of birth.");
 
             person.LastName = "Esh";
             Assert.IsFalse(person.IsValid(out issues), "The person should not be valid when first created.");
-            Assert.AreEqual("Please enter your first name and address.\r\nYou have to be at least five to sign up.",
-                issues, "The first name and address are blank and there is an invalid date of birth.");
+            Assert.AreEqual("Please enter your first name, grade and address.\r\nYou have to be at least five to sign up.",
+                issues, "The first name and address and grade are blank and there is an invalid date of birth.");
 
             person.BirthDate = new DateTimeOffset(new DateTime(1999, 2, 23));
             person.Address = new Address("52 Evergreen St", "Gordonville", "PA");
+            Assert.IsFalse(person.IsValid(out issues), "The person should not be valid when first created.");
+            Assert.AreEqual("Please enter your first name and grade.\r\n", issues, "The first name and grade is blank.");
+
+            person.Grade = "Kindergarten";
             Assert.IsFalse(person.IsValid(out issues), "The person should not be valid when first created.");
             Assert.AreEqual("Please enter your first name.\r\n", issues, "The first name is blank.");
 
@@ -40,6 +44,11 @@ namespace SignIn.Logic.Tests
 
             person.BirthDate = DateTimeOffset.Now.AddYears(-2);
             Assert.IsFalse(person.IsValid(out string issues), "The person should not be valid when first created.");
+            Assert.AreEqual("Please enter your grade and address.\r\nYou have to be at least five to sign up.",
+                issues, "The address is blank and there is an invalid date of birth.");
+
+            person.Grade = "3";
+            Assert.IsFalse(person.IsValid(out issues), "The person should not be valid when first created.");
             Assert.AreEqual("Please enter your address.\r\nYou have to be at least five to sign up.",
                 issues, "The address is blank and there is an invalid date of birth.");
 
@@ -88,6 +97,10 @@ namespace SignIn.Logic.Tests
 
             person.BirthDate = DateTimeOffset.Now.AddYears(-10);
             Assert.ThrowsExceptionAsync<Exception>(async () => await person.Save(),
+                "There is no grade, so the save should fail.");
+
+            person.Grade = "2";
+            Assert.ThrowsExceptionAsync<Exception>(async () => await person.Save(),
                 "There is no guardian, so the save should fail.");
 
             person.Guardian = new Guardian();
@@ -106,6 +119,8 @@ namespace SignIn.Logic.Tests
                 "The last update time should have been updated.");
             Assert.IsFalse(string.IsNullOrWhiteSpace(person.Id), "The id should have been assigned by the data provider");
             Assert.AreNotEqual(ogPersonId, person.Id, "The id should change to the value assigned by data provider");
+            Assert.IsTrue(person.Notes.Contains("Grade: 2"), "Grade should be saved");
+            Assert.IsTrue(person.Notes.Contains(DateTime.Today.ToLongDateString()), "The last update time should have been updated.");
         }
 
         [TestMethod]
@@ -154,6 +169,30 @@ namespace SignIn.Logic.Tests
             Assert.AreEqual("", person.Address.StreetAddress);
             Assert.AreEqual("", person.Address.City);
             Assert.AreEqual("", person.Address.State);
+        }
+
+        [TestMethod]
+        public void Parent_FromNotesTest()
+        {
+            var person = new Person()
+            {
+                Id = "MRJOE",
+                FirstName = "John",
+                LastName = "Doe",
+                Address = new Address("123 Programmer St", "Geekville", "UT"),
+                BirthDate = DateTimeOffset.Now.AddYears(-10),
+                Grade = "3",
+                Guardian = new Guardian("Sally Doe", "1234567890"),
+            };
+            person.Save().Wait();
+            Assert.IsTrue(person.Notes.Contains("Grade: 3"), "Should contain the grade");
+            Assert.IsTrue(person.Notes.Contains("Sally Doe"), "Should contain the guardian");
+
+            var reparsedPerson = new Person(person.Id, person.FirstName, person.LastName, person.Notes);
+            Assert.AreEqual(person.Grade, reparsedPerson.Grade, "Reparsing should yield thd same results");
+            Assert.AreEqual("3", reparsedPerson.Grade);
+            Assert.IsNotNull(reparsedPerson.Guardian);
+            Assert.AreEqual("Sally Doe", reparsedPerson.Guardian.Name);
         }
     }
 }

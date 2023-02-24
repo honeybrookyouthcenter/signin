@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Linq;
 using System.Text.RegularExpressions;
+using System.Xml;
 
 namespace SignIn.Logic.Data
 {
@@ -67,36 +69,15 @@ namespace SignIn.Logic.Data
         const string EmailLabel = "Guardian Email: ";
         const string LastUpdatedLabel = "Last updated: ";
 
-        readonly static Regex NameRegex = new Regex(GetLabelExpression(NameLabel), RegexOptions.Compiled);
-        readonly static Regex PhoneRegex = new Regex(GetLabelExpression(PhoneLabel), RegexOptions.Compiled);
-        readonly static Regex EmailRegex = new Regex(GetLabelExpression(EmailLabel), RegexOptions.Compiled);
-        readonly static Regex LastUpdatedRegex = new Regex(GetLabelExpression(LastUpdatedLabel), RegexOptions.Compiled);
-
-        static string GetLabelExpression(string label) => $@"(?<={label}).*";
-
-        public override string ToString()
-        {
-            return $"{NameLabel}{Name}\r\n" +
-                   $"{PhoneLabel}{PhoneNumber}\r\n" +
-                   $"{EmailLabel}{Email}\r\n" +
-                   $"{LastUpdatedLabel}{LastUpdated?.ToLongDateString()}";
-        }
+        readonly static Regex NameRegex = new Regex(NoteParser.GetLabelExpression(NameLabel), RegexOptions.Compiled);
+        readonly static Regex PhoneRegex = new Regex(NoteParser.GetLabelExpression(PhoneLabel), RegexOptions.Compiled);
+        readonly static Regex EmailRegex = new Regex(NoteParser.GetLabelExpression(EmailLabel), RegexOptions.Compiled);
+        readonly static Regex LastUpdatedRegex = new Regex(NoteParser.GetLabelExpression(LastUpdatedLabel), RegexOptions.Compiled);
 
         public static Guardian FromNotes(string notes)
         {
-            if (notes == null)
-                notes = "";
-
-            string GetMatch(Regex regex) => regex.Match(notes).Value.Trim();
-
-            var name = GetMatch(NameRegex);
-            var phone = GetMatch(PhoneRegex);
-            var email = GetMatch(EmailRegex);
-
-            var lastUpdatedString = GetMatch(LastUpdatedRegex);
-            var lastUpdated = ParseDateTime(lastUpdatedString);
-
-            return new Guardian(name, phone, email, lastUpdated);
+            var values = NoteParser.FromNotes(notes, NameRegex, PhoneRegex, EmailRegex, LastUpdatedRegex).ToArray();
+            return new Guardian(values[0], values[1], values[2], ParseDateTime(values[3]));
         }
 
         static DateTime? ParseDateTime(string lastUpdatedString)
@@ -112,6 +93,15 @@ namespace SignIn.Logic.Data
             {
                 return null;
             }
+        }
+
+        public override string ToString()
+        {
+            return NoteParser.ToNotes(
+                (NameLabel, Name), 
+                (PhoneLabel, PhoneNumber),
+                (EmailLabel, Email), 
+                (LastUpdatedLabel, LastUpdated?.ToLongDateString()));
         }
     }
 }

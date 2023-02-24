@@ -3,6 +3,7 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:controls="using:SignIn.Uwp.Controls"
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:d1="using:SignIn.Logic.Data"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
       mc:Ignorable="d">
@@ -36,6 +37,9 @@
                       ScrollViewer.VerticalScrollMode="Enabled"
                       VerticalScrollBarVisibility="Visible">
             <StackPanel Margin="0,0,20,0">
+                <ComboBox Header="Grade"
+                          ItemsSource="{x:Bind Person.Grades, Mode=OneWay}"
+                          SelectedItem="{x:Bind Person.Grade, Mode=TwoWay}" Margin="0 0 0 12" />
                 <controls:AddressControl Margin="0,0,0,30" Address="{x:Bind Person.Address, Mode=OneWay}" />
                 <controls:GuardianControl Guardian="{x:Bind Person.Guardian, Mode=OneWay}" />
                 <HyperlinkButton Margin="0 30 0 0"
