@@ -1,4 +1,4 @@
-name: .\Build deployment
+name: Build deployment
 
 on:
   push:
@@ -9,7 +9,7 @@ env:
   version: 1.2.${{ github.run_number }}
 
 jobs:
-  test:
+  build:
     runs-on: windows-latest
     steps:
     - uses: actions/checkout@v3
@@ -28,7 +28,7 @@ jobs:
         $manifestXml.Package.Identity.Version = [String]$updatedVersion
         $manifestXml.save($manifestfile.FullName)
     - name: Restore
-      run: dotnet restore YouthCenterSignIn.sln
+      run: dotnet restore SignIn.sln
     - name: Build
       run: msbuild YouthCenterSignIn\YouthCenterSignIn.csproj -property:Configuration=Release -property:Platform=x86 /p:AppxBundlePlatforms="x86" /p:AppxPackageDir="./AppxPackages/" /p:AppxBundle=Always /p:UapAppxPackageBuildMode=StoreUpload -v:quiet
     - name: Upload
