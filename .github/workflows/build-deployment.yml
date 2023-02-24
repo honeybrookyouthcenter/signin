@@ -1,0 +1,43 @@
+name: .\Build deployment
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  version: 1.2.${{ github.run_number }}
+
+jobs:
+  test:
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v3
+    - uses: actions/setup-dotnet@v2
+    - uses: microsoft/setup-msbuild@v1.1
+    - powershell: |
+        $projectfolder = "$(Build.SourcesDirectory)\YouthCenterSignIn"
+        $buildId= "$(Build.BuildId)"
+        
+        $manifestfile = Get-Item -Path "$projectFolder\Package.appxmanifest"
+          
+        $manifestXml = New-Object -TypeName System.Xml.XmlDocument
+        $manifestXml.Load($manifestfile.Fullname)
+        
+        $updatedVersion = [Version]('$(Build.BuildNumber)' + '.0')
+        
+        $manifestXml.Package.Identity.Version = [String]$updatedVersion
+        $manifestXml.save($manifestfile.FullName)
+      displayName: 'Update version'
+    - name: Restore
+      run: dotnet restore YouthCenterSignIn.sln
+    - name: Build
+      run: msbuild YouthCenterSignIn\YouthCenterSignIn.csproj -property:Configuration=Release -property:Platform=x86 /p:AppxBundlePlatforms="x86" /p:AppxPackageDir="./AppxPackages/" /p:AppxBundle=Always /p:UapAppxPackageBuildMode=StoreUpload -v:quiet
+    - name: Upload
+      uses: actions/upload-artifact@v3
+      with:
+        name: package
+        path: AppxPackages/**
+    - publish: $(Pipeline.Workspace)/AppxPackages
+      artifact: package
+      displayName: 'Publish package'
