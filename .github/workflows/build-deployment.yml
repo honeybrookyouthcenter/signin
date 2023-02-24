@@ -27,10 +27,10 @@ jobs:
         
         $manifestXml.Package.Identity.Version = [String]$updatedVersion
         $manifestXml.save($manifestfile.FullName)
-    - name: Restore
-      run: dotnet restore SignIn.sln
     - name: Build
-      run: msbuild YouthCenterSignIn\YouthCenterSignIn.csproj -property:Configuration=Release -property:Platform=x86 /p:AppxBundlePlatforms="x86" /p:AppxPackageDir="./AppxPackages/" /p:AppxBundle=Always /p:UapAppxPackageBuildMode=StoreUpload -v:quiet
+      run: msbuild SignIn.sln -restore -property:Configuration=Release
+    - name: Build
+      run: msbuild YouthCenterSignIn\YouthCenterSignIn.csproj -restore -property:Configuration=Release -property:Platform=x86 /p:AppxBundlePlatforms="x86" /p:AppxPackageDir="./AppxPackages/" /p:AppxBundle=Always /p:UapAppxPackageBuildMode=StoreUpload -v:quiet
     - name: Upload
       uses: actions/upload-artifact@v3
       with:
