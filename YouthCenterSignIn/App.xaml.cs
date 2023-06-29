@@ -5,6 +5,7 @@ using SignIn.Uwp.Data;
 using System;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
+using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Navigation;
@@ -37,6 +38,10 @@ namespace SignIn
         /// <param name="e">Details about the launch request and process.</param>
         protected override void OnLaunched(LaunchActivatedEventArgs e)
         {
+            ApplicationView.PreferredLaunchWindowingMode = ApplicationViewWindowingMode.FullScreen;
+            var view = ApplicationView.GetForCurrentView();
+            view.FullScreenSystemOverlayMode = FullScreenSystemOverlayMode.Minimal;
+
             ((UwpDataProvider)Logic.Data.DataProvider.Current).User = e.User;
 
             // Do not repeat app initialization when the Window already has content,
