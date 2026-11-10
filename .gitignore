@@ -328,3 +328,10 @@ ASALocalRun/
 
 # MFractors (Xamarin productivity tool) working folder 
 .mfractor/
+
+# Rewrite (Rust + Svelte)
+/server/target/
+/server/data/
+/server/config.toml
+/web/node_modules/
+/web/dist/
