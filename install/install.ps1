@@ -128,7 +128,8 @@ Start-Process $Exe -WorkingDirectory $InstallFolder -WindowStyle Minimized
 $running = $false
 foreach ($try in 1..30) {
     try {
-        Invoke-WebRequest -Uri "http://localhost:$Port/api/kiosk/config" -UseBasicParsing -TimeoutSec 2 | Out-Null
+        # 127.0.0.1 and not "localhost", which Windows tries over IPv6 first and is slow to give up on.
+        Invoke-WebRequest -Uri "http://127.0.0.1:$Port/api/kiosk/config" -UseBasicParsing -TimeoutSec 5 | Out-Null
         $running = $true
         break
     }

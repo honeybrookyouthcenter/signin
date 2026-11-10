@@ -86,14 +86,23 @@ jobs:
           foreach ($run in 'install', 'update') {
             powershell -NoProfile -NonInteractive -ExecutionPolicy Bypass -File download\install.ps1
             if ($LASTEXITCODE -ne 0) { throw "The installer failed ($run)" }
-            $config = Invoke-RestMethod http://localhost:8080/api/kiosk/config
+            $config = Invoke-RestMethod http://127.0.0.1:8080/api/kiosk/config
             if ($config.name -ne 'Honey Brook Youth Center') { throw "The program is not answering ($run)" }
           }
           if (-not (Test-Path C:\YouthCenterSignIn\data\signin.db)) { throw 'No database was created' }
           if (-not (Test-Path "$([Environment]::GetFolderPath('Startup'))\Youth Center Sign In.lnk")) { throw 'No startup shortcut' }
           Get-NetFirewallRule -DisplayName 'Youth Center Sign In' | Format-List DisplayName, Enabled, Profile, Action
-          Invoke-RestMethod http://localhost:8080/api/admin/status | ConvertTo-Json -Depth 5
+          Invoke-RestMethod http://127.0.0.1:8080/api/admin/status | ConvertTo-Json -Depth 5
           Stop-Process -Name signin
+
+      - name: Show the program's log if that failed
+        if: failure()
+        shell: powershell
+        run: |
+          Get-Process signin -ErrorAction SilentlyContinue | Format-Table Id, StartTime
+          netstat -ano | Select-String ':8080'
+          Get-ChildItem C:\YouthCenterSignIn -Recurse | Select-Object FullName, Length
+          Get-Content C:\YouthCenterSignIn\data\logs\* -ErrorAction SilentlyContinue
 
       - uses: actions/upload-artifact@v4
         with:
