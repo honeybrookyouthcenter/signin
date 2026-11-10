@@ -1,22 +1,38 @@
 # Youth Center Sign In
 
-A sign-in kiosk for the Honey Brook Youth Center.
+A sign-in kiosk for the Honey Brook Youth Center. Kids type their name on a tablet at the
+entrance and tap it. Staff see who is here, fix mistakes and pull reports from the office
+computer.
 
-> **Status: rewrite planned.** This README is the plan for the new version (Rust + Svelte).
-> The current UWP app (`YouthCenterSignIn/`, `HBCCSignIn/`, `SignIn.Uwp/`, `SignIn.Logic/`)
-> stays in the repo and in use until the new version is running at the center.
+![The kiosk home screen](docs/screenshots/kiosk-home.png)
+
+> **Status.** This is the rewrite (Rust + Svelte). It has not run at the center yet. The old
+> UWP app (`YouthCenterSignIn/`, `HBCCSignIn/`, `SignIn.Uwp/`, `SignIn.Logic/`) is still in
+> this repo and stays in use until the switch-over described at the end.
+> See [What has and hasn't been tested](#what-has-and-hasnt-been-tested).
+
+## Contents
+
+- [How it works](#how-it-works)
+- [Set it up at the center](#set-it-up-at-the-center)
+- [Using it](#using-it)
+- [Bring over the old sign-in logs](#bring-over-the-old-sign-in-logs)
+- [Looking after it](#looking-after-it)
+- [Working on the code](#working-on-the-code)
+- [What has and hasn't been tested](#what-has-and-hasnt-been-tested)
+- [Switching over from the old app](#switching-over-from-the-old-app)
 
 ---
 
 ## How it works
 
 ```
- ┌──────────────── Office PC (always on during open nights) ────────────────┐
+ ┌──────────────── Office PC (on during open nights) ───────────────────────┐
  │                                                                           │
  │   signin.exe  ── one program, starts with Windows                         │
- │     ├─ serves the kiosk web page and the admin web page                   │
+ │     ├─ serves the kiosk page and the staff page                           │
  │     ├─ stores sign-ins + a copy of the kids list in  data\signin.db       │
- │     ├─ syncs kids  ⇄  Outlook contacts (Microsoft Graph)                  │
+ │     ├─ syncs kids  ⇄  Outlook contacts                                    │
  │     └─ nightly backup  →  OneDrive\Youth Center Sign In\Backups\          │
  │                                                                           │
  │   Staff: open  http://localhost:8080/admin  in any browser                │
@@ -25,363 +41,304 @@ A sign-in kiosk for the Honey Brook Youth Center.
  ┌───────────────────────────────┴──────────────┐
  │  Tablet at the entrance                       │
  │  Edge in kiosk mode → http://OFFICE-PC:8080   │
- │  (saves sign-ins on the tablet if the PC is   │
- │   briefly unreachable, sends them when back)  │
  └───────────────────────────────────────────────┘
 ```
 
-**Why this shape:**
-
-- **One source of truth.** Only `signin.exe` writes sign-ins, one row at a time, into one
-  SQLite database. The old app had the tablet and the office PC both rewriting the same
-  day's JSON file through OneDrive. Whichever wrote last erased the other's entries, which
-  is the "missing sign-ins" bug.
-- **No hosting, no bills.** Nothing runs on the internet except the Outlook contacts sync
-  the center already uses.
-- **Easy handover.** One `.exe`, one `data` folder, and this README. To move it to a new
-  PC, copy the folder.
-- **Fast on a cheap tablet.** The tablet only runs a light web page. The search list is
-  loaded once and filtered on the tablet, so typing never waits on the network.
+- **One place writes sign-ins.** Only `signin.exe` saves them, one at a time, into one
+  database file. The old app had the tablet and the office PC each rewriting the same
+  day's file through OneDrive, and whichever wrote last erased the other's entries.
+- **No hosting and no bills.** Nothing runs on the internet except the Outlook contacts
+  sync the center already uses.
+- **Outlook stays the kids list** staff see on their phones. The program keeps its own
+  copy, so searching is instant and sign-in keeps working when the internet is down.
+- **The tablet doesn't wait on the network.** Each sign-in is saved on the tablet first,
+  then sent. If the office PC can't be reached, sign-ins wait on the tablet and are sent
+  when it is back, with the time the kid actually tapped.
+- **Easy to hand over.** One `.exe`, one `data` folder, one `config.toml`, and this README.
 
 ---
 
-## The stack
+## Set it up at the center
 
-### Backend: Rust
+About 20 minutes, plus the Microsoft step.
 
-The code stays plain: no custom traits, no macros of our own, no clever generics. Most
-files are "handler gets a request, runs a SQL query, returns JSON."
+### 1. Office PC
 
-| Crate | What it does for us |
+1. Download `signin.exe` and `config.example.toml` from the latest
+   [release](../../releases) into a folder such as `C:\YouthCenterSignIn\`.
+2. Copy `config.example.toml` to `config.toml` and open it in Notepad. Set
+   `onedrive_folder` to the folder the old app used (for example
+   `C:\\Users\\<user>\\OneDrive\\Youth Center Sign In`, with doubled backslashes).
+   Old waiver signatures are found there, and backups go there.
+3. Double-click `signin.exe`. When Windows Firewall asks, allow it on **Private**
+   networks only. A window shows the log. Leave it open for now.
+4. Open <http://localhost:8080/admin>. On **Settings**, set an **Admin PIN**. The office
+   PC never needs the PIN. Every other device does.
+5. Make it start with Windows: Task Scheduler → *Create Task* → trigger **At startup** →
+   action *Start a program* `C:\YouthCenterSignIn\signin.exe`, "Start in"
+   `C:\YouthCenterSignIn` → choose "Run whether user is logged on or not". Restart the PC
+   and check the admin page still opens.
+6. Power settings: never sleep while plugged in.
+7. In the router, give the office PC a fixed address (a "DHCP reservation"). It is the
+   fallback if the tablet can't find the PC by name.
+
+### 2. Connect Outlook
+
+The program needs its own free "app registration" with Microsoft before it may read and
+write the contacts. This is done once.
+
+1. Go to <https://entra.microsoft.com> → **App registrations** → **New registration**.
+   Sign in with any Microsoft account that can use the Azure portal. It does not have to
+   be the youth center's account.
+2. Name: `Youth Center Sign In`. Supported account types: **Personal Microsoft accounts
+   only**. Leave the redirect URI empty. Register.
+3. On the app's **Authentication** page, set **Allow public client flows** to **Yes** and save.
+4. On **API permissions**, add **Microsoft Graph → Delegated** permissions
+   `Contacts.ReadWrite`, `User.Read` and `offline_access`.
+5. Copy the **Application (client) ID** from the Overview page into `config.toml`:
+
+   ```toml
+   [microsoft]
+   client_id = "paste-it-here"
+   ```
+
+6. Restart `signin.exe`. On the admin page, **Settings → Connect Outlook** shows a short
+   code and a Microsoft web address. Open that address on any phone or computer, type the
+   code, and sign in with **the youth center's Microsoft account**. The settings page
+   changes to "connected" by itself, and the kids appear under **Kids**.
+
+Microsoft changes these screens from time to time, so the names may differ slightly. If
+the youth center's account is a work or school account instead of a personal one, pick
+"Accounts in any organizational directory and personal Microsoft accounts" in step 2 and
+set `tenant = "common"` in `config.toml`.
+
+The sign-in is remembered. Microsoft forgets it after about 90 days without use, so after
+a long break the settings page may ask you to connect again.
+
+### 3. Tablet
+
+1. Make sure the tablet is on the same Wi-Fi as the office PC, and that
+   `http://OFFICE-PC-NAME:8080` opens in Edge. If the name doesn't work, use the PC's
+   fixed address instead, like `http://192.168.1.20:8080`.
+2. Settings → Accounts → Other users → **Set up a kiosk** → Microsoft Edge → **As a
+   digital sign or interactive display** → enter that address.
+
+The kiosk page has its own on-screen keyboard, so the Windows touch keyboard should stay
+hidden. If Windows shows its keyboard anyway, or you'd rather use it, switch under
+**Settings → Kiosk → Keyboard on the kiosk**.
+
+### Another organization (HBCC)
+
+The same program works for the church. In `config.toml`, change `name`, `short_name`,
+`tagline`, `waiver_name`, `rules_intro`, the `[[rules]]` and `accent_color`, and put the
+church's `logo.png` next to `signin.exe`.
+
+---
+
+## Using it
+
+### Kids
+
+| | |
 |---|---|
-| [`axum`](https://docs.rs/axum) + `tokio` | Web server and routes. The most common Rust web stack, with good docs. |
-| [`rusqlite`](https://docs.rs/rusqlite) (feature `bundled`) | SQLite. Plain SQL strings, no ORM. `bundled` compiles SQLite in, so there's nothing to install. |
-| `serde` / `serde_json` | JSON in and out of the API. |
-| [`reqwest`](https://docs.rs/reqwest) (feature `rustls-tls`, `json`) | Calls to Microsoft Graph for Outlook contacts. |
-| [`rust-embed`](https://docs.rs/rust-embed) | Bakes the built Svelte files *into* the exe, so the program is a single file. |
-| `chrono` | Dates and times (local time zone, "today", closing time). |
-| `uuid` | IDs for sign-ins. The tablet creates them, so a retried sign-in is never saved twice. |
-| `toml` | Reads the small `config.toml`. |
-| `tracing` + `tracing-subscriber` + `tracing-appender` | Log file in `data\logs\`, so errors are visible later. The old app's crash reporting (App Center) no longer exists. |
-| `anyhow` | Simple error handling: `?` everywhere, one error type. |
+| ![Searching](docs/screenshots/kiosk-search.png) | ![Signed in](docs/screenshots/kiosk-signed-in.png) |
 
-SQLite is used **synchronously** behind a `Mutex<Connection>`. At this scale (a few dozen
-kids a night) that's instant and avoids async database complexity.
+- **Sign in:** type a few letters, tap your name. A confirmation shows for five seconds
+  with an **Undo** button. Search forgives one typo.
+- **Info check:** when a kid's address and guardian info is more than six months old, the
+  confirmation also asks "is this still right?". The kid is already signed in by then, so
+  walking away loses nothing. Saved info is shown mostly hidden (`123 M•••`, `•••-•••-1234`)
+  because anyone can tap any name. "Something changed" lets them retype only the part
+  that changed.
+- **Sign out:** tap your name under "Here now", or search for it. The kiosk asks first,
+  so nobody signs out by accident.
+- **Sign up:** three short screens (about you, home and guardian, rules and the
+  guardian's signature). Finishing signs the kid in too.
+- Everyone still signed in at the nightly sign-out time (11 PM unless changed in Settings)
+  is signed out automatically.
 
-### Frontend: Svelte 5 + Vite (single-page app, no SvelteKit)
+### Staff
 
-- Plain Svelte with Vite. SvelteKit and Astro add routing and server rendering we don't
-  need, since Rust serves the files.
-- Two entry pages: `kiosk` (the tablet) and `admin` (the office PC).
-- A **service worker** caches the page itself, so the kiosk loads instantly and still
-  opens if the PC reboots.
-- No UI library. A small hand-written CSS file is lighter and easier to make feel native.
+![The staff page](docs/screenshots/admin-today.png)
 
-**Making it feel native on the tablet:**
+Open <http://localhost:8080/admin> on the office PC, or tap the small "Staff" link on the
+kiosk and enter the PIN.
 
-- `touch-action: manipulation`, no text selection, no long-press menus, no pinch zoom.
-- Big tap targets, with instant feedback on press (`:active` styles, no waiting on the server).
-- **A built-in on-screen A–Z keyboard on the search screen.** This avoids the Windows touch
-  keyboard popping up, covering the screen, or not appearing. Normal forms (sign-up) still
-  use the Windows keyboard.
-- Screen transitions use CSS only (≤150 ms) and never reload the page.
-- An optimistic UI: the "✓ Signed in" screen shows immediately, and the save happens in
-  the background, queued if needed.
+- **Sign-ins:** today's list updates by itself. Pick any earlier day. Sign someone out,
+  fix times, delete a wrong entry, or add one that was missed.
+- **Reports:** sign-ins and different kids per month and per day for any range of dates,
+  with a CSV download for Excel.
+- **Kids:** search, add and edit. **Merge a duplicate** moves one kid's sign-ins to
+  another and deletes the extra. **Remove** hides a kid from the kiosk and deletes their
+  Outlook contact, and keeps their past sign-ins in the reports.
+- **Settings:** Outlook connection and "Sync now", whether the kiosk is connected, the
+  nightly sign-out time, backups, and the PIN.
 
----
-
-## Kid-facing flows
-
-### Sign in (the 95% case): two taps
-
-1. Type a few letters on the on-screen keyboard. Matches appear as you type, showing
-   first name, last initial, and grade (e.g. "Sam R. · 7th"). Search tolerates small typos.
-2. Tap your name → **you're signed in.** A big green "✓ Signed in, Sam — 6:42 PM" screen
-   shows with an **Undo** button, then the kiosk resets after about 3 seconds.
-
-### Info check: *after* sign-in, never before
-
-If a kid's info is more than 6 months old, the confirmation screen also asks:
-**"Is this still right?"** It shows their saved address and guardian, filled in, with two
-big buttons: **Yes, still right** and **Update**.
-
-- The kid is **already signed in** at this point. Walking away doesn't lose the sign-in.
-  This fixes the second cause of missing sign-ins in the old app.
-- Nothing is cleared. "Update" opens the form filled in, so the kid changes only what changed.
-- If they walk away, it times out and asks again next visit.
-
-### Sign out
-
-- The home screen has a **"Here now"** strip: tap your name → "Sign out Sam?" → done.
-- Searching for a kid who's already signed in shows **"You're already signed in at 6:42
-  — Sign out?"**. A kid can't accidentally sign out by "signing in" again, which the old
-  app's single toggle button allowed.
-- **Auto sign-out at closing time** (set in config), so no one stays "signed in" overnight.
-
-### Sign up (new kid)
-
-Three short screens, each fitting on the tablet without scrolling:
-
-1. **You:** first name, last name, grade, birthday.
-2. **Home and guardian:** address, guardian name and phone (email optional).
-3. **Rules and waiver:** read the rules, check the box, sign with a finger.
-
-When they tap **Done**, the kid is signed up **and signed in** in one step, and sees the
-same "✓ Signed in" screen. The waiver signature is saved as a PNG to
-`OneDrive\Youth Center Sign In\Waivers\` (one file per kid, written once, so there are no
-sync conflicts).
+Changes made in Outlook reach the kiosk within five minutes. Changes made at the kiosk or
+on the staff page reach Outlook within seconds when the internet is up, and wait if it
+is not.
 
 ---
 
-## Staff admin page (office PC)
+## Bring over the old sign-in logs
 
-At `http://localhost:8080/admin`. Requires the PIN if opened from any device other than
-the office PC itself.
-
-- **Here now:** live list (updates within a second), with the time each kid arrived and
-  a manual sign-out button.
-- **Day view:** pick any date and see every visit. Fix mistakes (edit times, delete a
-  wrong entry, add a missed sign-in).
-- **Totals:** visits and unique kids per night, per month, per year. **Export CSV.**
-- **Kids:** search, edit, merge duplicates, see last visit.
-- **Settings:** PIN, closing time, Outlook connection status, "Sync now", last backup time.
-
-The live list uses Server-Sent Events, which axum supports natively. No WebSocket library
-is needed.
-
----
-
-## Data
-
-### Where it lives
-
-| What | Where | Notes |
-|---|---|---|
-| Sign-ins, kid list, settings | `data\signin.db` (SQLite) next to the exe | **Not** in OneDrive. A live database in a synced folder can be corrupted by sync. |
-| Nightly backup | `OneDrive\Youth Center Sign In\Backups\signin-YYYY-MM-DD.db` | Uses SQLite `VACUUM INTO`, a safe snapshot. Keeps the last 60. |
-| Daily CSV | `OneDrive\Youth Center Sign In\Logs\YYYY-MM-DD.csv` | So staff can open a night's log in Excel without the app. |
-| Waiver signatures | `OneDrive\Youth Center Sign In\Waivers\` | PNG per kid. |
-| App log | `data\logs\signin.log` | Errors and sync activity, rotated daily. |
-
-### Tables
-
-```sql
-people (
-  id            TEXT PRIMARY KEY,   -- our id (uuid)
-  outlook_id    TEXT UNIQUE,        -- Outlook contact id, null until pushed
-  first_name    TEXT NOT NULL,
-  last_name     TEXT NOT NULL,
-  birthday      TEXT,
-  grade         TEXT,
-  street, city, state TEXT,
-  guardian_name, guardian_phone, guardian_email TEXT,
-  info_updated  TEXT,               -- date info was last confirmed
-  dirty         INTEGER DEFAULT 0,  -- 1 = changed here, needs pushing to Outlook
-  archived      INTEGER DEFAULT 0,  -- contact deleted in Outlook: hidden, history kept
-  updated_at    TEXT NOT NULL
-)
-
-visits (
-  id            TEXT PRIMARY KEY,   -- uuid created on the tablet (old logs keep their Guid)
-  person_id     TEXT NOT NULL REFERENCES people(id),
-  person_name   TEXT NOT NULL,      -- name at the time, for reports
-  signed_in_at  TEXT NOT NULL,
-  signed_out_at TEXT,
-  sign_out_kind TEXT                -- 'kiosk' | 'staff' | 'auto'
-)
-
-settings ( key TEXT PRIMARY KEY, value TEXT )   -- PIN hash, Graph refresh token, delta link
-```
-
-### Outlook contacts sync
-
-Outlook stays the youth database staff can see on their phones and in Outlook. The local
-`people` table is a working copy, which is what lets search stay instant and keeps
-sign-in working when the internet is down.
-
-- **Pull:** every 5 minutes (and on "Sync now"), use Graph's contacts **delta query**,
-  which returns only what changed since last time.
-- **Push:** sign-ups and info updates save locally first (`dirty = 1`), then a background
-  task pushes them to Outlook and clears the flag. If the internet is down, they wait.
-- **Format:** grade and guardian info keep the **same "notes" format the old app used**
-  (`Grade: 7th`, `Guardian's Name: …`, `Guardian's Phone: …`, `Guardian Email: …`,
-  `Last updated: …`), so existing contacts work unchanged. Address and birthday use the
-  real contact fields.
-- **Conflicts:** last write wins per contact. Staff editing a contact in Outlook while a
-  kid edits the same contact at the kiosk is rare enough not to need more.
-
-**Signing in to Microsoft (personal account):** uses the OAuth *device code* flow.
-The admin Settings page shows "Go to microsoft.com/link and enter **ABCD-1234**". After
-that, the refresh token is stored in the database and renewed automatically. Microsoft
-expires personal-account refresh tokens after about 90 days *without use*, so the
-weekly open nights keep it alive. If the PC sits off for a whole summer, staff will be
-asked to sign in again.
-
-This needs a one-time **free app registration** in Microsoft Entra (Azure portal):
-"Personal Microsoft accounts" audience, "Allow public client flows" on, permission
-`Contacts.ReadWrite`. The client ID goes in `config.toml`. *(Phase 0 verifies this
-works with the center's personal account before anything else is built.)*
-
----
-
-## Importing the old data
-
-All history from the old app comes over with one command, and nothing is retyped.
+The old app wrote one file per day (`2021-05-14.json`) into its OneDrive folder. One
+command copies them all into the new database:
 
 ```
-signin.exe import "C:\Users\<user>\OneDrive\Youth Center Sign In" --dry-run   # report only
-signin.exe import "C:\Users\<user>\OneDrive\Youth Center Sign In"             # write to signin.db
+signin.exe import "C:\Users\<user>\OneDrive\Youth Center Sign In" --dry-run
+signin.exe import "C:\Users\<user>\OneDrive\Youth Center Sign In"
 ```
 
-### What the old app left behind
+Run it from the folder `signin.exe` is in. It is fine to run while the program is running.
 
-| Old data | Where | What happens to it |
-|---|---|---|
-| Sign-in logs | `OneDrive\Youth Center Sign In\YYYY-MM-DD.json`: one file per day, a list of `{ Guid, PersonId, PersonName, SignInTime, SignOutTime }` | Imported into `visits` |
-| OneDrive conflict copies | e.g. `2025-03-14-TABLET.json`, `2025-03-14 (1).json` | **Merged in.** These hold some of the "missing" sign-ins that the sync bug pushed aside, so the import recovers them. |
-| Kids | Outlook contacts | Already in Outlook. The normal contacts sync fills `people`. |
-| Waiver signatures | `OneDrive\Youth Center Sign In\COVID-19\<Name>.png` | Left where they are. The admin Kids page shows "waiver on file" when a PNG matches the kid's name. |
-| Admin PIN | Stored separately on each device in the old app | Not carried over. Set a new PIN on first run. |
-
-### How the import works
-
-1. **Find files:** every `*.json` in the folder whose name starts with a date. Conflict
-   copies are grouped with their day.
-2. **Read leniently:** extra fields the old app wrote (`SignInTimeString`, `SignedIn`, …)
-   are ignored. Times are read with or without a time zone offset. A file that won't
-   parse is reported and skipped, never fatal.
-3. **Merge per day by `Guid`:** take the union of all copies. If the same `Guid` appears
-   twice, keep the version that has a sign-out time.
-4. **Link to kids:** the old `PersonId` *is* the Outlook contact id. If no person with
-   that `outlook_id` exists yet, a placeholder row is created with the name from the log.
-   The Outlook sync fills in the rest later. If the contact was deleted from Outlook, the
-   row stays as `archived`, so old reports still count that kid. Because of this, the
-   import works before or after Outlook is connected.
-5. **Old open entries:** visits on past days with no sign-out get `sign_out_kind =
-   'unknown'` and no made-up time.
-6. **Write:** everything goes in one transaction with `INSERT OR IGNORE` on the `Guid`.
-   **Running it again is safe** and only adds what's new. That allows importing early,
-   then once more right before switching over to pick up the last nights.
-
-`--dry-run` prints, per day: entries found, extra entries recovered from conflict
-copies, unreadable files, and kids not yet matched to an Outlook contact. It ends with
-totals to compare against the old admin page.
-
-`import.rs` is tested against sample files that copy the real old format, including a
-conflict-copy pair and a broken file.
+- `--dry-run` only reports: visits per day, files it could not read, and what would be
+  added. Check the totals against the old app before running it for real.
+- **Side copies are merged in.** When the tablet and the office PC both wrote the same
+  day, OneDrive kept the loser under a longer name such as `2021-05-14-TABLET.json`. The
+  import reads those too, so sign-ins that went missing can come back. The report shows
+  how many were recovered per day.
+- **Running it again is safe.** Each visit keeps the id the old app gave it, so nothing is
+  added twice. Import early to try things out, then once more right before switching over.
+- Kids are matched by their Outlook contact id, so it works before or after Outlook is
+  connected. A kid whose contact has been deleted stays in the reports, hidden from the kiosk.
+- Old visits with no sign-out are marked "never signed out". No time is made up.
+- Old waiver signatures (the `COVID-19` folder) stay where they are. The Kids page finds
+  them by name.
+- The old admin PIN is not carried over. Set a new one.
 
 ---
 
-## API
+## Looking after it
 
-All JSON. Kiosk routes are open on the local network. Admin routes need the office PC
-itself or a PIN session cookie.
+| What | Where |
+|---|---|
+| Database (sign-ins, kids, settings) | `data\signin.db` next to the exe |
+| Nightly database copies (last 60) | `<OneDrive folder>\Backups\signin-YYYY-MM-DD.db` |
+| Daily logs for Excel | `<OneDrive folder>\Logs\YYYY-MM-DD.csv` |
+| Guardian signatures | `<OneDrive folder>\Waivers\<Name>.png` |
+| Program log (errors, sync activity) | `data\logs\signin.log.YYYY-MM-DD` |
 
-| Method | Route | Purpose |
-|---|---|---|
-| GET | `/api/kiosk/people` | Search list: id, first name, last initial, grade, info-expired flag, signed-in-now flag |
-| GET | `/api/kiosk/here` | Who's signed in right now |
-| POST | `/api/kiosk/sign-in` | `{ visit_id, person_id, at }`. Idempotent on `visit_id`. |
-| POST | `/api/kiosk/sign-out` | `{ visit_id, at }` |
-| POST | `/api/kiosk/undo` | `{ visit_id }`. Only within 60 s. |
-| GET | `/api/kiosk/people/:id` | Full info, for the "is this still right?" screen |
-| POST | `/api/kiosk/people` | Sign up (+ waiver PNG) and sign in |
-| PUT | `/api/kiosk/people/:id` | Update or confirm info |
-| POST | `/api/admin/login` | PIN → session cookie |
-| GET | `/api/admin/visits?date=` | Day view |
-| PATCH/DELETE/POST | `/api/admin/visits…` | Fix entries |
-| GET | `/api/admin/report?from=&to=` | Totals; `&format=csv` for export |
-| GET | `/api/admin/events` | Server-Sent Events: "visits changed" |
-| GET/PUT | `/api/admin/settings` | PIN, closing time, sync status |
-| POST | `/api/admin/sync` | Sync with Outlook now |
-| POST | `/api/admin/microsoft/login` | Start the device-code sign-in |
+The live database is deliberately **not** in OneDrive, because syncing a database file
+while it is in use can damage it. Only finished copies go there.
 
-**Offline queue on the tablet:** sign-in, sign-out and undo requests go into a small queue
-in `localStorage` before being sent. If a send fails, the kid still sees "✓ Signed in",
-and the queue retries every few seconds. Each request carries its own `visit_id` and the
-time it happened, so a retry is harmless and the time is correct. The admin page shows
-"Kiosk has N sign-ins waiting" if the tablet is behind.
+- **Update:** replace `signin.exe` and restart the PC (or end and re-run the scheduled
+  task). The database upgrades itself, and the kiosk page reloads itself.
+- **Restore a backup:** stop the program, copy a backup file over `data\signin.db`, start it.
+- **Move to a new PC:** copy the whole folder, redo steps 5 to 7 of the office PC setup,
+  and point the tablet at the new PC's name.
+- **Forgot the PIN:** set a new one on the office PC under Settings. It doesn't ask for the old one.
+- **Kiosk says it can't reach the office computer:** check the PC is on and awake, and
+  that both are on the same Wi-Fi. Sign-ins made meanwhile are kept on the tablet until it
+  reconnects. If the tablet itself was restarted while the PC was off, turn the PC on,
+  then restart the tablet.
+- **Handing off to someone else:** they need this README, the admin PIN, the youth
+  center's Microsoft account, and access to this GitHub repo.
 
 ---
 
-## Repo layout (new code)
+## Working on the code
 
 ```
-server/                 Rust
-  Cargo.toml
-  src/
-    main.rs             load config, open db, start sync task, start server
-    config.rs           config.toml → struct
-    db.rs               open/migrate SQLite, all SQL lives here
-    routes/
-      kiosk.rs          kiosk handlers
-      admin.rs          admin handlers + PIN check
-    graph.rs            Microsoft login + contacts pull/push
-    notes.rs            old notes format ⇄ fields (ported from SignIn.Logic, with tests)
-    backup.rs           nightly VACUUM INTO + CSV export + auto sign-out
-    import.rs           one-time import of the old OneDrive JSON logs
-web/                    Svelte + Vite
-  src/kiosk/…           search, confirm, sign-up, here-now
-  src/admin/…           here-now, day view, reports, kids, settings
-  src/lib/api.ts        fetch wrapper + offline queue
-  public/sw.js          service worker
+server/                 Rust: the program that runs on the office PC
+  src/main.rs           starts everything; also the `import` command
+  src/config.rs         reads config.toml
+  src/db.rs             the SQLite database; all SQL is in this file
+  src/app.rs            shared state and the error type
+  src/routes/kiosk.rs   what the tablet calls
+  src/routes/admin.rs   what the staff page calls, and the PIN check
+  src/routes/mod.rs     the route table, live-update stream, and the web pages
+  src/graph.rs          Outlook contacts sync
+  src/notes.rs          the old "notes" format for grade and guardian
+  src/backup.rs         nightly sign-out, backups and CSV logs
+  src/import.rs         import of the old app's logs
+  src/waivers.rs        guardian signature files
+  src/tests.rs          end-to-end tests, with a stand-in for Microsoft
+web/                    Svelte: the pages
+  src/kiosk/            the tablet page
+  src/admin/            the staff page
+  src/lib/              shared: server calls, search, the offline queue
 config.example.toml
 ```
 
-Build: `npm run build` in `web/` → `web/dist`, then `cargo build --release` in `server/`
-embeds `web/dist` into `signin.exe`. GitHub Actions builds the Windows exe on every
-tagged release, so no Rust toolchain is needed at the center.
+You need [Rust](https://rustup.rs) and [Node.js](https://nodejs.org) 22 or newer.
+
+```
+cd web
+npm install
+npm run build        # builds the pages into web/dist
+
+cd ../server
+cargo run            # http://localhost:8080 and http://localhost:8080/admin
+cargo test
+```
+
+`cargo build --release` bakes `web/dist` into the exe, so build the web pages first.
+While working on the pages, run `cargo run` in one terminal and `npm run dev` in `web/`
+in another. Open the address Vite prints, and the pages reload as you save. `npm run check`
+type-checks the pages and `npm test` runs their tests.
+
+GitHub Actions (`.github/workflows/signin.yml`) runs all tests on every push and builds
+`signin.exe` on Windows. Pushing a tag such as `v2.0.1` publishes it as a release.
+
+**Notes for whoever maintains this:**
+
+- The Rust is kept plain on purpose: handlers read a request, run SQL, and return JSON.
+  Crates used: `axum` + `tokio` (web server), `rusqlite` (SQLite, compiled in), `reqwest`
+  (calls to Microsoft), `rust-embed` (pages inside the exe), `serde`, `chrono`, `uuid`,
+  `toml`, `tracing`, `anyhow`.
+- Times are stored as local time text (`2026-11-10T18:42:05`).
+- To change the database layout, add a new entry to `MIGRATIONS` in `db.rs`. Never edit
+  an old one.
+- The tablet makes the ids for visits and new kids. That is what makes a resent request
+  harmless: the same id is only saved once.
+- Outlook sync reads the whole contact list each time and compares. It is simple, and
+  fine for a few hundred contacts.
+- The kiosk page is served over plain `http` on the local network. Browsers turn some
+  features off there (`crypto.randomUUID`, service workers), which is why `web/src/lib/uuid.ts`
+  exists.
 
 ---
 
-## Setup at the center (target: 15 minutes)
+## What has and hasn't been tested
 
-**Office PC**
+**Tested**, by 40 server tests, 12 page tests, and by driving both pages in a real
+browser (Chromium):
 
-1. Download `signin.exe` from the latest GitHub release into `C:\YouthCenterSignIn\`.
-2. Copy `config.example.toml` → `config.toml`, fill in the OneDrive folder path and the
-   closing time.
-3. Run it once and allow it through Windows Firewall on **Private** networks only.
-4. Task Scheduler → *Create Task* → trigger **At startup**, action
-   `C:\YouthCenterSignIn\signin.exe`, "Run whether user is logged on or not".
-5. Power settings: never sleep **while plugged in** during open hours (or always, simplest).
-6. Open `http://localhost:8080/admin` → Settings → **Connect Outlook** → follow the code.
-7. Bring over the old logs (see [Importing the old data](#importing-the-old-data)):
-   `signin.exe import "C:\Users\…\OneDrive\Youth Center Sign In" --dry-run`, check the
-   numbers, then run it again without `--dry-run`.
+- Sign in, sign out, undo, sign up with signature, the info check, auto sign-out.
+- The kiosk with the server stopped: sign-ins waited on the tablet and arrived with the
+  right time once the server was back.
+- Staff page: fixing and adding visits, reports and CSV, editing, merging and removing
+  kids, PIN required from another address, live updates.
+- Import of old-format logs, including side copies, a broken file, and running twice.
+- Backups and daily CSV files.
+- Outlook sync logic, against a **stand-in** Microsoft server written for the tests.
+- `signin.exe` compiles for Windows.
 
-**Tablet**
+**Not tested yet. Check these first at the center:**
 
-1. Settings → Accounts → Other users → **Set up a kiosk** (Assigned Access) → Microsoft Edge
-   → "As a digital sign or interactive display" → URL `http://OFFICE-PC-NAME:8080`.
-2. Give the office PC a fixed address in the router (DHCP reservation) as a backup in case
-   the PC name doesn't resolve on the network.
-
-**Updating:** replace `signin.exe` and restart the PC (or the scheduled task). The
-database upgrades itself on start.
-
-**Handing off:** this README, plus the admin PIN and the Microsoft account used for Outlook.
+1. **Outlook with the real account.** The sync has never talked to Microsoft itself. Do
+   "Connect Outlook" before anything else and confirm the kids appear with grade and
+   guardian filled in. Look at one contact in Outlook after a kiosk edit to confirm the
+   notes still look right.
+2. **`signin.exe` on a real Windows PC.** It was built here but only run on Linux.
+3. **The real tablet in Edge kiosk mode:** speed, whether the Windows touch keyboard
+   stays hidden, and how the screens fit its resolution (they were drawn at 1280×800 and
+   scale with the screen).
+4. **The import on a copy of the real OneDrive folder.** The old file format was worked
+   out from the old app's code, not from real files.
 
 ---
 
-## Plan
+## Switching over from the old app
 
-Each phase ends with something usable. Estimates assume evenings and weekends.
-
-| Phase | What | Done when |
-|---|---|---|
-| **0. Spike** (1 evening) | Register the Entra app; tiny Rust program does device-code login with the center's personal account and lists 5 contacts. | We know Graph and personal accounts work. This is the riskiest part, so it's first. |
-| **1. Server core + import** | axum + SQLite schema + migrations, kiosk API, `notes.rs` ported with the old tests, `import` command (with conflict-copy merge and `--dry-run`). | `curl` can sign a kid in and out. A copy of the real OneDrive folder imports, and totals match the old admin page (plus any recovered entries). |
-| **2. Kiosk UI** | Svelte search with on-screen keyboard, two-tap sign-in, confirmation + undo, here-now, sign-out. Offline queue + service worker. | Usable on the real tablet in Edge kiosk mode, and fast. |
-| **3. Outlook sync** | Delta pull, dirty push, settings status. | Kids added in Outlook appear at the kiosk within 5 min, and vice versa. |
-| **4. Sign-up + info check** | Three-step sign-up with waiver signature; "still right?" flow after sign-in. | A new kid can sign up and be signed in in one go. |
-| **5. Admin** | Day view with edits, reports + CSV, kids list, settings, live updates. | Staff can stop using the old admin page. |
-| **6. Backups + ops** | Nightly backup + CSV, auto sign-out, log file, GitHub Actions release build. | Survives a reboot, and backups appear in OneDrive. |
-| **7. Cutover** | Run alongside the old app for one open night, compare counts, re-run `import` to pick up the final nights, then switch the tablet over. | Old UWP code moved to `legacy/` (or deleted). |
-
-### Out of scope (on purpose)
-
-- Internet access to the admin page from home. It could be added later with something
-  like Tailscale, but it's not needed now.
-- Multiple sites, user accounts per staff member, photos.
-- A database server, Docker, or cloud hosting of any kind.
+1. Set up the office PC and connect Outlook. Run the import with `--dry-run`, check the
+   totals, then run it for real.
+2. Try the kiosk page on the tablet in a normal Edge window while the old app is still
+   the real kiosk.
+3. On a quiet open night, run both: old app on the tablet as usual, new kiosk page open
+   on a second device. Compare the counts at the end of the night.
+4. Run the import one more time to pick up the last nights. Put the tablet into Edge
+   kiosk mode pointing at the new page.
+5. After a few good weeks, remove the old app from the tablet and the office PC, and
+   move the old code in this repo into a `legacy/` folder (or delete it).

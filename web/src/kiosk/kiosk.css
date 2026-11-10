@@ -1,0 +1,212 @@
+/* Kiosk-wide rules and the building blocks the kiosk screens share. */
+
+/* Everything is sized in rem, and 1rem follows the screen size. The layout
+   was drawn for a 1280x800 tablet (1rem = 16px) and scales to any other. */
+html {
+  font-size: min(2vh, 1.25vw);
+}
+
+/* Make it behave like an app, not a web page: no text selection, no
+   long-press menu, no pinch zoom, no bounce, no tap highlight. */
+html,
+body {
+  overflow: hidden;
+  overscroll-behavior: none;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+input {
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+#app {
+  height: 100%;
+}
+
+.screen {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  animation: screen-in 120ms ease-out;
+}
+
+@keyframes screen-in {
+  from {
+    opacity: 0;
+  }
+}
+
+/* ---- buttons ---- */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  min-height: 3.4rem;
+  padding: 0 1.5rem;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  background: var(--card);
+  font-size: 1.2rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+.btn:active {
+  background: var(--press);
+}
+.btn.primary {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: #fff;
+}
+.btn.primary:active {
+  background: #000;
+}
+.btn.quiet {
+  border-color: transparent;
+  background: transparent;
+  color: var(--muted);
+}
+.btn.big {
+  min-height: 4rem;
+  padding: 0 2rem;
+  font-size: 1.35rem;
+}
+
+/* ---- forms ---- */
+
+.form-bar {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.9rem 2rem;
+  background: var(--card);
+  border-bottom: 1px solid var(--line);
+}
+.form-bar h1 {
+  flex: 1;
+  font-size: 1.5rem;
+}
+.form-bar .step {
+  margin-left: 0.8rem;
+  color: var(--muted);
+  font-size: 1.05rem;
+  font-weight: 400;
+  letter-spacing: 0;
+}
+
+.form-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 1.5rem 2rem;
+}
+
+.form-error {
+  flex: none;
+  padding: 0.7rem 2rem;
+  border-bottom: 1px solid var(--line);
+  background: var(--card);
+  color: var(--bad);
+  font-size: 1.1rem;
+}
+
+.fields {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 1rem 1.1rem;
+  max-width: 58rem;
+  margin: 0 auto;
+}
+.field {
+  grid-column: span 3;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+.field.full {
+  grid-column: span 6;
+}
+.field.third {
+  grid-column: span 2;
+}
+.field > span {
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+.field input,
+.field select {
+  height: 3.1rem;
+  padding: 0 0.8rem;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  background: var(--card);
+  font-size: 1.25rem;
+}
+.field input:focus,
+.field select:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent);
+}
+
+/* A row of choices where one is picked, like the grade. */
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+.chip {
+  min-height: 2.7rem;
+  padding: 0 0.95rem;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  background: var(--card);
+  font-size: 1.05rem;
+}
+.chip:active {
+  background: var(--press);
+}
+.chip.on {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  box-shadow: 0 0 0 1px var(--accent);
+}
+
+/* ---- a centered card, for confirmations ---- */
+
+.center {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+.card {
+  width: min(100%, 40rem);
+  padding: 2.6rem 3rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  background: var(--card);
+  box-shadow: var(--shadow);
+}
+.card h1 {
+  font-size: 2.3rem;
+  line-height: 1.15;
+}
+.card .sub {
+  margin-top: 0.5rem;
+  color: var(--muted);
+  font-size: 1.3rem;
+}
+.card .actions {
+  display: flex;
+  gap: 0.7rem;
+  margin-top: 2rem;
+}

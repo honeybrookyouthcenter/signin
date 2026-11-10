@@ -1,0 +1,288 @@
+/* Styles shared by the admin screens. */
+
+html {
+  font-size: 15px;
+}
+
+.wrap {
+  max-width: 68rem;
+  margin: 0 auto;
+  padding: 1.5rem 1.5rem 4rem;
+}
+
+h1 {
+  font-size: 1.4rem;
+}
+a {
+  color: var(--accent-ink);
+}
+h2 {
+  font-size: 1.1rem;
+}
+.muted {
+  color: var(--muted);
+}
+.small {
+  font-size: 0.87rem;
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 1rem;
+}
+.toolbar .grow {
+  flex: 1;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  height: 2.3rem;
+  padding: 0 0.9rem;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  background: var(--card);
+  font-weight: 500;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.btn:hover {
+  background: var(--press);
+}
+.btn.primary {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: #fff;
+}
+.btn.primary:hover {
+  background: #000;
+}
+.btn.danger {
+  color: var(--bad);
+}
+.btn.small {
+  height: 1.9rem;
+  padding: 0 0.6rem;
+  font-size: 0.87rem;
+}
+.btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+input[type='text'],
+input[type='search'],
+input[type='date'],
+input[type='time'],
+input[type='password'],
+select,
+textarea {
+  height: 2.3rem;
+  padding: 0 0.6rem;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  background: var(--card);
+}
+textarea {
+  height: auto;
+  padding: 0.5rem 0.6rem;
+}
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent);
+}
+
+.panel {
+  padding: 1.2rem 1.4rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  background: var(--card);
+}
+.panel + .panel {
+  margin-top: 1rem;
+}
+.panel h2 {
+  margin-bottom: 0.6rem;
+}
+
+.stats {
+  display: flex;
+  margin-bottom: 1.2rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  background: var(--card);
+}
+.stat {
+  flex: 1;
+  padding: 0.9rem 1.4rem;
+}
+.stat + .stat {
+  border-left: 1px solid var(--line);
+}
+.stat b {
+  display: block;
+  font-size: 1.8rem;
+  font-weight: 600;
+  line-height: 1.15;
+}
+.stat span {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  background: var(--card);
+  border-spacing: 0;
+  border-collapse: separate;
+  overflow: hidden;
+}
+th,
+td {
+  padding: 0.55rem 0.8rem;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  vertical-align: middle;
+}
+th {
+  color: var(--muted);
+  font-size: 0.87rem;
+  font-weight: 400;
+}
+td b {
+  font-weight: 500;
+}
+tr:last-child td {
+  border-bottom: 0;
+}
+td.actions {
+  text-align: right;
+  white-space: nowrap;
+}
+td.number,
+th.number {
+  text-align: right;
+}
+tr.clickable {
+  cursor: pointer;
+}
+tr.clickable:hover td {
+  background: var(--page);
+}
+
+/* A small status word, like "here" or "not set". */
+.tag {
+  margin-left: 0.3rem;
+  color: var(--muted);
+  font-size: 0.87rem;
+}
+.tag:first-child {
+  margin-left: 0;
+}
+.tag.good {
+  color: var(--good);
+}
+.tag.warn {
+  color: var(--warn);
+}
+.tag.bad {
+  color: var(--bad);
+}
+.tag.good::before,
+.tag.warn::before,
+.tag.bad::before {
+  content: '';
+  display: inline-block;
+  width: 0.5rem;
+  height: 0.5rem;
+  margin-right: 0.35rem;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.notice {
+  margin-bottom: 1rem;
+  padding: 0.7rem 1rem;
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--warn);
+  border-radius: var(--radius);
+  background: var(--card);
+}
+.notice.bad {
+  border-left-color: var(--bad);
+}
+.notice.good {
+  border-left-color: var(--good);
+}
+
+.empty {
+  padding: 2rem;
+  color: var(--muted);
+  text-align: center;
+}
+
+/* ---- pop-up windows ---- */
+
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 4vh 1rem;
+  overflow-y: auto;
+  background: rgb(36 34 30 / 35%);
+}
+.dialog {
+  width: min(100%, 40rem);
+  padding: 1.6rem 1.8rem;
+  border-radius: var(--radius-card);
+  background: var(--card);
+  box-shadow: var(--shadow);
+}
+.dialog h1 {
+  margin-bottom: 1rem;
+}
+.dialog .buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-top: 1.2rem;
+}
+.dialog .buttons .grow {
+  flex: 1;
+}
+
+.form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.7rem 0.9rem;
+}
+.form label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  color: var(--muted);
+  font-size: 0.87rem;
+}
+.form label.full {
+  grid-column: span 2;
+}
+.form input,
+.form select,
+.form textarea {
+  color: var(--text);
+  font-size: 1rem;
+  font-weight: 400;
+}

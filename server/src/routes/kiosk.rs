@@ -46,12 +46,16 @@ struct KioskConfig {
     name: String,
     short_name: String,
     tagline: String,
+    accent_color: String,
+    rules_intro: String,
     rules: Vec<Rule>,
     waiver_name: String,
     waiver_text: String,
     grades: &'static [&'static str],
     /// Show the built-in on-screen keyboard instead of the Windows one.
     use_keyboard: bool,
+    /// When the server started. The page reloads itself if this changes.
+    started: String,
 }
 
 async fn config(State(state): State<Shared>) -> ApiResult<KioskConfig> {
@@ -60,11 +64,14 @@ async fn config(State(state): State<Shared>) -> ApiResult<KioskConfig> {
         name: state.config.name.clone(),
         short_name: state.config.short_name.clone(),
         tagline: state.config.tagline.clone(),
+        accent_color: state.config.accent_color.clone(),
+        rules_intro: state.config.rules_intro.clone(),
         rules: state.config.rules.clone(),
         waiver_name: state.config.waiver_name(),
         waiver_text: state.config.waiver_text(),
         grades: GRADES,
         use_keyboard,
+        started: state.started.clone(),
     }))
 }
 

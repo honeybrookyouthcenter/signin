@@ -28,12 +28,14 @@ pub fn router(state: Shared) -> Router {
 }
 
 /// A stream the pages keep open. We send "changed" whenever people or visits
-/// change, and the page then reloads its lists. It carries no data itself.
+/// change, and the page then reloads its lists. The event says nothing about
+/// what changed, so it is safe to send to the kiosk. (It still needs some
+/// data: browsers silently drop an event whose data is empty.)
 async fn events(State(state): State<Shared>) -> Sse<impl Stream<Item = Result<Event, Infallible>>> {
     let changes = BroadcastStream::new(state.changes.subscribe());
     // If a page falls behind it gets an error instead of a message. It still
     // means "something changed", so both become the same event.
-    let events = changes.map(|_| Ok(Event::default().event("changed").data("")));
+    let events = changes.map(|_| Ok(Event::default().event("changed").data("changed")));
     Sse::new(events).keep_alive(KeepAlive::new().interval(Duration::from_secs(20)))
 }
 
@@ -42,10 +44,17 @@ async fn events(State(state): State<Shared>) -> Sse<impl Stream<Item = Result<Ev
 #[folder = "../web/dist"]
 struct WebFiles;
 
-async fn web_file(uri: Uri) -> Response {
+async fn web_file(State(state): State<Shared>, uri: Uri) -> Response {
     let path = uri.path().trim_start_matches('/');
     if path.starts_with("api/") {
         return (StatusCode::NOT_FOUND, "No such API route.").into_response();
+    }
+
+    // A `logo.png` next to config.toml replaces the built-in logo.
+    if path == "logo.png" {
+        if let Ok(logo) = std::fs::read(state.paths.base.join("logo.png")) {
+            return ([(header::CONTENT_TYPE, "image/png"), (header::CACHE_CONTROL, "no-cache")], logo).into_response();
+        }
     }
 
     // "/" is the kiosk page and "/admin" is the admin page.

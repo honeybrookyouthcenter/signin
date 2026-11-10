@@ -1,0 +1,87 @@
+# Tests the new sign-in app (Rust server + Svelte pages) and builds signin.exe.
+# Pushing a tag like v2.0.0 also publishes the exe as a GitHub release.
+name: Sign In (Rust + Svelte)
+
+on:
+  push:
+    branches: ['**']
+    tags: ['v*']
+    paths:
+      - 'server/**'
+      - 'web/**'
+      - 'config.example.toml'
+      - '.github/workflows/signin.yml'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - name: Check, test and build the web pages
+        working-directory: web
+        run: |
+          npm ci
+          npm run check
+          npm test
+          npm run build
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            server/target
+          key: test-${{ runner.os }}-${{ hashFiles('server/Cargo.lock') }}
+      - name: Test the server
+        working-directory: server
+        run: cargo test
+
+  windows:
+    needs: test
+    runs-on: windows-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - name: Build the web pages
+        working-directory: web
+        run: |
+          npm ci
+          npm run build
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            server/target
+          key: build-${{ runner.os }}-${{ hashFiles('server/Cargo.lock') }}
+      # The web pages are baked into the exe, so this must run after they are built.
+      - name: Build signin.exe
+        working-directory: server
+        run: cargo build --release
+      - name: Collect the files
+        shell: bash
+        run: |
+          mkdir YouthCenterSignIn-new
+          cp server/target/release/signin.exe config.example.toml README.md YouthCenterSignIn-new/
+      - uses: actions/upload-artifact@v4
+        with:
+          name: signin-windows
+          path: YouthCenterSignIn-new
+      - name: Publish a release
+        if: startsWith(github.ref, 'refs/tags/v')
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" --generate-notes \
+            YouthCenterSignIn-new/signin.exe YouthCenterSignIn-new/config.example.toml

@@ -33,6 +33,9 @@ pub struct AppState {
     /// Held while an Outlook sync runs, so two never run at once.
     pub sync_lock: tokio::sync::Mutex<()>,
     pub kiosk: Mutex<KioskStatus>,
+    /// When this program started. The kiosk page reloads itself when this
+    /// changes, which is how it picks up a new version after an update.
+    pub started: String,
 }
 
 /// What the kiosk last told us about itself.
@@ -58,6 +61,7 @@ impl AppState {
             graph: Mutex::new(GraphState::default()),
             sync_lock: tokio::sync::Mutex::new(()),
             kiosk: Mutex::new(KioskStatus::default()),
+            started: crate::db::time_text(crate::db::now()),
         })
     }
 

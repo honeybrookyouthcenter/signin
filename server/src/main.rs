@@ -54,8 +54,8 @@ async fn serve(config: Config, paths: Paths) -> Result<()> {
     let (log_writer, _keep_log_open) = tracing_appender::non_blocking(log_file);
     tracing_subscriber::registry()
         .with(tracing_subscriber::filter::LevelFilter::INFO)
-        .with(tracing_subscriber::fmt::layer())
-        .with(tracing_subscriber::fmt::layer().with_ansi(false).with_writer(log_writer))
+        .with(tracing_subscriber::fmt::layer().with_timer(log_time()))
+        .with(tracing_subscriber::fmt::layer().with_timer(log_time()).with_ansi(false).with_writer(log_writer))
         .init();
 
     let conn = db::open(&paths.database())?;
@@ -75,6 +75,11 @@ async fn serve(config: Config, paths: Paths) -> Result<()> {
     let router = routes::router(state);
     axum::serve(listener, router.into_make_service_with_connect_info::<SocketAddr>()).await?;
     Ok(())
+}
+
+/// Log lines show local time, like `2026-11-10 18:42:05`.
+fn log_time() -> tracing_subscriber::fmt::time::ChronoLocal {
+    tracing_subscriber::fmt::time::ChronoLocal::new("%Y-%m-%d %H:%M:%S".to_string())
 }
 
 fn run_import(paths: &Paths, args: &[String]) -> Result<()> {

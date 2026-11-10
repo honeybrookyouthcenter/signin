@@ -1,0 +1,47 @@
+# Settings for Youth Center Sign In.
+#
+# Copy this file to "config.toml", next to signin.exe, and change what you need.
+# Every line is optional. Lines starting with # are notes and are ignored.
+# Restart signin.exe after changing this file.
+
+# The port the pages are served on. The kiosk opens http://OFFICE-PC-NAME:8080
+port = 8080
+
+# Shown on the kiosk.
+name = "Honey Brook Youth Center"
+short_name = "Youth Center"
+tagline = "Sharing Jesus. Giving Hope."
+
+# The one highlight color. Gold matches the HBYC logo.
+# To use a different logo, put a file called "logo.png" next to signin.exe.
+accent_color = "#af890e"
+
+# The name used in the waiver a guardian signs. Leave out to use "the <name>".
+# waiver_name = "the Honey Brook Youth Center"
+
+# The OneDrive folder for nightly backups, daily CSV logs and waiver signatures.
+# Use the same folder the old app used, so old signatures are found too.
+# Note the doubled backslashes. Without this line, those files stay in the
+# "data" folder on this computer only.
+# onedrive_folder = "C:\\Users\\YouthCenter\\OneDrive\\Youth Center Sign In"
+
+# Outlook contacts sync. See "Connect Outlook" in the README for how to get the id.
+[microsoft]
+client_id = ""
+# "consumers" is for a personal Microsoft account (outlook.com, hotmail.com, live.com).
+tenant = "consumers"
+
+# The sentence above the rules, and the rules themselves.
+# rules_intro = "Welcome to the Youth Center! Our goal is to share the hope of Jesus in a safe, structured environment."
+#
+# [[rules]]
+# title = "Respect each other."
+# text = "Romans 12:10 sums it up pretty well! Be kind, even when it's hard."
+#
+# [[rules]]
+# title = "Respect yourself."
+# text = "Be the best you can be, you never know who is watching, so be sure you're reflecting who you are."
+#
+# [[rules]]
+# title = "Have fun and be safe!"
+# text = "The staff are here to help everyone have fun and be safe. But we need you to help, by respecting and obeying the staff."

@@ -1,0 +1,75 @@
+/* Colors and basics shared by the kiosk and the admin page.
+   The look is plain on purpose: a paper-white page, dark type, hairlines,
+   and one accent color taken from the logo. */
+
+:root {
+  /* The accent comes from config.toml (accent_color). Gold is the default. */
+  --accent: #af890e;
+  --accent-ink: color-mix(in srgb, var(--accent) 78%, black);
+  --accent-soft: color-mix(in srgb, var(--accent) 12%, white);
+
+  --ink: #24221e;
+  --text: #24221e;
+  --muted: #736f68;
+  --faint: #a29e96;
+  --line: #e6e3dd;
+  --line-strong: #cfcbc3;
+  --page: #f8f7f4;
+  --card: #ffffff;
+  --press: #f1efea;
+
+  --good: #2f7a4d;
+  --warn: #9a6a0a;
+  --bad: #a8392b;
+
+  --radius: 6px;
+  --radius-card: 12px;
+  --shadow: 0 1px 2px rgb(40 34 20 / 4%), 0 12px 40px rgb(40 34 20 / 7%);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+}
+
+body {
+  background: var(--page);
+  color: var(--text);
+  font-family: 'Segoe UI Variable Text', 'Segoe UI', system-ui, -apple-system, Roboto, 'Helvetica Neue', Arial, sans-serif;
+  line-height: 1.4;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3,
+p {
+  margin: 0;
+}
+
+h1,
+h2,
+h3 {
+  font-family: 'Segoe UI Variable Display', 'Segoe UI', system-ui, -apple-system, Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+}

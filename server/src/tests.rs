@@ -106,6 +106,7 @@ async fn kiosk_sign_up_sign_out_and_undo() {
     assert_eq!(config["name"], "Honey Brook Youth Center");
     assert_eq!(config["rules"].as_array().unwrap().len(), 3);
     assert!(config["waiver_text"].as_str().unwrap().contains("the Honey Brook Youth Center"));
+    assert!(config["started"].is_string());
 
     // Signing up also signs the kid in, and saves the signature.
     let (sam, visit) = server.sign_up(" Sam ", "Reed").await;
@@ -304,7 +305,8 @@ async fn pages_are_told_when_something_changes() {
     server.sign_up("Sam", "Reed").await;
 
     let chunk = tokio::time::timeout(Duration::from_secs(5), events.chunk()).await.unwrap().unwrap().unwrap();
-    assert!(String::from_utf8_lossy(&chunk).contains("event: changed"));
+    // Browsers ignore an event with no data, so check that it has some.
+    assert_eq!(String::from_utf8_lossy(&chunk), "event: changed\ndata: changed\n\n");
 }
 
 #[tokio::test]

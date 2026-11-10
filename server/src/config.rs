@@ -19,6 +19,10 @@ pub struct Config {
     pub waiver_name: Option<String>,
     /// Small line of text under the name on the kiosk.
     pub tagline: String,
+    /// The one color used for highlights, as a web color. Gold matches the logo.
+    pub accent_color: String,
+    /// The sentence shown above the rules.
+    pub rules_intro: String,
     /// The OneDrive folder for backups, daily CSV logs and waiver signatures.
     /// When it is not set, those files go into the `data` folder instead.
     pub onedrive_folder: Option<PathBuf>,
@@ -52,6 +56,8 @@ impl Default for Config {
             short_name: "Youth Center".into(),
             waiver_name: None,
             tagline: "Sharing Jesus. Giving Hope.".into(),
+            accent_color: "#af890e".into(),
+            rules_intro: "Welcome to the Youth Center! Our goal is to share the hope of Jesus in a safe, structured environment.".into(),
             onedrive_folder: None,
             microsoft: Microsoft::default(),
             rules: vec![
@@ -124,6 +130,8 @@ employees, agents, and representatives, occurring before, during, or after parti
 /// Where files live on disk.
 #[derive(Debug, Clone)]
 pub struct Paths {
+    /// Folder holding `config.toml`, and `logo.png` if the center has its own.
+    pub base: PathBuf,
     /// Folder holding `signin.db` and the log files.
     pub data: PathBuf,
     /// Where backups, CSV logs and waivers go: the OneDrive folder if set, else `data`.
@@ -136,8 +144,8 @@ impl Paths {
     pub fn new(base: &Path, config: &Config) -> Paths {
         let data = base.join("data");
         match &config.onedrive_folder {
-            Some(folder) => Paths { data, shared: folder.clone(), has_onedrive: true },
-            None => Paths { shared: data.clone(), data, has_onedrive: false },
+            Some(folder) => Paths { base: base.to_path_buf(), data, shared: folder.clone(), has_onedrive: true },
+            None => Paths { base: base.to_path_buf(), shared: data.clone(), data, has_onedrive: false },
         }
     }
 
@@ -172,5 +180,38 @@ pub fn base_dir() -> PathBuf {
     match std::env::current_exe() {
         Ok(exe) => exe.parent().map(Path::to_path_buf).unwrap_or(current),
         Err(_) => current,
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn the_example_config_is_valid() {
+        let config: Config = toml::from_str(include_str!("../../config.example.toml")).unwrap();
+        assert_eq!(config.port, 8080);
+        assert_eq!(config.microsoft.tenant, "consumers");
+        assert_eq!(config.rules.len(), 3);
+        assert_eq!(config.waiver_name(), "the Honey Brook Youth Center");
+    }
+
+    #[test]
+    fn a_config_can_change_just_a_few_things() {
+        let text = r#"
+            name = "Honey Brook Community Church"
+            short_name = "HBCC"
+            waiver_name = "Honey Brook Community Church"
+            onedrive_folder = "C:\\Users\\Office\\OneDrive\\HBCC Sign In"
+
+            [microsoft]
+            client_id = "abc"
+        "#;
+        let config: Config = toml::from_str(text).unwrap();
+        assert_eq!(config.short_name, "HBCC");
+        assert_eq!(config.port, 8080);
+        assert_eq!(config.microsoft.client_id, "abc");
+        assert_eq!(config.onedrive_folder.as_ref().unwrap().to_string_lossy(), "C:\\Users\\Office\\OneDrive\\HBCC Sign In");
+        assert!(config.waiver_text().contains("attendance at Honey Brook Community Church or"));
     }
 }

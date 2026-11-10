@@ -21,7 +21,7 @@ tokio-stream = { version = "0.1", features = ["sync"] }
 toml = "0.9"
 tracing = "0.1"
 tracing-appender = "0.2"
-tracing-subscriber = "0.3"
+tracing-subscriber = { version = "0.3", features = ["chrono"] }
 uuid = { version = "1", features = ["v4", "v5"] }
 
 [profile.release]
