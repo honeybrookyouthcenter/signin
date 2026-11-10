@@ -74,8 +74,8 @@ jobs:
       - name: Collect the download
         shell: bash
         run: |
-          mkdir YouthCenterSignIn
-          cp server/target/release/signin.exe install/* README.md YouthCenterSignIn/
+          mkdir download
+          cp server/target/release/signin.exe install/* README.md download/
 
       # Runs the installer for real, the way staff would, then checks the
       # program answers. Running it a second time checks that updating works.
@@ -84,7 +84,7 @@ jobs:
         run: |
           $ErrorActionPreference = 'Stop'
           foreach ($run in 'install', 'update') {
-            powershell -NoProfile -NonInteractive -ExecutionPolicy Bypass -File YouthCenterSignIn\install.ps1
+            powershell -NoProfile -NonInteractive -ExecutionPolicy Bypass -File download\install.ps1
             if ($LASTEXITCODE -ne 0) { throw "The installer failed ($run)" }
             $config = Invoke-RestMethod http://localhost:8080/api/kiosk/config
             if ($config.name -ne 'Honey Brook Youth Center') { throw "The program is not answering ($run)" }
@@ -98,12 +98,12 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: YouthCenterSignIn
-          path: YouthCenterSignIn
+          path: download
       - name: Publish a release
         if: startsWith(github.ref, 'refs/tags/v')
         shell: powershell
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          Compress-Archive -Path YouthCenterSignIn -DestinationPath YouthCenterSignIn.zip
+          Compress-Archive -Path download\* -DestinationPath YouthCenterSignIn.zip
           gh release create $env:GITHUB_REF_NAME --generate-notes YouthCenterSignIn.zip
