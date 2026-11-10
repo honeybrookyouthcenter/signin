@@ -4,15 +4,8 @@
   // Keys act on "pointerdown" and cancel the event, so pressing one never
   // takes the cursor out of the text box.
 
-  let {
-    layout = 'full',
-    onenter,
-  }: {
-    /** 'letters' is just A–Z for the name search. 'full' adds numbers and symbols. */
-    layout?: 'letters' | 'full';
-    /** Called when Next is pressed. Without it, Next moves to the next text box. */
-    onenter?: () => void;
-  } = $props();
+  /** 'letters' is just A–Z for the name search. 'full' adds numbers and symbols. */
+  let { layout = 'full' }: { layout?: 'letters' | 'full' } = $props();
 
   const NUMBERS = '1234567890'.split('');
   const LETTER_ROWS = ['qwertyuiop', 'asdfghjkl', 'zxcvbnm'].map((row) => row.split(''));
@@ -69,8 +62,8 @@
     input.dispatchEvent(new Event('input', { bubbles: true }));
   }
 
+  /** Moves the cursor to the next text box. */
   function next() {
-    if (onenter) return onenter();
     const input = box();
     if (!input) return;
     const boxes = Array.from(document.querySelectorAll<HTMLInputElement>('input[type="text"]:not([disabled])'));
@@ -195,8 +188,8 @@
     font-size: 1.2rem;
   }
   .wide.on {
-    border-color: var(--ink);
-    background: var(--ink);
+    border-color: var(--text);
+    background: var(--text);
     color: #fff;
   }
   .next {

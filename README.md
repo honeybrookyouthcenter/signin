@@ -13,14 +13,72 @@ computer.
 
 ## Contents
 
+- [Install](#install)
 - [How it works](#how-it-works)
-- [Set it up at the center](#set-it-up-at-the-center)
 - [Using it](#using-it)
 - [Bring over the old sign-in logs](#bring-over-the-old-sign-in-logs)
 - [Looking after it](#looking-after-it)
+- [Get the Microsoft app ID](#get-the-microsoft-app-id) (once, by whoever maintains this)
 - [Working on the code](#working-on-the-code)
 - [What has and hasn't been tested](#what-has-and-hasnt-been-tested)
 - [Switching over from the old app](#switching-over-from-the-old-app)
+
+---
+
+## Install
+
+### On the office computer
+
+Sign in to Windows as the person who normally uses the office computer, with OneDrive
+signed in.
+
+1. Download **YouthCenterSignIn.zip** from the latest [release](../../releases).
+2. Right-click the zip, choose **Extract All**, and open the extracted folder.
+3. Double-click **Install**. If Windows says "Windows protected your PC", choose
+   **More info**, then **Run anyway**.
+4. When Windows asks "Do you want to allow this app to make changes?", choose **Yes**.
+
+The installer copies the program to `C:\YouthCenterSignIn`, makes it start whenever you
+sign in to Windows, lets the tablet through the firewall, and stops the computer from
+sleeping. When it finishes it opens the **staff page** in your browser and shows the
+**address for the tablet**. Write that address down. A "Sign In - Staff page" shortcut is
+also put on the desktop.
+
+Then, on the staff page under **Settings**:
+
+5. **Admin PIN:** choose a PIN. This computer never needs it. Every other device does.
+6. **Outlook contacts:** choose **Connect Outlook**. A short code and a Microsoft web
+   address appear. Open that address on any phone or computer, type the code, and sign
+   in with **the youth center's Microsoft account**. The page changes to "connected" by
+   itself and the kids appear under **Kids**.
+7. **Backups:** check that the folder shown is inside OneDrive.
+
+### On the tablet
+
+8. In Edge, open the address the installer showed, like `http://OFFICE-PC:8080`, and
+   check the sign-in screen appears. The tablet must be on the same Wi-Fi as the office
+   computer.
+9. Windows Settings → Accounts → Other users → **Set up a kiosk** → Microsoft Edge →
+   **As a digital sign or interactive display** → enter that address.
+
+That's it. To bring over the old app's sign-in history, see
+[Bring over the old sign-in logs](#bring-over-the-old-sign-in-logs).
+
+### If something doesn't work
+
+- **The tablet can't open the address.** Use the second address the installer showed
+  (numbers, like `http://192.168.1.20:8080`). If that works, ask whoever looks after the
+  router to give the office computer a fixed address, so it never changes. If neither
+  works, run **Install** again and answer **Y** when it asks about marking the network
+  as Private.
+- **Settings says Outlook is "not set up".** This copy of the program has no Microsoft
+  app ID yet. See [Get the Microsoft app ID](#get-the-microsoft-app-id).
+- **Outlook asks to connect again later.** Microsoft forgets the sign-in after about 90
+  days without use, for example over a long break. Choose Connect Outlook again.
+- **Windows shows its own keyboard over the kiosk's.** Switch under Settings → Kiosk →
+  Keyboard on the kiosk.
+- **Changing the name, colors, logo or rules** (for example for the church): edit
+  `C:\YouthCenterSignIn\config.toml` in Notepad. Each setting is explained in the file.
 
 ---
 
@@ -54,84 +112,8 @@ computer.
 - **The tablet doesn't wait on the network.** Each sign-in is saved on the tablet first,
   then sent. If the office PC can't be reached, sign-ins wait on the tablet and are sent
   when it is back, with the time the kid actually tapped.
-- **Easy to hand over.** One `.exe`, one `data` folder, one `config.toml`, and this README.
-
----
-
-## Set it up at the center
-
-About 20 minutes, plus the Microsoft step.
-
-### 1. Office PC
-
-1. Download `signin.exe` and `config.example.toml` from the latest
-   [release](../../releases) into a folder such as `C:\YouthCenterSignIn\`.
-2. Copy `config.example.toml` to `config.toml` and open it in Notepad. Set
-   `onedrive_folder` to the folder the old app used (for example
-   `C:\\Users\\<user>\\OneDrive\\Youth Center Sign In`, with doubled backslashes).
-   Old waiver signatures are found there, and backups go there.
-3. Double-click `signin.exe`. When Windows Firewall asks, allow it on **Private**
-   networks only. A window shows the log. Leave it open for now.
-4. Open <http://localhost:8080/admin>. On **Settings**, set an **Admin PIN**. The office
-   PC never needs the PIN. Every other device does.
-5. Make it start with Windows: Task Scheduler → *Create Task* → trigger **At startup** →
-   action *Start a program* `C:\YouthCenterSignIn\signin.exe`, "Start in"
-   `C:\YouthCenterSignIn` → choose "Run whether user is logged on or not". Restart the PC
-   and check the admin page still opens.
-6. Power settings: never sleep while plugged in.
-7. In the router, give the office PC a fixed address (a "DHCP reservation"). It is the
-   fallback if the tablet can't find the PC by name.
-
-### 2. Connect Outlook
-
-The program needs its own free "app registration" with Microsoft before it may read and
-write the contacts. This is done once.
-
-1. Go to <https://entra.microsoft.com> → **App registrations** → **New registration**.
-   Sign in with any Microsoft account that can use the Azure portal. It does not have to
-   be the youth center's account.
-2. Name: `Youth Center Sign In`. Supported account types: **Personal Microsoft accounts
-   only**. Leave the redirect URI empty. Register.
-3. On the app's **Authentication** page, set **Allow public client flows** to **Yes** and save.
-4. On **API permissions**, add **Microsoft Graph → Delegated** permissions
-   `Contacts.ReadWrite`, `User.Read` and `offline_access`.
-5. Copy the **Application (client) ID** from the Overview page into `config.toml`:
-
-   ```toml
-   [microsoft]
-   client_id = "paste-it-here"
-   ```
-
-6. Restart `signin.exe`. On the admin page, **Settings → Connect Outlook** shows a short
-   code and a Microsoft web address. Open that address on any phone or computer, type the
-   code, and sign in with **the youth center's Microsoft account**. The settings page
-   changes to "connected" by itself, and the kids appear under **Kids**.
-
-Microsoft changes these screens from time to time, so the names may differ slightly. If
-the youth center's account is a work or school account instead of a personal one, pick
-"Accounts in any organizational directory and personal Microsoft accounts" in step 2 and
-set `tenant = "common"` in `config.toml`.
-
-The sign-in is remembered. Microsoft forgets it after about 90 days without use, so after
-a long break the settings page may ask you to connect again.
-
-### 3. Tablet
-
-1. Make sure the tablet is on the same Wi-Fi as the office PC, and that
-   `http://OFFICE-PC-NAME:8080` opens in Edge. If the name doesn't work, use the PC's
-   fixed address instead, like `http://192.168.1.20:8080`.
-2. Settings → Accounts → Other users → **Set up a kiosk** → Microsoft Edge → **As a
-   digital sign or interactive display** → enter that address.
-
-The kiosk page has its own on-screen keyboard, so the Windows touch keyboard should stay
-hidden. If Windows shows its keyboard anyway, or you'd rather use it, switch under
-**Settings → Kiosk → Keyboard on the kiosk**.
-
-### Another organization (HBCC)
-
-The same program works for the church. In `config.toml`, change `name`, `short_name`,
-`tagline`, `waiver_name`, `rules_intro`, the `[[rules]]` and `accent_color`, and put the
-church's `logo.png` next to `signin.exe`.
+- **Easy to hand over.** One folder (`C:\YouthCenterSignIn`) holds the program, its
+  settings and its data.
 
 ---
 
@@ -186,11 +168,13 @@ The old app wrote one file per day (`2021-05-14.json`) into its OneDrive folder.
 command copies them all into the new database:
 
 ```
-signin.exe import "C:\Users\<user>\OneDrive\Youth Center Sign In" --dry-run
-signin.exe import "C:\Users\<user>\OneDrive\Youth Center Sign In"
+cd C:\YouthCenterSignIn
+signin.exe import "%OneDrive%\Youth Center Sign In" --dry-run
+signin.exe import "%OneDrive%\Youth Center Sign In"
 ```
 
-Run it from the folder `signin.exe` is in. It is fine to run while the program is running.
+Type these in a Command Prompt window (press Win+R, type `cmd`). It is fine to run them
+while the program is running.
 
 - `--dry-run` only reports: visits per day, files it could not read, and what would be
   added. Check the totals against the old app before running it for real.
@@ -213,20 +197,26 @@ Run it from the folder `signin.exe` is in. It is fine to run while the program i
 
 | What | Where |
 |---|---|
-| Database (sign-ins, kids, settings) | `data\signin.db` next to the exe |
+| Database (sign-ins, kids, settings) | `C:\YouthCenterSignIn\data\signin.db` |
 | Nightly database copies (last 60) | `<OneDrive folder>\Backups\signin-YYYY-MM-DD.db` |
 | Daily logs for Excel | `<OneDrive folder>\Logs\YYYY-MM-DD.csv` |
 | Guardian signatures | `<OneDrive folder>\Waivers\<Name>.png` |
-| Program log (errors, sync activity) | `data\logs\signin.log.YYYY-MM-DD` |
+| Program log (errors, sync activity) | `C:\YouthCenterSignIn\data\logs\signin.log.YYYY-MM-DD` |
 
-The live database is deliberately **not** in OneDrive, because syncing a database file
+The OneDrive folder is `Youth Center Sign In` in this computer's OneDrive, the same
+folder the old app used. The live database is deliberately **not** in OneDrive, because syncing a database file
 while it is in use can damage it. Only finished copies go there.
 
-- **Update:** replace `signin.exe` and restart the PC (or end and re-run the scheduled
-  task). The database upgrades itself, and the kiosk page reloads itself.
-- **Restore a backup:** stop the program, copy a backup file over `data\signin.db`, start it.
-- **Move to a new PC:** copy the whole folder, redo steps 5 to 7 of the office PC setup,
-  and point the tablet at the new PC's name.
+- **Update:** download the new zip and double-click **Install** again. Settings and data
+  are kept, and the kiosk page reloads itself.
+- **Restore a backup:** close the program's window, copy a backup file over
+  `C:\YouthCenterSignIn\data\signin.db`, and start the program again from the Start
+  menu's Startup folder or by restarting the computer.
+- **Move to a new PC:** run **Install** on the new PC, close the program, copy the `data`
+  folder and `config.toml` from the old PC over the new ones, and restart. Connect Outlook
+  again, and give the tablet the new address.
+- **Remove it:** delete the "Youth Center Sign In" shortcut from the Startup folder
+  (press Win+R, type `shell:startup`), then delete `C:\YouthCenterSignIn`.
 - **Forgot the PIN:** set a new one on the office PC under Settings. It doesn't ask for the old one.
 - **Kiosk says it can't reach the office computer:** check the PC is on and awake, and
   that both are on the same Wi-Fi. Sign-ins made meanwhile are kept on the tablet until it
@@ -234,6 +224,49 @@ while it is in use can damage it. Only finished copies go there.
   then restart the tablet.
 - **Handing off to someone else:** they need this README, the admin PIN, the youth
   center's Microsoft account, and access to this GitHub repo.
+
+---
+
+## Get the Microsoft app ID
+
+Before the program may read and write Outlook contacts, Microsoft wants it registered as
+an "app". This is free and done **once**, by whoever maintains this. The ID it gives is
+not a secret. It is built into the program, so staff never see this step.
+
+1. Go to <https://entra.microsoft.com> and sign in. Any Microsoft account that can open
+   the Azure portal works. It does not have to be the youth center's account. If Microsoft
+   asks you to sign up for Azure first, the free sign-up is enough and nothing here costs money.
+2. Open **Applications → App registrations → New registration**.
+   - Name: `Youth Center Sign In`
+   - Supported account types: **Personal Microsoft accounts only**
+   - Redirect URI: leave empty
+   - Choose **Register**.
+3. Open **Authentication**. Under "Advanced settings", set **Allow public client flows**
+   to **Yes**, and save.
+4. Open **API permissions → Add a permission → Microsoft Graph → Delegated permissions**,
+   tick **Contacts.ReadWrite**, and choose **Add permissions**. `User.Read` is already there.
+5. Open **Overview** and copy the **Application (client) ID**. It looks like
+   `1a2b3c4d-0000-1111-2222-333344445555`.
+6. Paste it into `server/src/config.rs`:
+
+   ```rust
+   pub const BUILT_IN_CLIENT_ID: &str = "paste-it-here";
+   ```
+
+   Commit, and push a new version tag to publish a release with the ID inside.
+
+To try an ID without rebuilding, or to use a different registration on one computer, put
+it in `C:\YouthCenterSignIn\config.toml`, which wins over the built-in one:
+
+```toml
+[microsoft]
+client_id = "paste-it-here"
+```
+
+Microsoft renames these screens from time to time, so the labels may differ a little. If
+the youth center's account is a work or school account instead of a personal one, choose
+"Accounts in any organizational directory and personal Microsoft accounts" in step 2 and
+set `tenant = "common"` in `config.toml`.
 
 ---
 
@@ -247,7 +280,7 @@ server/                 Rust: the program that runs on the office PC
   src/app.rs            shared state and the error type
   src/routes/kiosk.rs   what the tablet calls
   src/routes/admin.rs   what the staff page calls, and the PIN check
-  src/routes/mod.rs     the route table, live-update stream, and the web pages
+  src/routes/mod.rs     the route table and the web pages
   src/graph.rs          Outlook contacts sync
   src/notes.rs          the old "notes" format for grade and guardian
   src/backup.rs         nightly sign-out, backups and CSV logs
@@ -258,7 +291,10 @@ web/                    Svelte: the pages
   src/kiosk/            the tablet page
   src/admin/            the staff page
   src/lib/              shared: server calls, search, the offline queue
-config.example.toml
+install/                what staff download, next to signin.exe
+  Install.cmd           double-click to install or update
+  install.ps1           the installer itself
+  config.toml           the settings file, with every setting explained
 ```
 
 You need [Rust](https://rustup.rs) and [Node.js](https://nodejs.org) 22 or newer.
@@ -278,8 +314,9 @@ While working on the pages, run `cargo run` in one terminal and `npm run dev` in
 in another. Open the address Vite prints, and the pages reload as you save. `npm run check`
 type-checks the pages and `npm test` runs their tests.
 
-GitHub Actions (`.github/workflows/signin.yml`) runs all tests on every push and builds
-`signin.exe` on Windows. Pushing a tag such as `v2.0.1` publishes it as a release.
+GitHub Actions (`.github/workflows/signin.yml`) runs all tests on every push, builds
+`signin.exe` on Windows, and runs the installer there to check the program starts.
+Pushing a tag such as `v2.0.1` publishes `YouthCenterSignIn.zip` as a release.
 
 **Notes for whoever maintains this:**
 
@@ -287,6 +324,10 @@ GitHub Actions (`.github/workflows/signin.yml`) runs all tests on every push and
   Crates used: `axum` + `tokio` (web server), `rusqlite` (SQLite, compiled in), `reqwest`
   (calls to Microsoft), `rust-embed` (pages inside the exe), `serde`, `chrono`, `uuid`,
   `toml`, `tracing`, `anyhow`.
+- The pages stay current by asking the server again every 10 to 20 seconds. There is no
+  push channel from server to page.
+- Things only needed while the program runs (logged-in sessions, the Outlook token) are
+  in one `Memory` struct in `app.rs`. Everything that must survive a restart is in SQLite.
 - Times are stored as local time text (`2026-11-10T18:42:05`).
 - To change the database layout, add a new entry to `MIGRATIONS` in `db.rs`. Never edit
   an old one.

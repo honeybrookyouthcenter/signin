@@ -119,7 +119,7 @@ fn check_entry(log: OldLog) -> Option<OldVisit> {
     let no_guid = Uuid::nil().to_string();
     let id = match log.guid.map(|guid| guid.to_lowercase()) {
         Some(guid) if !guid.is_empty() && guid != no_guid => guid,
-        _ => Uuid::new_v5(&Uuid::NAMESPACE_OID, format!("{outlook_id}|{sign_in_text}").as_bytes()).to_string(),
+        _ => format!("old-{outlook_id}-{sign_in_text}"),
     };
 
     Some(OldVisit {
@@ -137,7 +137,10 @@ fn read_folder(folder: &Path, report: &mut ImportReport) -> Result<Vec<OldVisit>
     for entry in std::fs::read_dir(folder).with_context(|| format!("could not open {}", folder.display()))? {
         let path = entry?.path();
         let name = path.file_name().unwrap_or_default().to_string_lossy().to_string();
-        if let (true, Some((_, side_copy))) = (path.is_file(), log_file_day(&name)) {
+        if !path.is_file() {
+            continue;
+        }
+        if let Some((_, side_copy)) = log_file_day(&name) {
             files.push((path, side_copy));
         }
     }

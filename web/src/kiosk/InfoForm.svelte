@@ -4,8 +4,10 @@
   // retyped. The rest stays as it was.
 
   import type { InfoChanges, MaskedInfo } from '../lib/types';
+  import GradeChips from './GradeChips.svelte';
   import Keyboard from './Keyboard.svelte';
-  import { kiosk } from './state.svelte';
+  import { inputMode } from './state.svelte';
+  import TextField from './TextField.svelte';
 
   let {
     firstName,
@@ -35,8 +37,6 @@
   let guardian_phone = $state('');
   let guardian_email = $state('');
 
-  let useKeyboard = $derived(kiosk.config?.use_keyboard ?? true);
-  let inputmode = $derived<'none' | 'text'>(useKeyboard ? 'none' : 'text');
 
   function save() {
     const changes: InfoChanges = {};
@@ -73,28 +73,12 @@
 
   <div class="form-body">
     <div class="fields">
-      <div class="field full">
-        <span>Grade</span>
-        <div class="chips">
-          {#each kiosk.config?.grades ?? [] as option}
-            <button type="button" class="chip" class:on={grade === option} onclick={() => (grade = option)}>{option}</button>
-          {/each}
-        </div>
-      </div>
+      <GradeChips bind:value={grade} />
 
       {#if editAddress}
-        <label class="field full">
-          <span>Street address</span>
-          <input type="text" bind:value={street} data-caps="words" {inputmode} autocomplete="off" spellcheck="false" />
-        </label>
-        <label class="field">
-          <span>City</span>
-          <input type="text" bind:value={city} data-caps="words" {inputmode} autocomplete="off" spellcheck="false" />
-        </label>
-        <label class="field">
-          <span>State</span>
-          <input type="text" bind:value={region} data-caps="words" {inputmode} autocomplete="off" spellcheck="false" />
-        </label>
+        <TextField label="Street address" bind:value={street} caps wide />
+        <TextField label="City" bind:value={city} caps />
+        <TextField label="State" bind:value={region} caps />
       {:else}
         <div class="field full">
           <span>Home</span>
@@ -106,18 +90,9 @@
       {/if}
 
       {#if editGuardian}
-        <label class="field">
-          <span>Guardian's full name</span>
-          <input type="text" bind:value={guardian_name} data-caps="words" {inputmode} autocomplete="off" spellcheck="false" />
-        </label>
-        <label class="field">
-          <span>Guardian's phone number</span>
-          <input type="text" bind:value={guardian_phone} {inputmode} autocomplete="off" />
-        </label>
-        <label class="field full">
-          <span>Guardian's email (optional)</span>
-          <input type="text" bind:value={guardian_email} {inputmode} autocomplete="off" spellcheck="false" />
-        </label>
+        <TextField label="Guardian's full name" bind:value={guardian_name} caps />
+        <TextField label="Guardian's phone number" bind:value={guardian_phone} />
+        <TextField label="Guardian's email (optional)" bind:value={guardian_email} wide />
       {:else}
         <div class="field full">
           <span>Guardian</span>
@@ -130,7 +105,7 @@
     </div>
   </div>
 
-  {#if useKeyboard && (editAddress || editGuardian)}
+  {#if inputMode() === 'none' && (editAddress || editGuardian)}
     <Keyboard />
   {/if}
 </div>

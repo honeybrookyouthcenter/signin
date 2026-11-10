@@ -54,9 +54,8 @@
 
   const syncNow = () =>
     run('sync', async () => {
-      const result = await api<{ sent: number; received: number; errors: string[] }>('POST', '/api/admin/sync', {});
-      if (result.errors.length > 0) throw new Error(result.errors[0]);
-      return `Synced with Outlook: ${result.sent} sent, ${result.received} received.`;
+      await api('POST', '/api/admin/sync');
+      return 'Syncing with Outlook now. "Last synced" below updates when it is done.';
     });
 
   const saveSettings = () =>
@@ -94,8 +93,9 @@
     <h2>Outlook contacts</h2>
     {#if !outlook.configured}
       <p>
-        <span class="tag warn">not set up</span> Outlook sync needs a Microsoft <code>client_id</code> in
-        <code>config.toml</code>. The README explains how to get one. Until then the kids list lives only on this computer.
+        <span class="tag warn">not set up</span> Outlook sync needs a Microsoft app ID, and this copy of the program
+        has none yet. The README explains how to get one ("Get the Microsoft app ID"). Until then the kids list lives
+        only on this computer.
       </p>
     {:else if outlook.login}
       <p>To connect, open this page on any phone or computer and type in the code:</p>
@@ -120,7 +120,7 @@
       </p>
       {#if outlook.last_error}<div class="notice bad" style="margin-top: 0.6rem">{outlook.last_error}</div>{/if}
       <div class="row">
-        <button type="button" class="btn primary" disabled={busy !== ''} onclick={syncNow}>{busy === 'sync' ? 'Syncing…' : 'Sync now'}</button>
+        <button type="button" class="btn primary" disabled={busy !== ''} onclick={syncNow}>Sync now</button>
         <button type="button" class="btn" disabled={busy !== ''} onclick={disconnect}>Disconnect</button>
       </div>
     {/if}
@@ -136,7 +136,6 @@
       {:else}
         <span class="tag bad">not connected</span> Last seen {ago(status.kiosk.seconds_since_seen)}.
       {/if}
-      {#if status.kiosk.waiting > 0}<span class="tag warn">{status.kiosk.waiting} sign-ins waiting on the tablet</span>{/if}
     </p>
     <div class="form" style="margin-top: 0.8rem; max-width: 34rem">
       <label>
@@ -165,7 +164,8 @@
     <p class="muted small">Saved every night to <code>{status.backup.folder}</code></p>
     {#if !status.backup.in_onedrive}
       <div class="notice" style="margin-top: 0.6rem">
-        Backups are only on this computer. Set <code>onedrive_folder</code> in <code>config.toml</code> to keep a copy in OneDrive.
+        Backups are only on this computer, because it has no OneDrive folder. Sign in to OneDrive on this computer and
+        restart the program, or set <code>onedrive_folder</code> in <code>config.toml</code>.
       </div>
     {/if}
     <div class="row">

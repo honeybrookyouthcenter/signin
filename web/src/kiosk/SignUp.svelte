@@ -5,10 +5,12 @@
   import { normalize } from '../lib/search';
   import { toDateText } from '../lib/time';
   import type { KioskPerson, SignUpForm } from '../lib/types';
+  import GradeChips from './GradeChips.svelte';
   import Keyboard from './Keyboard.svelte';
   import Rules from './Rules.svelte';
   import SignaturePad from './SignaturePad.svelte';
-  import { kiosk } from './state.svelte';
+  import { inputMode, kiosk } from './state.svelte';
+  import TextField from './TextField.svelte';
 
   let {
     typedName = '',
@@ -57,8 +59,6 @@
   let existing = $state<KioskPerson | null>(null);
   let existingDismissed = false;
 
-  let useKeyboard = $derived(kiosk.config?.use_keyboard ?? true);
-  let inputmode = $derived<'none' | 'text'>(useKeyboard ? 'none' : 'text');
 
   function birthday(): Date | null {
     if (!month || !day || !year) return null;
@@ -163,14 +163,8 @@
   <div class="form-body">
     {#if step === 1}
       <div class="fields">
-        <label class="field">
-          <span>First name</span>
-          <input type="text" bind:value={first_name} data-caps="words" {inputmode} autocomplete="off" spellcheck="false" />
-        </label>
-        <label class="field">
-          <span>Last name</span>
-          <input type="text" bind:value={last_name} data-caps="words" {inputmode} autocomplete="off" spellcheck="false" />
-        </label>
+        <TextField label="First name" bind:value={first_name} caps />
+        <TextField label="Last name" bind:value={last_name} caps />
         <label class="field third">
           <span>Birthday</span>
           <select bind:value={month}>
@@ -198,41 +192,16 @@
             {/each}
           </select>
         </label>
-        <div class="field full">
-          <span>Grade</span>
-          <div class="chips">
-            {#each kiosk.config?.grades ?? [] as option}
-              <button type="button" class="chip" class:on={grade === option} onclick={() => (grade = option)}>{option}</button>
-            {/each}
-          </div>
-        </div>
+        <GradeChips bind:value={grade} />
       </div>
     {:else if step === 2}
       <div class="fields">
-        <label class="field full">
-          <span>Street address</span>
-          <input type="text" bind:value={street} data-caps="words" {inputmode} autocomplete="off" spellcheck="false" />
-        </label>
-        <label class="field">
-          <span>City</span>
-          <input type="text" bind:value={city} data-caps="words" {inputmode} autocomplete="off" spellcheck="false" />
-        </label>
-        <label class="field">
-          <span>State</span>
-          <input type="text" bind:value={region} data-caps="words" {inputmode} autocomplete="off" spellcheck="false" />
-        </label>
-        <label class="field">
-          <span>Guardian's full name</span>
-          <input type="text" bind:value={guardian_name} data-caps="words" {inputmode} autocomplete="off" spellcheck="false" />
-        </label>
-        <label class="field">
-          <span>Guardian's phone number</span>
-          <input type="text" bind:value={guardian_phone} {inputmode} autocomplete="off" />
-        </label>
-        <label class="field full">
-          <span>Guardian's email (optional)</span>
-          <input type="text" bind:value={guardian_email} {inputmode} autocomplete="off" spellcheck="false" />
-        </label>
+        <TextField label="Street address" bind:value={street} caps wide />
+        <TextField label="City" bind:value={city} caps />
+        <TextField label="State" bind:value={region} caps />
+        <TextField label="Guardian's full name" bind:value={guardian_name} caps />
+        <TextField label="Guardian's phone number" bind:value={guardian_phone} />
+        <TextField label="Guardian's email (optional)" bind:value={guardian_email} wide />
       </div>
     {:else}
       <div class="last-step">
@@ -261,7 +230,7 @@
     {/if}
   </div>
 
-  {#if useKeyboard && step < 3}
+  {#if inputMode() === 'none' && step < 3}
     <Keyboard />
   {/if}
 </div>
@@ -325,29 +294,12 @@
     width: 1.8rem;
     height: 1.8rem;
     margin: 0;
-    accent-color: var(--ink);
+    accent-color: var(--text);
   }
   .sign-title {
     display: flex;
     justify-content: space-between;
     align-items: baseline;
     margin: 1.6rem 0 0.4rem;
-  }
-  .link {
-    padding: 0;
-    border: 0;
-    background: none;
-    color: var(--accent-ink);
-    text-decoration: underline;
-  }
-  .backdrop {
-    position: fixed;
-    inset: 0;
-    z-index: 10;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 2rem;
-    background: rgb(36 34 30 / 35%);
   }
 </style>

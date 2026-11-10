@@ -104,21 +104,21 @@ pub async fn start_login(state: &Shared) -> Result<DeviceLogin> {
 
     let login = DeviceLogin { user_code: code.user_code.clone(), verification_uri: code.verification_uri.clone() };
     {
-        let mut graph = state.graph.lock().unwrap();
-        graph.login = Some(login.clone());
-        graph.last_error = None;
+        let mut memory = state.memory();
+        memory.outlook.login = Some(login.clone());
+        memory.outlook.last_error = None;
     }
 
     let state = state.clone();
     tokio::spawn(async move {
         let result = wait_for_login(&state, &code).await;
-        let mut graph = state.graph.lock().unwrap();
-        graph.login = None;
+        let mut memory = state.memory();
+        memory.outlook.login = None;
         match result {
             Ok(()) => state.sync_now.notify_one(),
             Err(error) => {
                 tracing::warn!("Microsoft sign-in did not finish: {error:#}");
-                graph.last_error = Some(format!("Sign-in did not finish: {error}"));
+                memory.outlook.last_error = Some(format!("Sign-in did not finish: {error}"));
             }
         }
     });
@@ -168,7 +168,7 @@ fn save_token(state: &AppState, token: TokenResponse) -> Result<()> {
     }
     // Stop using the token a minute early so it never expires mid-request.
     let expires = Instant::now() + Duration::from_secs(token.expires_in.saturating_sub(60));
-    state.graph.lock().unwrap().access_token = Some((token.access_token, expires));
+    state.memory().outlook.access_token = Some((token.access_token, expires));
     Ok(())
 }
 
@@ -192,16 +192,16 @@ pub fn disconnect(state: &AppState) -> Result<()> {
     let conn = state.db();
     db::delete_setting(&conn, "ms_refresh_token")?;
     db::delete_setting(&conn, "ms_account")?;
-    let mut graph = state.graph.lock().unwrap();
-    graph.access_token = None;
-    graph.last_error = None;
+    let mut memory = state.memory();
+    memory.outlook.access_token = None;
+    memory.outlook.last_error = None;
     Ok(())
 }
 
 /// A token that proves to Microsoft who we are. They last about an hour, so
 /// we keep the current one and get a new one when it runs out.
 async fn access_token(state: &Shared) -> Result<String> {
-    if let Some((token, expires)) = &state.graph.lock().unwrap().access_token {
+    if let Some((token, expires)) = &state.memory().outlook.access_token {
         if Instant::now() < *expires {
             return Ok(token.clone());
         }
@@ -371,10 +371,9 @@ pub async fn sync_loop(state: Shared) {
     }
 }
 
-/// Runs one sync and records how it went. Only one sync runs at a time.
+/// Runs one sync and records how it went. Only `sync_loop` calls this, so
+/// two syncs never run at the same time.
 pub async fn sync(state: &Shared) -> SyncSummary {
-    let _one_at_a_time = state.sync_lock.lock().await;
-
     let summary = match sync_steps(state).await {
         Ok(summary) => summary,
         Err(error) => SyncSummary { errors: vec![format!("{error:#}")], ..SyncSummary::default() },
@@ -382,15 +381,14 @@ pub async fn sync(state: &Shared) -> SyncSummary {
 
     if summary.pushed + summary.pulled > 0 {
         tracing::info!("Outlook sync: sent {}, received {}", summary.pushed, summary.pulled);
-        state.changed();
     }
     for error in &summary.errors {
         tracing::warn!("Outlook sync: {error}");
     }
 
-    let mut graph = state.graph.lock().unwrap();
-    graph.last_sync = Some(db::time_text(db::now()));
-    graph.last_error = summary.errors.first().cloned();
+    let mut memory = state.memory();
+    memory.outlook.last_sync = Some(db::time_text(db::now()));
+    memory.outlook.last_error = summary.errors.first().cloned();
     summary
 }
 

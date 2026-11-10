@@ -5,7 +5,7 @@
 
 import { ApiError, api } from './api';
 
-export interface QueuedRequest {
+interface QueuedRequest {
   id: string;
   method: string;
   url: string;
@@ -14,7 +14,7 @@ export interface QueuedRequest {
   at: number;
 }
 
-export interface Storage {
+interface Storage {
   getItem(key: string): string | null;
   setItem(key: string, value: string): void;
 }
@@ -26,8 +26,7 @@ const RETRY_MS = 3000;
 
 export class Queue {
   private items: QueuedRequest[] = [];
-  /** The request being sent right now. It can no longer be cancelled. */
-  private sending: string | null = null;
+  private sending = false;
   private retryTimer: ReturnType<typeof setTimeout> | null = null;
   private nextId = 1;
 
@@ -57,23 +56,10 @@ export class Queue {
     void this.flush();
   }
 
-  /**
-   * Removes the first waiting request that `matches`, if it has not started
-   * sending. Returns true if one was removed. Used by Undo: undoing a sign-in
-   * that never left the tablet just drops it.
-   */
-  cancel(matches: (request: QueuedRequest) => boolean): boolean {
-    const index = this.items.findIndex((item) => item.id !== this.sending && matches(item));
-    if (index === -1) return false;
-    this.items.splice(index, 1);
-    this.save();
-    this.onChange(this.items.length, true);
-    return true;
-  }
-
   /** Sends everything that is waiting, oldest first. */
   async flush(): Promise<void> {
-    if (this.sending !== null) return;
+    if (this.sending) return;
+    this.sending = true;
     if (this.retryTimer !== null) {
       clearTimeout(this.retryTimer);
       this.retryTimer = null;
@@ -81,7 +67,6 @@ export class Queue {
 
     while (this.items.length > 0) {
       const item = this.items[0];
-      this.sending = item.id;
       try {
         // Say how long ago it happened, not what time it was. The tablet's
         // clock may be wrong, but it can still measure a length of time.
@@ -92,7 +77,7 @@ export class Queue {
         const serverRefused = status >= 400 && status < 500;
         if (!serverRefused) {
           // Not reachable, or the server had a problem. Keep it and try again soon.
-          this.sending = null;
+          this.sending = false;
           this.onChange(this.items.length, false);
           this.retryTimer = setTimeout(() => void this.flush(), RETRY_MS);
           return;
@@ -101,11 +86,11 @@ export class Queue {
         // deleted). Sending it again will never work, so let it go.
         console.warn('The server refused a saved request', item, error);
       }
-      this.sending = null;
       this.items = this.items.filter((other) => other.id !== item.id);
       this.save();
       this.onChange(this.items.length, true);
     }
+    this.sending = false;
   }
 
   private save(): void {

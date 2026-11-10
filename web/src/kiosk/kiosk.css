@@ -60,8 +60,8 @@ input {
   background: var(--press);
 }
 .btn.primary {
-  border-color: var(--ink);
-  background: var(--ink);
+  border-color: var(--text);
+  background: var(--text);
   color: #fff;
 }
 .btn.primary:active {
@@ -209,4 +209,27 @@ input {
   display: flex;
   gap: 0.7rem;
   margin-top: 2rem;
+}
+
+/* ---- pop-ups and text links ---- */
+
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  background: rgb(36 34 30 / 35%);
+  animation: screen-in 120ms ease-out;
+}
+
+.link {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--accent-ink);
+  font-style: inherit;
+  text-decoration: underline;
 }

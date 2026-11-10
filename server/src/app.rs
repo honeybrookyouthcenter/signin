@@ -8,7 +8,7 @@ use axum::http::StatusCode;
 use axum::response::{IntoResponse, Response};
 use axum::Json;
 use rusqlite::Connection;
-use tokio::sync::{broadcast, Notify};
+use tokio::sync::Notify;
 
 use crate::config::{Config, Paths};
 use crate::graph::GraphState;
@@ -19,48 +19,38 @@ pub struct AppState {
     pub config: Config,
     pub paths: Paths,
     db: Mutex<Connection>,
+    memory: Mutex<Memory>,
     /// For calls to Microsoft.
     pub http: reqwest::Client,
-    /// A message is sent here whenever people or visits change, so open pages refresh.
-    pub changes: broadcast::Sender<()>,
     /// Wakes the Outlook sync task up early.
     pub sync_now: Notify,
-    /// Admin session cookies that are logged in.
-    pub sessions: Mutex<HashSet<String>>,
-    /// Wrong PIN tries in a row, and when the last one was.
-    pub wrong_pins: Mutex<(u32, Instant)>,
-    pub graph: Mutex<GraphState>,
-    /// Held while an Outlook sync runs, so two never run at once.
-    pub sync_lock: tokio::sync::Mutex<()>,
-    pub kiosk: Mutex<KioskStatus>,
     /// When this program started. The kiosk page reloads itself when this
     /// changes, which is how it picks up a new version after an update.
     pub started: String,
 }
 
-/// What the kiosk last told us about itself.
-#[derive(Default, Clone)]
-pub struct KioskStatus {
-    pub last_seen: Option<Instant>,
-    /// Sign-ins saved on the tablet that have not reached us yet.
-    pub waiting: u32,
+/// Things that only need remembering while the program runs.
+#[derive(Default)]
+pub struct Memory {
+    /// Admin session cookies that are logged in.
+    pub sessions: HashSet<String>,
+    /// Wrong PIN tries in a row, and when the last one was.
+    pub wrong_pins: u32,
+    pub last_wrong_pin: Option<Instant>,
+    /// When the kiosk last asked for the list of people.
+    pub kiosk_last_seen: Option<Instant>,
+    pub outlook: GraphState,
 }
 
 impl AppState {
     pub fn new(config: Config, paths: Paths, conn: Connection) -> Shared {
-        let (changes, _) = broadcast::channel(16);
         Arc::new(AppState {
             config,
             paths,
             db: Mutex::new(conn),
+            memory: Mutex::new(Memory::default()),
             http: reqwest::Client::new(),
-            changes,
             sync_now: Notify::new(),
-            sessions: Mutex::new(HashSet::new()),
-            wrong_pins: Mutex::new((0, Instant::now())),
-            graph: Mutex::new(GraphState::default()),
-            sync_lock: tokio::sync::Mutex::new(()),
-            kiosk: Mutex::new(KioskStatus::default()),
             started: crate::db::time_text(crate::db::now()),
         })
     }
@@ -71,10 +61,9 @@ impl AppState {
         self.db.lock().unwrap_or_else(|poisoned| poisoned.into_inner())
     }
 
-    /// Tells every open page that something changed.
-    pub fn changed(&self) {
-        // An error only means no page is listening.
-        let _ = self.changes.send(());
+    /// Locks the in-memory state. Same rules as `db()`.
+    pub fn memory(&self) -> MutexGuard<'_, Memory> {
+        self.memory.lock().unwrap_or_else(|poisoned| poisoned.into_inner())
     }
 }
 

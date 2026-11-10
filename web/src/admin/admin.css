@@ -54,8 +54,8 @@ h2 {
   background: var(--press);
 }
 .btn.primary {
-  border-color: var(--ink);
-  background: var(--ink);
+  border-color: var(--text);
+  background: var(--text);
   color: #fff;
 }
 .btn.primary:hover {

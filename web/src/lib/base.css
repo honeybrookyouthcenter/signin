@@ -8,7 +8,6 @@
   --accent-ink: color-mix(in srgb, var(--accent) 78%, black);
   --accent-soft: color-mix(in srgb, var(--accent) 12%, white);
 
-  --ink: #24221e;
   --text: #24221e;
   --muted: #736f68;
   --faint: #a29e96;

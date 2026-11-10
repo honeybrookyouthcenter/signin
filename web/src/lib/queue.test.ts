@@ -75,20 +75,4 @@ describe('Queue', () => {
     expect(sent).toEqual(['/good']);
     expect(queue.waiting).toBe(0);
   });
-
-  it('can cancel a request that has not been sent yet', async () => {
-    const sent: string[] = [];
-    const queue = new Queue(memoryStorage(), async (_method, url) => {
-      if (sent.length === 0 && url === '/sign-in') throw new ApiError(0, 'offline');
-      sent.push(url);
-    });
-
-    queue.add('POST', '/sign-in', { visit_id: 'v1' });
-    await vi.advanceTimersByTimeAsync(10);
-
-    expect(queue.cancel((request) => request.body.visit_id === 'v1')).toBe(true);
-    expect(queue.cancel((request) => request.body.visit_id === 'v1')).toBe(false);
-    await vi.runAllTimersAsync();
-    expect(sent).toEqual([]);
-  });
 });

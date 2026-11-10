@@ -43,7 +43,6 @@ fn housekeeping(state: &Shared) -> Result<()> {
 
     if signed_out > 0 {
         tracing::info!("signed out {signed_out} people at the end of the night");
-        state.changed();
     }
     if backup_due {
         run_backup(state)?;

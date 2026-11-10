@@ -3,18 +3,11 @@
 pub mod admin;
 pub mod kiosk;
 
-use std::convert::Infallible;
-use std::time::Duration;
-
 use axum::extract::State;
 use axum::http::{header, StatusCode, Uri};
-use axum::response::sse::{Event, KeepAlive, Sse};
 use axum::response::{IntoResponse, Response};
-use axum::routing::get;
 use axum::Router;
 use rust_embed::RustEmbed;
-use tokio_stream::wrappers::BroadcastStream;
-use tokio_stream::{Stream, StreamExt};
 
 use crate::app::Shared;
 
@@ -22,27 +15,26 @@ pub fn router(state: Shared) -> Router {
     Router::new()
         .nest("/api/kiosk", kiosk::router())
         .nest("/api/admin", admin::router(state.clone()))
-        .route("/api/events", get(events))
         .fallback(web_file)
         .with_state(state)
-}
-
-/// A stream the pages keep open. We send "changed" whenever people or visits
-/// change, and the page then reloads its lists. The event says nothing about
-/// what changed, so it is safe to send to the kiosk. (It still needs some
-/// data: browsers silently drop an event whose data is empty.)
-async fn events(State(state): State<Shared>) -> Sse<impl Stream<Item = Result<Event, Infallible>>> {
-    let changes = BroadcastStream::new(state.changes.subscribe());
-    // If a page falls behind it gets an error instead of a message. It still
-    // means "something changed", so both become the same event.
-    let events = changes.map(|_| Ok(Event::default().event("changed").data("changed")));
-    Sse::new(events).keep_alive(KeepAlive::new().interval(Duration::from_secs(20)))
 }
 
 /// The built web pages (`web/dist`), baked into the program when it is compiled.
 #[derive(RustEmbed)]
 #[folder = "../web/dist"]
 struct WebFiles;
+
+/// What kind of file this is, for the browser.
+fn content_type(path: &str) -> &'static str {
+    match path.rsplit('.').next() {
+        Some("html") => "text/html; charset=utf-8",
+        Some("js") => "text/javascript",
+        Some("css") => "text/css",
+        Some("svg") => "image/svg+xml",
+        Some("png") => "image/png",
+        _ => "application/octet-stream",
+    }
+}
 
 async fn web_file(State(state): State<Shared>, uri: Uri) -> Response {
     let path = uri.path().trim_start_matches('/');
@@ -62,11 +54,10 @@ async fn web_file(State(state): State<Shared>, uri: Uri) -> Response {
     for candidate in candidates {
         let candidate = candidate.trim_start_matches('/');
         if let Some(file) = WebFiles::get(candidate) {
-            let mime = mime_guess::from_path(candidate).first_or_octet_stream();
             // Files under assets/ have a fingerprint in their name, so they can
             // be kept forever. Pages are always checked for a newer version.
             let cache = if candidate.starts_with("assets/") { "public, max-age=31536000, immutable" } else { "no-cache" };
-            let headers = [(header::CONTENT_TYPE, mime.to_string()), (header::CACHE_CONTROL, cache.to_string())];
+            let headers = [(header::CONTENT_TYPE, content_type(candidate)), (header::CACHE_CONTROL, cache)];
             return (headers, file.data).into_response();
         }
     }

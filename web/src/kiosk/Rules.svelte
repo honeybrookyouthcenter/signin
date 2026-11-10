@@ -25,22 +25,6 @@
 </div>
 
 <style>
-  .backdrop {
-    position: fixed;
-    inset: 0;
-    z-index: 10;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 2rem;
-    background: rgb(36 34 30 / 35%);
-    animation: fade 120ms ease-out;
-  }
-  @keyframes fade {
-    from {
-      opacity: 0;
-    }
-  }
   .sheet {
     width: min(100%, 44rem);
     max-height: 100%;

@@ -10,14 +10,17 @@ export class ApiError extends Error {
   }
 }
 
-export async function api<T = unknown>(method: string, url: string, body?: unknown): Promise<T> {
+export async function api<T = unknown>(method: string, url: string, body: unknown = {}): Promise<T> {
+  // Everything except GET is sent as JSON. The server refuses changes that
+  // are not JSON, because those did not come from these pages.
+  const options: RequestInit =
+    method === 'GET'
+      ? { method }
+      : { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) };
+
   let response: Response;
   try {
-    response = await fetch(url, {
-      method,
-      headers: body === undefined ? undefined : { 'Content-Type': 'application/json' },
-      body: body === undefined ? undefined : JSON.stringify(body),
-    });
+    response = await fetch(url, options);
   } catch {
     throw new ApiError(0, "Can't reach the office computer.");
   }
@@ -32,15 +35,4 @@ export async function api<T = unknown>(method: string, url: string, body?: unkno
     throw new ApiError(response.status, message);
   }
   return (await response.json()) as T;
-}
-
-/**
- * Calls `onChange` whenever the server says people or visits changed, and
- * whenever the connection to the server comes back.
- */
-export function onServerChange(onChange: () => void): () => void {
-  const events = new EventSource('/api/events');
-  events.addEventListener('changed', onChange);
-  events.addEventListener('open', onChange);
-  return () => events.close();
 }

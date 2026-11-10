@@ -306,6 +306,14 @@ pub fn save_person(conn: &Connection, person: &Person) -> Result<()> {
 /// Called after a person was sent to Outlook. The dirty count is only cleared
 /// if nobody changed the person again while the upload was running.
 pub fn mark_pushed(conn: &Connection, id: &str, outlook_id: &str, dirty_when_read: i64) -> Result<()> {
+    // If staff removed the person while the upload was running, the contact
+    // that was just saved has to be deleted again.
+    let removed: bool = conn.query_row("SELECT archived FROM people WHERE id = ?", [id], |row| row.get(0))?;
+    if removed {
+        conn.execute("INSERT OR IGNORE INTO outlook_deletes (outlook_id) VALUES (?)", [outlook_id])?;
+        return Ok(());
+    }
+
     conn.execute("UPDATE people SET outlook_id = ? WHERE id = ?", [outlook_id, id])?;
     conn.execute(
         "UPDATE people SET dirty = 0 WHERE id = ? AND dirty = ?",
@@ -413,24 +421,33 @@ pub struct PersonWithStats {
     pub person: Person,
     pub visit_count: i64,
     pub last_visit: Option<String>,
+    /// Their info is old enough that the kiosk will ask about it.
+    pub info_expired: bool,
+    /// Filled in by the caller, which knows where the signature files are.
     pub has_waiver: bool,
 }
 
-pub fn people_with_stats(conn: &Connection) -> Result<Vec<PersonWithStats>> {
-    let mut statement = conn.prepare(
-        "SELECT person_id, COUNT(*), MAX(signed_in_at) FROM visits GROUP BY person_id",
-    )?;
-    let stats: std::collections::HashMap<String, (i64, Option<String>)> = statement
-        .query_map([], |row| Ok((row.get(0)?, (row.get(1)?, row.get(2)?))))?
+pub fn people_with_stats(conn: &Connection, today: NaiveDate) -> Result<Vec<PersonWithStats>> {
+    // The person's own columns come first, then the two visit numbers.
+    let sql = "SELECT p.id, p.outlook_id, p.first_name, p.last_name, p.birthday, p.grade, p.street, p.city, p.state,
+                p.guardian_name, p.guardian_phone, p.guardian_email, p.info_updated, p.notes, p.dirty, p.archived,
+                p.created_at, p.updated_at, COUNT(v.id), MAX(v.signed_in_at)
+         FROM people p LEFT JOIN visits v ON v.person_id = p.id
+         GROUP BY p.id
+         ORDER BY p.first_name COLLATE NOCASE, p.last_name COLLATE NOCASE";
+    let mut statement = conn.prepare(sql)?;
+    let people = statement
+        .query_map([], |row| {
+            let person = person_from_row(row)?;
+            Ok(PersonWithStats {
+                info_expired: info_expired(person.info_updated.as_deref(), today),
+                person,
+                visit_count: row.get(18)?,
+                last_visit: row.get(19)?,
+                has_waiver: false,
+            })
+        })?
         .collect::<rusqlite::Result<_>>()?;
-
-    let people = all_people(conn)?
-        .into_iter()
-        .map(|person| {
-            let (visit_count, last_visit) = stats.get(&person.id).cloned().unwrap_or((0, None));
-            PersonWithStats { person, visit_count, last_visit, has_waiver: false }
-        })
-        .collect();
     Ok(people)
 }
 
@@ -606,23 +623,25 @@ pub struct Report {
     pub new_people: i64,
 }
 
+/// Visits and different people per day (`period_length` 10) or per month (7).
+/// The length is how much of `2026-11-10T18:42:05` to group by.
+fn report_rows(conn: &Connection, period_length: usize, start: &str, end: &str) -> Result<Vec<ReportRow>> {
+    let mut statement = conn.prepare(
+        "SELECT substr(signed_in_at, 1, ?1) AS period, COUNT(*), COUNT(DISTINCT person_id)
+         FROM visits WHERE signed_in_at >= ?2 AND signed_in_at < ?3
+         GROUP BY period ORDER BY period",
+    )?;
+    let rows = statement
+        .query_map(params![period_length, start, end], |row| {
+            Ok(ReportRow { period: row.get(0)?, visits: row.get(1)?, people: row.get(2)? })
+        })?
+        .collect::<rusqlite::Result<_>>()?;
+    Ok(rows)
+}
+
 pub fn report(conn: &Connection, from: NaiveDate, to: NaiveDate) -> Result<Report> {
     let start = day_range(from).0;
     let end = day_range(to).1;
-
-    let grouped = |period_length: usize| -> Result<Vec<ReportRow>> {
-        let mut statement = conn.prepare(
-            "SELECT substr(signed_in_at, 1, ?1) AS period, COUNT(*), COUNT(DISTINCT person_id)
-             FROM visits WHERE signed_in_at >= ?2 AND signed_in_at < ?3
-             GROUP BY period ORDER BY period",
-        )?;
-        let rows = statement
-            .query_map(params![period_length, start, end], |row| {
-                Ok(ReportRow { period: row.get(0)?, visits: row.get(1)?, people: row.get(2)? })
-            })?
-            .collect::<rusqlite::Result<_>>()?;
-        Ok(rows)
-    };
 
     let (total_visits, total_people) = conn.query_row(
         "SELECT COUNT(*), COUNT(DISTINCT person_id) FROM visits WHERE signed_in_at >= ? AND signed_in_at < ?",
@@ -635,7 +654,13 @@ pub fn report(conn: &Connection, from: NaiveDate, to: NaiveDate) -> Result<Repor
         |row| row.get(0),
     )?;
 
-    Ok(Report { days: grouped(10)?, months: grouped(7)?, total_visits, total_people, new_people })
+    Ok(Report {
+        days: report_rows(conn, 10, &start, &end)?,
+        months: report_rows(conn, 7, &start, &end)?,
+        total_visits,
+        total_people,
+        new_people,
+    })
 }
 
 // ---------------------------------------------------------------- backup
@@ -809,5 +834,22 @@ mod tests {
 
         mark_pushed(&conn, "p1", "outlook-1", 2).unwrap();
         assert_eq!(person(&conn, "p1").unwrap().unwrap().dirty, 0);
+    }
+
+    #[test]
+    fn a_person_removed_during_an_upload_stays_removed() {
+        let conn = open_in_memory().unwrap();
+        let mut kid = add_kid(&conn, "p1", "Sam", "Reed");
+        kid.dirty = 1;
+        save_person(&conn, &kid).unwrap();
+
+        // Staff remove Sam while his first upload to Outlook is still running.
+        remove_person(&conn, "p1").unwrap();
+        mark_pushed(&conn, "p1", "outlook-1", 1).unwrap();
+
+        let kid = person(&conn, "p1").unwrap().unwrap();
+        assert!(kid.archived);
+        assert_eq!(kid.outlook_id, None);
+        assert_eq!(outlook_deletes(&conn).unwrap(), vec!["outlook-1".to_string()]);
     }
 }

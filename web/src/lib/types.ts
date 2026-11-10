@@ -38,7 +38,6 @@ export interface MaskedInfo {
   address: string;
   guardian: string;
   phone: string;
-  email: string;
 }
 
 export interface InfoChanges {
@@ -77,7 +76,6 @@ export interface Visit {
 /** A kid with everything staff can see. */
 export interface Person {
   id: string;
-  outlook_id: string | null;
   first_name: string;
   last_name: string;
   birthday: string | null;
@@ -90,10 +88,10 @@ export interface Person {
   guardian_email: string;
   info_updated: string | null;
   notes: string;
-  dirty: number;
   archived: boolean;
   created_at: string;
-  updated_at: string;
+  /** Their info is old enough that the kiosk will ask about it. */
+  info_expired: boolean;
   visit_count: number;
   last_visit: string | null;
   has_waiver: boolean;
@@ -125,6 +123,6 @@ export interface Status {
     login: { user_code: string; verification_uri: string } | null;
   };
   backup: { last_backup: string | null; folder: string; in_onedrive: boolean };
-  kiosk: { seconds_since_seen: number | null; waiting: number };
+  kiosk: { seconds_since_seen: number | null };
   settings: { auto_sign_out_time: string; use_keyboard: boolean; pin_set: boolean };
 }

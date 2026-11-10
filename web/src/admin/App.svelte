@@ -111,7 +111,7 @@
     color: var(--muted);
   }
   nav button.on {
-    border-bottom-color: var(--ink);
+    border-bottom-color: var(--text);
     color: var(--text);
   }
   nav .grow {

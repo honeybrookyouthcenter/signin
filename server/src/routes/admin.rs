@@ -5,7 +5,7 @@ use std::net::SocketAddr;
 use std::time::{Duration, Instant};
 
 use axum::extract::{ConnectInfo, Path, Query, Request, State};
-use axum::http::{header, HeaderMap, StatusCode};
+use axum::http::{header, HeaderMap, Method, StatusCode};
 use axum::middleware::Next;
 use axum::response::{IntoResponse, Response};
 use axum::routing::{get, patch, post, put};
@@ -62,7 +62,7 @@ fn session_cookie(headers: &HeaderMap) -> Option<String> {
 
 fn is_logged_in(state: &AppState, headers: &HeaderMap) -> bool {
     match session_cookie(headers) {
-        Some(session) => state.sessions.lock().unwrap().contains(&session),
+        Some(session) => state.memory().sessions.contains(&session),
         None => false,
     }
 }
@@ -74,6 +74,14 @@ async fn require_admin(
     request: Request,
     next: Next,
 ) -> Response {
+    // Our own pages send every change as JSON. A request that changes
+    // something and isn't JSON came from somewhere else, such as another
+    // website open on this computer, and is refused.
+    let is_json = request.headers().get(header::CONTENT_TYPE).is_some_and(|kind| kind == "application/json");
+    if request.method() != Method::GET && !is_json {
+        return ApiError::new(StatusCode::FORBIDDEN, "Not allowed.").into_response();
+    }
+
     if address.ip().is_loopback() || is_logged_in(&state, request.headers()) {
         next.run(request).await
     } else {
@@ -123,21 +131,24 @@ struct Pin {
 async fn login(State(state): State<Shared>, Json(body): Json<Pin>) -> Result<Response, ApiError> {
     // After a few wrong tries, make people wait, so the PIN can't be guessed quickly.
     {
-        let wrong = state.wrong_pins.lock().unwrap();
-        if wrong.0 >= 5 && wrong.1.elapsed() < Duration::from_secs(30) {
+        let memory = state.memory();
+        let waited = memory.last_wrong_pin.is_none_or(|last| last.elapsed() > Duration::from_secs(30));
+        if memory.wrong_pins >= 5 && !waited {
             return Err(ApiError::new(StatusCode::TOO_MANY_REQUESTS, "Too many wrong tries. Wait 30 seconds."));
         }
     }
 
-    if !pin_matches(&state, &body.pin)? {
-        let mut wrong = state.wrong_pins.lock().unwrap();
-        *wrong = (wrong.0 + 1, Instant::now());
+    let correct = pin_matches(&state, &body.pin)?;
+    let mut memory = state.memory();
+    if !correct {
+        memory.wrong_pins += 1;
+        memory.last_wrong_pin = Some(Instant::now());
         return Err(ApiError::new(StatusCode::UNAUTHORIZED, "Wrong PIN."));
     }
 
-    *state.wrong_pins.lock().unwrap() = (0, Instant::now());
+    memory.wrong_pins = 0;
     let session = Uuid::new_v4().to_string();
-    state.sessions.lock().unwrap().insert(session.clone());
+    memory.sessions.insert(session.clone());
 
     let cookie = format!("{COOKIE}={session}; Path=/; HttpOnly; SameSite=Strict");
     Ok(([(header::SET_COOKIE, cookie)], Json(json!({}))).into_response())
@@ -195,12 +206,11 @@ impl VisitTimes {
     }
 }
 
-/// After staff change a visit, refresh that day's CSV file and tell open pages.
+/// After staff change a visit, refresh that day's CSV file.
 fn visit_changed(state: &Shared, day: NaiveDate) {
     if let Err(error) = backup::write_day_csv(state, day) {
         tracing::warn!("could not update the CSV log: {error:#}");
     }
-    state.changed();
 }
 
 #[derive(Deserialize)]
@@ -242,7 +252,7 @@ async fn delete_visit(State(state): State<Shared>, Path(id): Path<String>) -> Ap
 
 async fn sign_out_visit(State(state): State<Shared>, Path(id): Path<String>) -> ApiResult<Value> {
     db::sign_out(&state.db(), &id, db::now(), "staff")?;
-    state.changed();
+    visit_changed(&state, db::today());
     Ok(Json(json!({})))
 }
 
@@ -271,7 +281,7 @@ async fn report_csv(State(state): State<Shared>, Query(range): Query<RangeQuery>
 // ---------------------------------------------------------------- people
 
 async fn people(State(state): State<Shared>) -> ApiResult<Vec<PersonWithStats>> {
-    let mut people = db::people_with_stats(&state.db())?;
+    let mut people = db::people_with_stats(&state.db(), db::today())?;
     let on_file = waivers::names_on_file(&state.paths);
     for entry in &mut people {
         entry.has_waiver = waivers::is_on_file(&on_file, &entry.person.full_name());
@@ -322,9 +332,8 @@ impl PersonEdit {
     }
 }
 
-/// After staff change a person: tell open pages and send the change to Outlook.
+/// After staff change a person, send the change to Outlook.
 fn person_changed(state: &Shared) {
-    state.changed();
     state.sync_now.notify_one();
 }
 
@@ -440,7 +449,6 @@ struct BackupStatus {
 #[derive(Serialize)]
 struct KioskStatus {
     seconds_since_seen: Option<u64>,
-    waiting: u32,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -453,10 +461,10 @@ struct Settings {
 }
 
 async fn status(State(state): State<Shared>) -> ApiResult<Status> {
-    let kiosk = state.kiosk.lock().unwrap().clone();
-    let (last_sync, last_error, login) = {
-        let graph = state.graph.lock().unwrap();
-        (graph.last_sync.clone(), graph.last_error.clone(), graph.login.clone())
+    let (kiosk_last_seen, last_sync, last_error, login) = {
+        let memory = state.memory();
+        let outlook = &memory.outlook;
+        (memory.kiosk_last_seen, outlook.last_sync.clone(), outlook.last_error.clone(), outlook.login.clone())
     };
     let connected = graph::is_connected(&state);
     let conn = state.db();
@@ -477,10 +485,7 @@ async fn status(State(state): State<Shared>) -> ApiResult<Status> {
             folder: state.paths.backups().display().to_string(),
             in_onedrive: state.paths.has_onedrive,
         },
-        kiosk: KioskStatus {
-            seconds_since_seen: kiosk.last_seen.map(|seen| seen.elapsed().as_secs()),
-            waiting: kiosk.waiting,
-        },
+        kiosk: KioskStatus { seconds_since_seen: kiosk_last_seen.map(|seen| seen.elapsed().as_secs()) },
         settings: Settings {
             auto_sign_out_time: db::auto_sign_out_time(&conn)?.format("%H:%M").to_string(),
             use_keyboard: db::setting(&conn, "use_keyboard")?.as_deref() != Some("false"),
@@ -498,18 +503,18 @@ async fn save_settings(State(state): State<Shared>, Json(body): Json<Settings>) 
         db::set_setting(&conn, "auto_sign_out_time", &body.auto_sign_out_time)?;
         db::set_setting(&conn, "use_keyboard", if body.use_keyboard { "true" } else { "false" })?;
     }
-    state.changed();
     Ok(Json(json!({})))
 }
 
 // ---------------------------------------------------------------- Outlook + backup buttons
 
+/// Wakes the sync task. The settings page shows the result when it is done.
 async fn sync_now(State(state): State<Shared>) -> ApiResult<Value> {
     if !graph::is_connected(&state) {
         return Err(ApiError::bad_request("Outlook is not connected."));
     }
-    let summary = graph::sync(&state).await;
-    Ok(Json(json!({ "sent": summary.pushed, "received": summary.pulled, "errors": summary.errors })))
+    state.sync_now.notify_one();
+    Ok(Json(json!({})))
 }
 
 async fn backup_now(State(state): State<Shared>) -> ApiResult<Value> {

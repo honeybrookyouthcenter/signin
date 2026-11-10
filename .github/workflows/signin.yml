@@ -1,5 +1,6 @@
-# Tests the new sign-in app (Rust server + Svelte pages) and builds signin.exe.
-# Pushing a tag like v2.0.0 also publishes the exe as a GitHub release.
+# Tests the new sign-in app (Rust server + Svelte pages), builds signin.exe,
+# and tries the installer on a real Windows machine.
+# Pushing a tag like v2.0.0 also publishes the download as a GitHub release.
 name: Sign In (Rust + Svelte)
 
 on:
@@ -9,7 +10,7 @@ on:
     paths:
       - 'server/**'
       - 'web/**'
-      - 'config.example.toml'
+      - 'install/**'
       - '.github/workflows/signin.yml'
 
 jobs:
@@ -68,20 +69,41 @@ jobs:
       - name: Build signin.exe
         working-directory: server
         run: cargo build --release
-      - name: Collect the files
+
+      # Everything staff download: the program, its settings file and the installer.
+      - name: Collect the download
         shell: bash
         run: |
-          mkdir YouthCenterSignIn-new
-          cp server/target/release/signin.exe config.example.toml README.md YouthCenterSignIn-new/
+          mkdir YouthCenterSignIn
+          cp server/target/release/signin.exe install/* README.md YouthCenterSignIn/
+
+      # Runs the installer for real, the way staff would, then checks the
+      # program answers. Running it a second time checks that updating works.
+      - name: Try the installer
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          foreach ($run in 'install', 'update') {
+            powershell -NoProfile -NonInteractive -ExecutionPolicy Bypass -File YouthCenterSignIn\install.ps1
+            if ($LASTEXITCODE -ne 0) { throw "The installer failed ($run)" }
+            $config = Invoke-RestMethod http://localhost:8080/api/kiosk/config
+            if ($config.name -ne 'Honey Brook Youth Center') { throw "The program is not answering ($run)" }
+          }
+          if (-not (Test-Path C:\YouthCenterSignIn\data\signin.db)) { throw 'No database was created' }
+          if (-not (Test-Path "$([Environment]::GetFolderPath('Startup'))\Youth Center Sign In.lnk")) { throw 'No startup shortcut' }
+          Get-NetFirewallRule -DisplayName 'Youth Center Sign In' | Format-List DisplayName, Enabled, Profile, Action
+          Invoke-RestMethod http://localhost:8080/api/admin/status | ConvertTo-Json -Depth 5
+          Stop-Process -Name signin
+
       - uses: actions/upload-artifact@v4
         with:
-          name: signin-windows
-          path: YouthCenterSignIn-new
+          name: YouthCenterSignIn
+          path: YouthCenterSignIn
       - name: Publish a release
         if: startsWith(github.ref, 'refs/tags/v')
-        shell: bash
+        shell: powershell
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create "$GITHUB_REF_NAME" --generate-notes \
-            YouthCenterSignIn-new/signin.exe YouthCenterSignIn-new/config.example.toml
+          Compress-Archive -Path YouthCenterSignIn -DestinationPath YouthCenterSignIn.zip
+          gh release create $env:GITHUB_REF_NAME --generate-notes YouthCenterSignIn.zip

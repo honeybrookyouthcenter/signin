@@ -28,7 +28,6 @@ pub fn router() -> Router<Shared> {
         .route("/sign-out", post(sign_out))
         .route("/undo-sign-in", post(undo_sign_in))
         .route("/undo-sign-out", post(undo_sign_out))
-        .route("/ping", post(ping))
 }
 
 /// The tablet says how long ago something happened instead of what time it
@@ -77,7 +76,10 @@ async fn config(State(state): State<Shared>) -> ApiResult<KioskConfig> {
 
 // ---------------------------------------------------------------- people list
 
+/// The kiosk asks for this every few seconds, which is also how the admin
+/// page knows the kiosk is connected.
 async fn people(State(state): State<Shared>) -> ApiResult<Vec<KioskPerson>> {
+    state.memory().kiosk_last_seen = Some(std::time::Instant::now());
     Ok(Json(db::kiosk_people(&state.db(), db::today())?))
 }
 
@@ -97,7 +99,6 @@ async fn sign_in(State(state): State<Shared>, Json(body): Json<SignIn>) -> ApiRe
         return Err(ApiError::not_found("That person is no longer in the list."));
     };
     tracing::info!("signed in: {}", visit.person_name);
-    state.changed();
     Ok(Json(visit))
 }
 
@@ -109,19 +110,16 @@ struct VisitRef {
 
 async fn sign_out(State(state): State<Shared>, Json(body): Json<VisitRef>) -> ApiResult<Value> {
     db::sign_out(&state.db(), &body.visit_id, event_time(body.seconds_ago), "kiosk")?;
-    state.changed();
     Ok(Json(json!({})))
 }
 
 async fn undo_sign_in(State(state): State<Shared>, Json(body): Json<VisitRef>) -> ApiResult<Value> {
     db::delete_visit(&state.db(), &body.visit_id)?;
-    state.changed();
     Ok(Json(json!({})))
 }
 
 async fn undo_sign_out(State(state): State<Shared>, Json(body): Json<VisitRef>) -> ApiResult<Value> {
     db::reopen_visit(&state.db(), &body.visit_id)?;
-    state.changed();
     Ok(Json(json!({})))
 }
 
@@ -186,7 +184,6 @@ async fn sign_up(State(state): State<Shared>, Json(body): Json<SignUp>) -> ApiRe
         }
     }
 
-    state.changed();
     state.sync_now.notify_one();
     visit.map(Json).ok_or_else(|| ApiError::not_found("Sign-up did not save."))
 }
@@ -201,7 +198,6 @@ struct MaskedInfo {
     address: String,
     guardian: String,
     phone: String,
-    email: String,
 }
 
 async fn masked_info(State(state): State<Shared>, Path(id): Path<String>) -> ApiResult<MaskedInfo> {
@@ -215,7 +211,6 @@ async fn masked_info(State(state): State<Shared>, Path(id): Path<String>) -> Api
         address,
         guardian: mask_name(&person.guardian_name),
         phone: mask_phone(&person.guardian_phone),
-        email: mask_email(&person.guardian_email),
     }))
 }
 
@@ -253,17 +248,6 @@ fn mask_phone(phone: &str) -> String {
     format!("•••-•••-{last_four}")
 }
 
-/// "jane@example.com" becomes "j•••@example.com".
-fn mask_email(email: &str) -> String {
-    match email.trim().split_once('@') {
-        Some((name, domain)) => {
-            let initial: String = name.chars().take(1).collect();
-            format!("{initial}•••@{domain}")
-        }
-        None => String::new(),
-    }
-}
-
 #[derive(Deserialize)]
 struct InfoUpdate {
     grade: Option<String>,
@@ -275,6 +259,13 @@ struct InfoUpdate {
     guardian_email: Option<String>,
 }
 
+/// Replaces `field` with `value` if one was sent.
+fn set(field: &mut String, value: Option<String>) {
+    if let Some(value) = value {
+        *field = value.trim().to_string();
+    }
+}
+
 /// The kid confirmed their info, or changed some of it. Only the fields that
 /// were sent are changed. Either way the info counts as fresh again.
 async fn update_info(State(state): State<Shared>, Path(id): Path<String>, Json(body): Json<InfoUpdate>) -> ApiResult<Value> {
@@ -282,11 +273,6 @@ async fn update_info(State(state): State<Shared>, Path(id): Path<String>, Json(b
         let conn = state.db();
         let mut person = db::person(&conn, &id)?.ok_or_else(|| ApiError::not_found("No such person."))?;
 
-        let set = |field: &mut String, value: Option<String>| {
-            if let Some(value) = value {
-                *field = value.trim().to_string();
-            }
-        };
         set(&mut person.grade, body.grade);
         set(&mut person.street, body.street);
         set(&mut person.city, body.city);
@@ -300,25 +286,8 @@ async fn update_info(State(state): State<Shared>, Path(id): Path<String>, Json(b
         db::save_person(&conn, &person)?;
         tracing::info!("info updated: {}", person.full_name());
     }
-    state.changed();
     state.sync_now.notify_one();
     Ok(Json(json!({})))
-}
-
-// ---------------------------------------------------------------- ping
-
-#[derive(Deserialize)]
-struct Ping {
-    /// How many sign-ins are saved on the tablet, waiting to be sent.
-    waiting: u32,
-}
-
-/// The kiosk calls this every so often so the admin page can show it is alive.
-async fn ping(State(state): State<Shared>, Json(body): Json<Ping>) -> Json<Value> {
-    let mut kiosk = state.kiosk.lock().unwrap();
-    kiosk.last_seen = Some(std::time::Instant::now());
-    kiosk.waiting = body.waiting;
-    Json(json!({}))
 }
 
 #[cfg(test)]
@@ -335,7 +304,5 @@ mod tests {
         assert_eq!(mask_name(""), "");
         assert_eq!(mask_phone("(610) 555-1234"), "•••-•••-1234");
         assert_eq!(mask_phone(""), "");
-        assert_eq!(mask_email("jane@example.com"), "j•••@example.com");
-        assert_eq!(mask_email(""), "");
     }
 }

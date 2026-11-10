@@ -28,7 +28,7 @@ struct TestServer {
 impl TestServer {
     async fn start(config: Config) -> TestServer {
         let folder = std::env::temp_dir().join(format!("signin-test-{}", Uuid::new_v4()));
-        let paths = Paths::new(&folder, &config);
+        let paths = Paths::with_onedrive(&folder, &config, None);
         std::fs::create_dir_all(&paths.data).unwrap();
         let state = AppState::new(config, paths, db::open_in_memory().unwrap());
 
@@ -248,6 +248,7 @@ async fn admin_people_pin_and_settings() {
     let people = server.get("/api/admin/people").await;
     let listed = find(&people, "id", &sam);
     assert_eq!(listed["visit_count"], 1);
+    assert_eq!(listed["info_expired"], false);
     assert_eq!(listed["has_waiver"], true);
     assert_eq!(listed["guardian_phone"], "(610) 555-1234");
     let waiver = server.http.get(format!("{}/api/admin/people/{sam}/waiver", server.url)).send().await.unwrap();
@@ -292,21 +293,13 @@ async fn admin_people_pin_and_settings() {
     assert_eq!(status["outlook"]["configured"], false);
     assert_eq!(server.get("/api/kiosk/config").await["use_keyboard"], false);
 
-    // The kiosk's heartbeat shows up too.
-    server.post("/api/kiosk/ping", json!({ "waiting": 3 })).await;
-    assert_eq!(server.get("/api/admin/status").await["kiosk"]["waiting"], 3);
-}
+    // Asking for the people list is how the kiosk shows it is connected.
+    assert!(server.get("/api/admin/status").await["kiosk"]["seconds_since_seen"].is_number());
 
-#[tokio::test]
-async fn pages_are_told_when_something_changes() {
-    let server = TestServer::start(Config::default()).await;
-    let mut events = server.http.get(format!("{}/api/events", server.url)).send().await.unwrap();
-
-    server.sign_up("Sam", "Reed").await;
-
-    let chunk = tokio::time::timeout(Duration::from_secs(5), events.chunk()).await.unwrap().unwrap().unwrap();
-    // Browsers ignore an event with no data, so check that it has some.
-    assert_eq!(String::from_utf8_lossy(&chunk), "event: changed\ndata: changed\n\n");
+    // A request that changes something and is not JSON did not come from our
+    // pages (it could be another website open on the office computer).
+    let foreign = server.http.post(format!("{}/api/admin/backup", server.url)).send().await.unwrap();
+    assert_eq!(foreign.status(), StatusCode::FORBIDDEN);
 }
 
 #[tokio::test]
@@ -360,8 +353,8 @@ async fn outlook_sync_sends_and_receives_contacts() {
     }
     assert!(graph::is_connected(&server.state), "the sign-in never finished");
 
-    let result = server.post("/api/admin/sync", json!({})).await;
-    assert_eq!(result["errors"], json!([]), "sync had errors");
+    let result = graph::sync(&server.state).await;
+    assert_eq!(result.errors, Vec::<String>::new(), "sync had errors");
 
     // Sam went up to Outlook, in the old notes format.
     let contacts = microsoft.contacts();
@@ -389,7 +382,7 @@ async fn outlook_sync_sends_and_receives_contacts() {
     // Alex updates his grade at the kiosk. It goes to Outlook, and the note staff typed is kept.
     let alex_id = alex["id"].as_str().unwrap();
     server.send(reqwest::Method::PUT, &format!("/api/kiosk/people/{alex_id}"), json!({ "grade": "7th" })).await;
-    server.post("/api/admin/sync", json!({})).await;
+    graph::sync(&server.state).await;
     let contacts = microsoft.contacts();
     let notes = find(&contacts, "id", "old/1=")["personalNotes"].as_str().unwrap().to_string();
     assert!(notes.starts_with("Grade: 7th\r\n"), "notes were: {notes}");
@@ -398,8 +391,8 @@ async fn outlook_sync_sends_and_receives_contacts() {
     // Jo is deleted in Outlook: hidden here. Sam is removed here: deleted in Outlook.
     microsoft.remove_contact("old-2");
     server.post(&format!("/api/admin/people/{sam}/remove"), json!({})).await;
-    let result = server.post("/api/admin/sync", json!({})).await;
-    assert_eq!(result["errors"], json!([]));
+    let result = graph::sync(&server.state).await;
+    assert_eq!(result.errors, Vec::<String>::new());
 
     let people = server.get("/api/admin/people").await;
     assert_eq!(find(&people, "first_name", "Jo")["archived"], true);
@@ -409,8 +402,10 @@ async fn outlook_sync_sends_and_receives_contacts() {
     assert_eq!(contacts[0]["givenName"], "Alex");
 
     // Running sync again changes nothing.
-    let result = server.post("/api/admin/sync", json!({})).await;
-    assert_eq!(result, json!({ "sent": 0, "received": 0, "errors": [] }));
+    assert_eq!(graph::sync(&server.state).await, graph::SyncSummary::default());
+
+    // "Sync now" on the settings page only wakes the sync task up.
+    server.post("/api/admin/sync", json!({})).await;
 }
 
 // ---------------------------------------------------------------- fake Microsoft

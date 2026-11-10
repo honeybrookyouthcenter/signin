@@ -53,7 +53,10 @@ pub fn names_on_file(paths: &Paths) -> HashSet<String> {
         for entry in entries.flatten() {
             let path = entry.path();
             let is_png = path.extension().is_some_and(|ext| ext.eq_ignore_ascii_case("png"));
-            if let (true, Some(stem)) = (is_png, path.file_stem()) {
+            if !is_png {
+                continue;
+            }
+            if let Some(stem) = path.file_stem() {
                 names.insert(stem.to_string_lossy().to_lowercase());
             }
         }

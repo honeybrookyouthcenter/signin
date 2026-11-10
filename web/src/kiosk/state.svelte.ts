@@ -3,11 +3,14 @@
 // Actions change what is on screen right away and put the request in the
 // queue (see lib/queue.ts). The screen never waits for the office computer.
 
-import { api, onServerChange } from '../lib/api';
+import { api } from '../lib/api';
 import { Queue } from '../lib/queue';
 import { toStamp } from '../lib/time';
 import type { InfoChanges, KioskConfig, KioskPerson, MaskedInfo, SignUpForm } from '../lib/types';
 import { uuid } from '../lib/uuid';
+
+/** How often the kiosk asks the office computer for the latest list. */
+const REFRESH_MS = 20_000;
 
 export const kiosk = $state({
   config: null as KioskConfig | null,
@@ -24,41 +27,9 @@ export const kiosk = $state({
 /** The server start time this page was loaded from. */
 let serverStarted: string | null = null;
 
-// A copy of the last config and people list is kept on the tablet, so the
-// page can start even when the office computer is not answering.
-function readSaved<T>(key: string): T | null {
-  try {
-    return JSON.parse(localStorage.getItem(key) ?? 'null');
-  } catch {
-    return null;
-  }
-}
-
-function save(key: string, value: unknown) {
-  try {
-    localStorage.setItem(key, JSON.stringify(value));
-  } catch {
-    // Storage is full or off. Nothing breaks, we just can't start offline.
-  }
-}
-
 let queue: Queue;
 
-/** Uses the center's accent color from config.toml. */
-function applyAccent() {
-  const color = kiosk.config?.accent_color;
-  if (color) document.documentElement.style.setProperty('--accent', color);
-}
-
 export function start() {
-  kiosk.config = readSaved<KioskConfig>('signin-config');
-  applyAccent();
-  const savedPeople = readSaved<KioskPerson[]>('signin-people');
-  if (savedPeople) {
-    kiosk.people = savedPeople;
-    kiosk.ready = true;
-  }
-
   queue = new Queue(localStorage);
   kiosk.waiting = queue.waiting;
   queue.onChange = (waiting, online) => {
@@ -70,56 +41,44 @@ export function start() {
 
   void queue.flush();
   void refresh();
-  onServerChange(() => void refresh());
-  window.addEventListener('online', () => void queue.flush());
-  setInterval(ping, 30_000);
-  // A safety net, in case a change message was missed.
-  setInterval(refresh, 10 * 60_000);
+  setInterval(refresh, REFRESH_MS);
 }
 
 /** Loads the config and people list from the office computer. */
 async function refresh() {
-  // While changes are still waiting here, the server's list is behind ours.
-  if (queue.waiting > 0) return;
   try {
     const [config, people] = await Promise.all([
       api<KioskConfig>('GET', '/api/kiosk/config'),
       api<KioskPerson[]>('GET', '/api/kiosk/people'),
     ]);
-    if (queue.waiting > 0) return;
+    kiosk.online = true;
+
+    // While changes are still waiting here, the server's list is behind ours.
+    // Send them first. This runs again when they are all sent.
+    if (queue.waiting > 0) return void queue.flush();
+
     serverStarted ??= config.started;
     if (config.started !== serverStarted) kiosk.reloadWanted = true;
+
+    document.documentElement.style.setProperty('--accent', config.accent_color);
     kiosk.config = config;
-    applyAccent();
     kiosk.people = people;
-    kiosk.online = true;
     kiosk.ready = true;
-    save('signin-config', config);
-    save('signin-people', people);
   } catch {
     kiosk.online = false;
   }
 }
 
-/** Tells the office computer the kiosk is alive, for the admin page. */
-async function ping() {
-  try {
-    await api('POST', '/api/kiosk/ping', { waiting: queue.waiting });
-    if (!kiosk.online) {
-      kiosk.online = true;
-      void queue.flush();
-    }
-  } catch {
-    kiosk.online = false;
-  }
+/**
+ * With the built-in keyboard on, text boxes tell Windows not to show its own
+ * keyboard ('none'). Staff can switch to the Windows keyboard in Settings.
+ */
+export function inputMode(): 'none' | 'text' {
+  return kiosk.config?.use_keyboard === false ? 'text' : 'none';
 }
 
 function find(personId: string): KioskPerson | undefined {
   return kiosk.people.find((person) => person.id === personId);
-}
-
-function changed() {
-  save('signin-people', kiosk.people);
 }
 
 // ---------------------------------------------------------------- actions
@@ -132,7 +91,6 @@ export function signIn(personId: string): { visitId: string; signedInAt: string 
     person.visit_id = visitId;
     person.signed_in_at = signedInAt;
   }
-  changed();
   queue.add('POST', '/api/kiosk/sign-in', { visit_id: visitId, person_id: personId });
   return { visitId, signedInAt };
 }
@@ -143,10 +101,7 @@ export function undoSignIn(personId: string, visitId: string) {
     person.visit_id = null;
     person.signed_in_at = null;
   }
-  changed();
-  // If the sign-in never left the tablet, just drop it.
-  const dropped = queue.cancel((request) => request.url === '/api/kiosk/sign-in' && request.body.visit_id === visitId);
-  if (!dropped) queue.add('POST', '/api/kiosk/undo-sign-in', { visit_id: visitId });
+  queue.add('POST', '/api/kiosk/undo-sign-in', { visit_id: visitId });
 }
 
 export function signOut(personId: string): { visitId: string; signedInAt: string } | null {
@@ -155,7 +110,6 @@ export function signOut(personId: string): { visitId: string; signedInAt: string
   const visit = { visitId: person.visit_id, signedInAt: person.signed_in_at ?? '' };
   person.visit_id = null;
   person.signed_in_at = null;
-  changed();
   queue.add('POST', '/api/kiosk/sign-out', { visit_id: visit.visitId });
   return visit;
 }
@@ -166,9 +120,7 @@ export function undoSignOut(personId: string, visitId: string, signedInAt: strin
     person.visit_id = visitId;
     person.signed_in_at = signedInAt;
   }
-  changed();
-  const dropped = queue.cancel((request) => request.url === '/api/kiosk/sign-out' && request.body.visit_id === visitId);
-  if (!dropped) queue.add('POST', '/api/kiosk/undo-sign-out', { visit_id: visitId });
+  queue.add('POST', '/api/kiosk/undo-sign-out', { visit_id: visitId });
 }
 
 /** Adds a new kid and signs them in. */
@@ -186,10 +138,6 @@ export function signUp(form: SignUpForm): { personId: string; visitId: string; s
     visit_id: visitId,
     signed_in_at: signedInAt,
   });
-  kiosk.people.sort(
-    (a, b) => a.first_name.localeCompare(b.first_name) || a.last_name.localeCompare(b.last_name),
-  );
-  changed();
   queue.add('POST', '/api/kiosk/people', { ...form, person_id: personId, visit_id: visitId });
   return { personId, visitId, signedInAt };
 }
@@ -201,7 +149,6 @@ export function saveInfo(personId: string, changes: InfoChanges) {
     person.info_expired = false;
     if (changes.grade) person.grade = changes.grade;
   }
-  changed();
   queue.add('PUT', `/api/kiosk/people/${personId}`, { ...changes });
 }
 

@@ -5,7 +5,7 @@
   import { formatTime } from '../lib/time';
   import type { KioskPerson } from '../lib/types';
   import Keyboard from './Keyboard.svelte';
-  import { kiosk } from './state.svelte';
+  import { inputMode, kiosk } from './state.svelte';
 
   let {
     onpick,
@@ -22,7 +22,6 @@
 
   let searching = $derived(typed.trim() !== '');
   let results = $derived(search(kiosk.people, typed, 5));
-  let useKeyboard = $derived(kiosk.config?.use_keyboard ?? true);
 
   // The cursor always stays in the search box, so the keyboard always types there.
   function keepFocus() {
@@ -49,7 +48,7 @@
             bind:value={typed}
             type="text"
             data-caps="words"
-            inputmode={useKeyboard ? 'none' : 'text'}
+            inputmode={inputMode()}
             placeholder="Type your name to sign in or out"
             autocomplete="off"
             autocapitalize="words"
@@ -104,7 +103,7 @@
   {#if !kiosk.online}
     <p class="offline">Not connected to the office computer. Sign-ins are being saved here for now.</p>
   {/if}
-  {#if useKeyboard}
+  {#if inputMode() === 'none'}
     <Keyboard layout="letters" />
   {/if}
   <a class="staff" href="/admin">Staff</a>
@@ -266,14 +265,6 @@
     color: var(--muted);
     font-size: 0.95rem;
     font-style: italic;
-  }
-  .link {
-    padding: 0;
-    border: 0;
-    background: none;
-    color: var(--accent-ink);
-    font-style: inherit;
-    text-decoration: underline;
   }
 
   .offline {

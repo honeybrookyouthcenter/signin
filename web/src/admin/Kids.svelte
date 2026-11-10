@@ -89,10 +89,6 @@
     const question = `Merge ${first_name} ${last_name} into ${other.first_name} ${other.last_name}?\n\nAll sign-ins move to ${other.first_name} ${other.last_name}, and ${first_name} ${last_name} is deleted. This can't be undone.`;
     if (confirm(question)) void change(() => api('POST', `/api/admin/people/${id}/merge`, { into: other.id }));
   }
-
-  const sixMonthsAgo = new Date();
-  sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
-  const infoIsOld = (person: Person) => !person.info_updated || new Date(person.info_updated) < sixMonthsAgo;
 </script>
 
 <div class="toolbar">
@@ -127,7 +123,7 @@
           <td class="number">{person.visit_count || ''}</td>
           <td class="actions">
             {#if !person.has_waiver}<span class="tag warn" title="No guardian signature on file">no signature</span>{/if}
-            {#if infoIsOld(person)}<span class="tag" title="The kiosk will ask them to check their info">info is old</span>{/if}
+            {#if person.info_expired}<span class="tag" title="The kiosk will ask them to check their info">info is old</span>{/if}
           </td>
         </tr>
       {/each}

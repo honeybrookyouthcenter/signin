@@ -6,6 +6,11 @@ use std::path::{Path, PathBuf};
 use anyhow::{Context, Result};
 use serde::{Deserialize, Serialize};
 
+/// The "Application (client) ID" of the Youth Center Sign In app registration
+/// at Microsoft. It is not a secret. The README explains how to get one.
+/// `client_id` under `[microsoft]` in config.toml overrides it.
+pub const BUILT_IN_CLIENT_ID: &str = "";
+
 #[derive(Debug, Clone, Deserialize)]
 #[serde(default)]
 pub struct Config {
@@ -23,8 +28,9 @@ pub struct Config {
     pub accent_color: String,
     /// The sentence shown above the rules.
     pub rules_intro: String,
-    /// The OneDrive folder for backups, daily CSV logs and waiver signatures.
-    /// When it is not set, those files go into the `data` folder instead.
+    /// The folder for backups, daily CSV logs and waiver signatures. When it is
+    /// not set, "<OneDrive>\<short_name> Sign In" is used if this computer has
+    /// OneDrive (the same folder the old app used), else the `data` folder.
     pub onedrive_folder: Option<PathBuf>,
     pub microsoft: Microsoft,
     pub rules: Vec<Rule>,
@@ -34,6 +40,7 @@ pub struct Config {
 #[serde(default)]
 pub struct Microsoft {
     /// "Application (client) ID" of the app registration. Empty = Outlook sync is off.
+    /// Defaults to `BUILT_IN_CLIENT_ID`.
     pub client_id: String,
     /// "consumers" for a personal Microsoft account, "common" for either kind.
     pub tenant: String,
@@ -81,7 +88,7 @@ impl Default for Config {
 impl Default for Microsoft {
     fn default() -> Self {
         Microsoft {
-            client_id: String::new(),
+            client_id: BUILT_IN_CLIENT_ID.into(),
             tenant: "consumers".into(),
             login_url: "https://login.microsoftonline.com".into(),
             graph_url: "https://graph.microsoft.com/v1.0".into(),
@@ -136,16 +143,25 @@ pub struct Paths {
     pub data: PathBuf,
     /// Where backups, CSV logs and waivers go: the OneDrive folder if set, else `data`.
     pub shared: PathBuf,
-    /// True when `shared` is a real OneDrive folder from the config.
+    /// True when `shared` is in OneDrive (or wherever config.toml says).
     pub has_onedrive: bool,
 }
 
 impl Paths {
     pub fn new(base: &Path, config: &Config) -> Paths {
+        // Windows sets the OneDrive variable to the signed-in user's OneDrive folder.
+        let onedrive = std::env::var_os("OneDrive").map(PathBuf::from);
+        Paths::with_onedrive(base, config, onedrive)
+    }
+
+    pub fn with_onedrive(base: &Path, config: &Config, onedrive: Option<PathBuf>) -> Paths {
+        let base = base.to_path_buf();
         let data = base.join("data");
-        match &config.onedrive_folder {
-            Some(folder) => Paths { base: base.to_path_buf(), data, shared: folder.clone(), has_onedrive: true },
-            None => Paths { base: base.to_path_buf(), shared: data.clone(), data, has_onedrive: false },
+        let found = onedrive.map(|folder| folder.join(format!("{} Sign In", config.short_name)));
+
+        match config.onedrive_folder.clone().or(found) {
+            Some(shared) => Paths { base, data, shared, has_onedrive: true },
+            None => Paths { base, shared: data.clone(), data, has_onedrive: false },
         }
     }
 
@@ -188,12 +204,32 @@ mod tests {
     use super::*;
 
     #[test]
-    fn the_example_config_is_valid() {
-        let config: Config = toml::from_str(include_str!("../../config.example.toml")).unwrap();
+    fn the_config_file_we_ship_is_valid() {
+        let config: Config = toml::from_str(include_str!("../../install/config.toml")).unwrap();
+        assert_eq!(config.microsoft.client_id, BUILT_IN_CLIENT_ID);
         assert_eq!(config.port, 8080);
         assert_eq!(config.microsoft.tenant, "consumers");
         assert_eq!(config.rules.len(), 3);
         assert_eq!(config.waiver_name(), "the Honey Brook Youth Center");
+    }
+
+    #[test]
+    fn backups_go_to_onedrive_when_this_computer_has_it() {
+        let base = Path::new("app");
+        let mut config = Config::default();
+
+        let none = Paths::with_onedrive(base, &config, None);
+        assert_eq!(none.backups(), Path::new("app/data/Backups"));
+        assert!(!none.has_onedrive);
+
+        let found = Paths::with_onedrive(base, &config, Some(PathBuf::from("OneDrive")));
+        assert_eq!(found.waivers(), Path::new("OneDrive/Youth Center Sign In/Waivers"));
+        assert_eq!(found.database(), Path::new("app/data/signin.db"));
+
+        // config.toml wins over what was found.
+        config.onedrive_folder = Some(PathBuf::from("elsewhere"));
+        let set = Paths::with_onedrive(base, &config, Some(PathBuf::from("OneDrive")));
+        assert_eq!(set.csv_logs(), Path::new("elsewhere/Logs"));
     }
 
     #[test]
@@ -202,7 +238,7 @@ mod tests {
             name = "Honey Brook Community Church"
             short_name = "HBCC"
             waiver_name = "Honey Brook Community Church"
-            onedrive_folder = "C:\\Users\\Office\\OneDrive\\HBCC Sign In"
+            onedrive_folder = 'C:\Users\Office\OneDrive\HBCC Sign In'
 
             [microsoft]
             client_id = "abc"
