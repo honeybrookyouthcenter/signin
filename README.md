@@ -343,26 +343,32 @@ Pushing a tag such as `v2.0.1` publishes `YouthCenterSignIn.zip` as a release.
 
 ## What has and hasn't been tested
 
-**Tested**, by 40 server tests, 12 page tests, and by driving both pages in a real
+**Tested**, by 41 server tests, 11 page tests, and by driving both pages in a real
 browser (Chromium):
 
 - Sign in, sign out, undo, sign up with signature, the info check, auto sign-out.
 - The kiosk with the server stopped: sign-ins waited on the tablet and arrived with the
   right time once the server was back.
 - Staff page: fixing and adding visits, reports and CSV, editing, merging and removing
-  kids, PIN required from another address, live updates.
+  kids, and the PIN being required from another address.
 - Import of old-format logs, including side copies, a broken file, and running twice.
 - Backups and daily CSV files.
 - Outlook sync logic, against a **stand-in** Microsoft server written for the tests.
-- `signin.exe` compiles for Windows.
+- **The installer and `signin.exe` on Windows.** Every push, GitHub builds the program on
+  a Windows machine, runs the installer twice (install, then update), and checks the
+  program answers, the database exists, and the startup shortcut and firewall rule are there.
 
 **Not tested yet. Check these first at the center:**
 
-1. **Outlook with the real account.** The sync has never talked to Microsoft itself. Do
-   "Connect Outlook" before anything else and confirm the kids appear with grade and
-   guardian filled in. Look at one contact in Outlook after a kiosk edit to confirm the
-   notes still look right.
-2. **`signin.exe` on a real Windows PC.** It was built here but only run on Linux.
+1. **Outlook with the real account.** The sync has never talked to Microsoft itself, and
+   the program has no Microsoft app ID until someone does
+   [Get the Microsoft app ID](#get-the-microsoft-app-id). After "Connect Outlook",
+   confirm the kids appear with grade and guardian filled in. Look at one contact in
+   Outlook after a kiosk edit to confirm the notes still look right.
+2. **The installer on the real office PC.** GitHub's Windows machine has no OneDrive, no
+   "allow this app to make changes?" prompt and no download warning, so those three
+   parts have not been seen working. After installing, check Settings → Backups shows
+   a OneDrive folder.
 3. **The real tablet in Edge kiosk mode:** speed, whether the Windows touch keyboard
    stays hidden, and how the screens fit its resolution (they were drawn at 1280×800 and
    scale with the screen).
@@ -373,8 +379,8 @@ browser (Chromium):
 
 ## Switching over from the old app
 
-1. Set up the office PC and connect Outlook. Run the import with `--dry-run`, check the
-   totals, then run it for real.
+1. [Install](#install) on the office PC and connect Outlook. Run the import with
+   `--dry-run`, check the totals, then run it for real.
 2. Try the kiosk page on the tablet in a normal Edge window while the old app is still
    the real kiosk.
 3. On a quiet open night, run both: old app on the tablet as usual, new kiosk page open
