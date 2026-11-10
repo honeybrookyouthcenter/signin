@@ -177,11 +177,12 @@ people (
   guardian_name, guardian_phone, guardian_email TEXT,
   info_updated  TEXT,               -- date info was last confirmed
   dirty         INTEGER DEFAULT 0,  -- 1 = changed here, needs pushing to Outlook
+  archived      INTEGER DEFAULT 0,  -- contact deleted in Outlook: hidden, history kept
   updated_at    TEXT NOT NULL
 )
 
 visits (
-  id            TEXT PRIMARY KEY,   -- uuid created on the tablet (makes retries safe)
+  id            TEXT PRIMARY KEY,   -- uuid created on the tablet (old logs keep their Guid)
   person_id     TEXT NOT NULL REFERENCES people(id),
   person_name   TEXT NOT NULL,      -- name at the time, for reports
   signed_in_at  TEXT NOT NULL,
@@ -220,6 +221,54 @@ This needs a one-time **free app registration** in Microsoft Entra (Azure portal
 "Personal Microsoft accounts" audience, "Allow public client flows" on, permission
 `Contacts.ReadWrite`. The client ID goes in `config.toml`. *(Phase 0 verifies this
 works with the center's personal account before anything else is built.)*
+
+---
+
+## Importing the old data
+
+All history from the old app comes over with one command, and nothing is retyped.
+
+```
+signin.exe import "C:\Users\<user>\OneDrive\Youth Center Sign In" --dry-run   # report only
+signin.exe import "C:\Users\<user>\OneDrive\Youth Center Sign In"             # write to signin.db
+```
+
+### What the old app left behind
+
+| Old data | Where | What happens to it |
+|---|---|---|
+| Sign-in logs | `OneDrive\Youth Center Sign In\YYYY-MM-DD.json`: one file per day, a list of `{ Guid, PersonId, PersonName, SignInTime, SignOutTime }` | Imported into `visits` |
+| OneDrive conflict copies | e.g. `2025-03-14-TABLET.json`, `2025-03-14 (1).json` | **Merged in.** These hold some of the "missing" sign-ins that the sync bug pushed aside, so the import recovers them. |
+| Kids | Outlook contacts | Already in Outlook. The normal contacts sync fills `people`. |
+| Waiver signatures | `OneDrive\Youth Center Sign In\COVID-19\<Name>.png` | Left where they are. The admin Kids page shows "waiver on file" when a PNG matches the kid's name. |
+| Admin PIN | Stored separately on each device in the old app | Not carried over. Set a new PIN on first run. |
+
+### How the import works
+
+1. **Find files:** every `*.json` in the folder whose name starts with a date. Conflict
+   copies are grouped with their day.
+2. **Read leniently:** extra fields the old app wrote (`SignInTimeString`, `SignedIn`, …)
+   are ignored. Times are read with or without a time zone offset. A file that won't
+   parse is reported and skipped, never fatal.
+3. **Merge per day by `Guid`:** take the union of all copies. If the same `Guid` appears
+   twice, keep the version that has a sign-out time.
+4. **Link to kids:** the old `PersonId` *is* the Outlook contact id. If no person with
+   that `outlook_id` exists yet, a placeholder row is created with the name from the log.
+   The Outlook sync fills in the rest later. If the contact was deleted from Outlook, the
+   row stays as `archived`, so old reports still count that kid. Because of this, the
+   import works before or after Outlook is connected.
+5. **Old open entries:** visits on past days with no sign-out get `sign_out_kind =
+   'unknown'` and no made-up time.
+6. **Write:** everything goes in one transaction with `INSERT OR IGNORE` on the `Guid`.
+   **Running it again is safe** and only adds what's new. That allows importing early,
+   then once more right before switching over to pick up the last nights.
+
+`--dry-run` prints, per day: entries found, extra entries recovered from conflict
+copies, unreadable files, and kids not yet matched to an Outlook contact. It ends with
+totals to compare against the old admin page.
+
+`import.rs` is tested against sample files that copy the real old format, including a
+conflict-copy pair and a broken file.
 
 ---
 
@@ -297,8 +346,9 @@ tagged release, so no Rust toolchain is needed at the center.
    `C:\YouthCenterSignIn\signin.exe`, "Run whether user is logged on or not".
 5. Power settings: never sleep **while plugged in** during open hours (or always, simplest).
 6. Open `http://localhost:8080/admin` → Settings → **Connect Outlook** → follow the code.
-7. Run `signin.exe import "C:\Users\…\OneDrive\Youth Center Sign In"` once to bring over
-   the old logs.
+7. Bring over the old logs (see [Importing the old data](#importing-the-old-data)):
+   `signin.exe import "C:\Users\…\OneDrive\Youth Center Sign In" --dry-run`, check the
+   numbers, then run it again without `--dry-run`.
 
 **Tablet**
 
@@ -321,13 +371,13 @@ Each phase ends with something usable. Estimates assume evenings and weekends.
 | Phase | What | Done when |
 |---|---|---|
 | **0. Spike** (1 evening) | Register the Entra app; tiny Rust program does device-code login with the center's personal account and lists 5 contacts. | We know Graph and personal accounts work. This is the riskiest part, so it's first. |
-| **1. Server core** | axum + SQLite schema + migrations, kiosk API, `notes.rs` ported with the old tests, `import` command for old JSON logs. | `curl` can sign a kid in and out. Old logs import correctly. |
+| **1. Server core + import** | axum + SQLite schema + migrations, kiosk API, `notes.rs` ported with the old tests, `import` command (with conflict-copy merge and `--dry-run`). | `curl` can sign a kid in and out. A copy of the real OneDrive folder imports, and totals match the old admin page (plus any recovered entries). |
 | **2. Kiosk UI** | Svelte search with on-screen keyboard, two-tap sign-in, confirmation + undo, here-now, sign-out. Offline queue + service worker. | Usable on the real tablet in Edge kiosk mode, and fast. |
 | **3. Outlook sync** | Delta pull, dirty push, settings status. | Kids added in Outlook appear at the kiosk within 5 min, and vice versa. |
 | **4. Sign-up + info check** | Three-step sign-up with waiver signature; "still right?" flow after sign-in. | A new kid can sign up and be signed in in one go. |
 | **5. Admin** | Day view with edits, reports + CSV, kids list, settings, live updates. | Staff can stop using the old admin page. |
 | **6. Backups + ops** | Nightly backup + CSV, auto sign-out, log file, GitHub Actions release build. | Survives a reboot, and backups appear in OneDrive. |
-| **7. Cutover** | Run alongside the old app for one open night, compare counts, then switch the tablet over. | Old UWP code moved to `legacy/` (or deleted). |
+| **7. Cutover** | Run alongside the old app for one open night, compare counts, re-run `import` to pick up the final nights, then switch the tablet over. | Old UWP code moved to `legacy/` (or deleted). |
 
 ### Out of scope (on purpose)
 
