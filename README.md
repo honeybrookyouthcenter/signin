@@ -150,7 +150,7 @@ church's `logo.png` next to `signin.exe`.
   walking away loses nothing. Saved info is shown mostly hidden (`123 M•••`, `•••-•••-1234`)
   because anyone can tap any name. "Something changed" lets them retype only the part
   that changed.
-- **Sign out:** tap your name under "Here now", or search for it. The kiosk asks first,
+- **Sign out:** type your name and tap it, the same as signing in. The kiosk asks first,
   so nobody signs out by accident.
 - **Sign up:** three short screens (about you, home and guardian, rules and the
   guardian's signature). Finishing signs the kid in too.

@@ -22,7 +22,6 @@
 
   let searching = $derived(typed.trim() !== '');
   let results = $derived(search(kiosk.people, typed, 5));
-  let here = $derived(kiosk.people.filter((person) => person.visit_id));
   let useKeyboard = $derived(kiosk.config?.use_keyboard ?? true);
 
   // The cursor always stays in the search box, so the keyboard always types there.
@@ -100,16 +99,6 @@
       {/if}
     </section>
 
-    {#if !searching && here.length > 0}
-      <section class="here">
-        <h2>Here now · {here.length}</h2>
-        <div class="names">
-          {#each here as person (person.id)}
-            <button type="button" onclick={() => onpick(person)}>{displayName(person, here)}</button>
-          {/each}
-        </div>
-      </section>
-    {/if}
   </main>
 
   {#if !kiosk.online}
@@ -285,35 +274,6 @@
     color: var(--accent-ink);
     font-style: inherit;
     text-decoration: underline;
-  }
-
-  .here {
-    width: min(100%, 50rem);
-    min-height: 0;
-    padding: 0 2.4rem;
-    overflow-y: auto;
-  }
-  .here h2 {
-    margin-bottom: 0.6rem;
-    color: var(--muted);
-    font-size: 0.95rem;
-    font-weight: 400;
-    letter-spacing: 0;
-  }
-  .names {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.4rem;
-  }
-  .names button {
-    padding: 0.45rem 0.9rem;
-    border: 1px solid var(--line);
-    border-radius: var(--radius);
-    background: var(--card);
-    font-size: 1.05rem;
-  }
-  .names button:active {
-    background: var(--press);
   }
 
   .offline {
