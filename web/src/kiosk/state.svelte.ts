@@ -60,7 +60,6 @@ async function refresh() {
     serverStarted ??= config.started;
     if (config.started !== serverStarted) kiosk.reloadWanted = true;
 
-    document.documentElement.style.setProperty('--accent', config.accent_color);
     kiosk.config = config;
     kiosk.people = people;
     kiosk.ready = true;

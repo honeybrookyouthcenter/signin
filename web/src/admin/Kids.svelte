@@ -2,13 +2,12 @@
   // Everyone in the kids list: search, add, edit, merge duplicates, remove.
 
   import { api } from '../lib/api';
+  import { GRADES } from '../lib/center';
   import { search } from '../lib/search';
   import { formatDate } from '../lib/time';
   import type { Person } from '../lib/types';
   import { live } from './live.svelte';
   import PersonPicker from './PersonPicker.svelte';
-
-  let { grades }: { grades: string[] } = $props();
 
   let people = $state<Person[]>([]);
   let loaded = $state(false);
@@ -157,8 +156,8 @@
             Grade
             <select bind:value={editing.grade}>
               <option value=""></option>
-              {#each grades as grade}<option>{grade}</option>{/each}
-              {#if editing.grade && !grades.includes(editing.grade)}<option>{editing.grade}</option>{/if}
+              {#each GRADES as grade}<option>{grade}</option>{/each}
+              {#if editing.grade && !GRADES.includes(editing.grade)}<option>{editing.grade}</option>{/if}
             </select>
           </label>
           <label class="full">Street address <input type="text" bind:value={editing.street} /></label>

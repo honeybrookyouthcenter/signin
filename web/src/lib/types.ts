@@ -1,20 +1,7 @@
 // The shapes of the JSON the server sends and receives.
 
-export interface Rule {
-  title: string;
-  text: string;
-}
-
 export interface KioskConfig {
-  name: string;
-  short_name: string;
-  tagline: string;
-  accent_color: string;
-  rules_intro: string;
-  rules: Rule[];
-  waiver_name: string;
-  waiver_text: string;
-  grades: string[];
+  /** Show the built-in on-screen keyboard instead of the Windows one. */
   use_keyboard: boolean;
   /** When the server started. */
   started: string;

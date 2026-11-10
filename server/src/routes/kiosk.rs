@@ -9,14 +9,8 @@ use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 
 use crate::app::{ApiError, ApiResult, Shared};
-use crate::config::Rule;
 use crate::db::{self, KioskPerson, Person, Visit};
 use crate::waivers;
-
-pub const GRADES: &[&str] = &[
-    "Kindergarten", "1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th", "9th", "10th", "11th", "12th",
-    "Finished",
-];
 
 pub fn router() -> Router<Shared> {
     Router::new()
@@ -40,17 +34,9 @@ fn event_time(seconds_ago: Option<f64>) -> NaiveDateTime {
 
 // ---------------------------------------------------------------- config
 
+/// Settings the kiosk page needs.
 #[derive(Serialize)]
 struct KioskConfig {
-    name: String,
-    short_name: String,
-    tagline: String,
-    accent_color: String,
-    rules_intro: String,
-    rules: Vec<Rule>,
-    waiver_name: String,
-    waiver_text: String,
-    grades: &'static [&'static str],
     /// Show the built-in on-screen keyboard instead of the Windows one.
     use_keyboard: bool,
     /// When the server started. The page reloads itself if this changes.
@@ -59,19 +45,7 @@ struct KioskConfig {
 
 async fn config(State(state): State<Shared>) -> ApiResult<KioskConfig> {
     let use_keyboard = db::setting(&state.db(), "use_keyboard")?.as_deref() != Some("false");
-    Ok(Json(KioskConfig {
-        name: state.config.name.clone(),
-        short_name: state.config.short_name.clone(),
-        tagline: state.config.tagline.clone(),
-        accent_color: state.config.accent_color.clone(),
-        rules_intro: state.config.rules_intro.clone(),
-        rules: state.config.rules.clone(),
-        waiver_name: state.config.waiver_name(),
-        waiver_text: state.config.waiver_text(),
-        grades: GRADES,
-        use_keyboard,
-        started: state.started.clone(),
-    }))
+    Ok(Json(KioskConfig { use_keyboard, started: state.started.clone() }))
 }
 
 // ---------------------------------------------------------------- people list

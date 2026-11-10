@@ -3,7 +3,7 @@
    and one accent color taken from the logo. */
 
 :root {
-  /* The accent comes from config.toml (accent_color). Gold is the default. */
+  /* Gold, from the HBYC logo. */
   --accent: #af890e;
   --accent-ink: color-mix(in srgb, var(--accent) 78%, black);
   --accent-soft: color-mix(in srgb, var(--accent) 12%, white);

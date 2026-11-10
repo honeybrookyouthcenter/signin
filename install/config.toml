@@ -7,20 +7,8 @@
 # The port the pages are served on. The kiosk opens http://OFFICE-PC-NAME:8080
 port = 8080
 
-# Shown on the kiosk.
-name = "Honey Brook Youth Center"
-short_name = "Youth Center"
-tagline = "Sharing Jesus. Giving Hope."
-
-# The one highlight color. Gold matches the HBYC logo.
-# To use a different logo, put a file called "logo.png" in this folder.
-accent_color = "#af890e"
-
-# The name used in the waiver a guardian signs. Leave out to use "the <name>".
-# waiver_name = "the Honey Brook Youth Center"
-
 # Where backups, daily logs and waiver signatures go. Normally this is found
-# by itself: the "<short_name> Sign In" folder in this computer's OneDrive,
+# by itself: the "Youth Center Sign In" folder in this computer's OneDrive,
 # which is the folder the old app used. Set it only to use a different folder.
 # Use single quotes, so the backslashes can stay as they are.
 # onedrive_folder = 'C:\Users\YouthCenter\OneDrive\Youth Center Sign In'
@@ -31,18 +19,3 @@ accent_color = "#af890e"
 [microsoft]
 # client_id = ""
 tenant = "consumers"
-
-# The sentence above the rules, and the rules themselves.
-# rules_intro = "Welcome to the Youth Center! Our goal is to share the hope of Jesus in a safe, structured environment."
-#
-# [[rules]]
-# title = "Respect each other."
-# text = "Romans 12:10 sums it up pretty well! Be kind, even when it's hard."
-#
-# [[rules]]
-# title = "Respect yourself."
-# text = "Be the best you can be, you never know who is watching, so be sure you're reflecting who you are."
-#
-# [[rules]]
-# title = "Have fun and be safe!"
-# text = "The staff are here to help everyone have fun and be safe. But we need you to help, by respecting and obeying the staff."

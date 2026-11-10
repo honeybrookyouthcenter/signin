@@ -6,10 +6,9 @@ computer.
 
 ![The kiosk home screen](docs/screenshots/kiosk-home.png)
 
-> **Status.** This is the rewrite (Rust + Svelte). It has not run at the center yet. The old
-> UWP app (`YouthCenterSignIn/`, `HBCCSignIn/`, `SignIn.Uwp/`, `SignIn.Logic/`) is still in
-> this repo and stays in use until the switch-over described at the end.
-> See [What has and hasn't been tested](#what-has-and-hasnt-been-tested).
+> **Status.** This version (Rust + Svelte) replaces the old Windows app. It has not run
+> at the center yet. See [What has and hasn't been tested](#what-has-and-hasnt-been-tested).
+> The old app's code is in this repo's history, before the rewrite.
 
 ## Contents
 
@@ -77,8 +76,6 @@ That's it. To bring over the old app's sign-in history, see
   days without use, for example over a long break. Choose Connect Outlook again.
 - **Windows shows its own keyboard over the kiosk's.** Switch under Settings → Kiosk →
   Keyboard on the kiosk.
-- **Changing the name, colors, logo or rules** (for example for the church): edit
-  `C:\YouthCenterSignIn\config.toml` in Notepad. Each setting is explained in the file.
 
 ---
 
@@ -291,6 +288,8 @@ web/                    Svelte: the pages
   src/kiosk/            the tablet page
   src/admin/            the staff page
   src/lib/              shared: server calls, search, the offline queue
+  src/lib/center.ts     the center's name, rules and waiver text
+  public/logo.png       the logo
 install/                what staff download, next to signin.exe
   Install.cmd           double-click to install or update
   install-script.ps1           the installer itself
@@ -374,6 +373,8 @@ browser (Chromium):
    scale with the screen).
 4. **The import on a copy of the real OneDrive folder.** The old file format was worked
    out from the old app's code, not from real files.
+5. **The waiver text.** It was copied from the old app. Read it once on the sign-up
+   screen ("terms and conditions") to confirm it is still what the center wants.
 
 ---
 
@@ -387,5 +388,5 @@ browser (Chromium):
    on a second device. Compare the counts at the end of the night.
 4. Run the import one more time to pick up the last nights. Put the tablet into Edge
    kiosk mode pointing at the new page.
-5. After a few good weeks, remove the old app from the tablet and the office PC, and
-   move the old code in this repo into a `legacy/` folder (or delete it).
+5. After a few good weeks, remove the old app from the tablet and the office PC. The
+   import code (`server/src/import.rs`) can then be deleted too.

@@ -2,6 +2,7 @@
   // Sign-up for a new kid, in three short steps:
   //   1. about you   2. home and guardian   3. rules and the guardian's signature
 
+  import { NAME, RULES } from '../lib/center';
   import { normalize } from '../lib/search';
   import { toDateText } from '../lib/time';
   import type { KioskPerson, SignUpForm } from '../lib/types';
@@ -207,7 +208,7 @@
       <div class="last-step">
         <div class="rules">
           <h2>Our rules</h2>
-          {#each kiosk.config?.rules ?? [] as rule}
+          {#each RULES as rule}
             <p><b>{rule.title}</b> {rule.text}</p>
           {/each}
         </div>
@@ -217,7 +218,7 @@
             <span>
               I agree to the
               <button type="button" class="link" onclick={() => (showing = 'waiver')}>terms and conditions</button>
-              of leaving my child at {kiosk.config?.waiver_name}.
+              of leaving my child at the {NAME}.
             </span>
           </label>
           <div class="sign-title">

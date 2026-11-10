@@ -2,7 +2,7 @@
   // The staff page: asks for the PIN if needed, then shows one of four tabs.
 
   import { api } from '../lib/api';
-  import type { KioskConfig } from '../lib/types';
+  import { SHORT_NAME } from '../lib/center';
   import Kids from './Kids.svelte';
   import Reports from './Reports.svelte';
   import Settings from './Settings.svelte';
@@ -17,7 +17,6 @@
   type Tab = (typeof TABS)[number]['id'];
 
   let session = $state<{ allowed: boolean; pin_set: boolean } | null>(null);
-  let config = $state<KioskConfig | null>(null);
   let tab = $state<Tab>('visits');
   let pin = $state('');
   let error = $state('');
@@ -25,8 +24,6 @@
   async function load() {
     try {
       session = await api('GET', '/api/admin/session');
-      config = await api<KioskConfig>('GET', '/api/kiosk/config');
-      document.documentElement.style.setProperty('--accent', config.accent_color);
       error = '';
     } catch (problem) {
       error = (problem as Error).message;
@@ -49,7 +46,7 @@
 {#if session?.allowed}
   <nav>
     <img src="/logo.png" alt="" />
-    <b>{config?.short_name ?? ''} Sign In</b>
+    <b>{SHORT_NAME} Sign In</b>
     {#each TABS as item}
       <button type="button" class:on={tab === item.id} onclick={() => (tab = item.id)}>{item.name}</button>
     {/each}
@@ -62,7 +59,7 @@
     {:else if tab === 'reports'}
       <Reports />
     {:else if tab === 'kids'}
-      <Kids grades={config?.grades ?? []} />
+      <Kids />
     {:else}
       <Settings />
     {/if}

@@ -1,6 +1,7 @@
 <script lang="ts">
   // The first screen: type your name, tap it, done.
 
+  import { NAME, SHORT_NAME, TAGLINE } from '../lib/center';
   import { displayName, search } from '../lib/search';
   import { formatTime } from '../lib/time';
   import type { KioskPerson } from '../lib/types';
@@ -37,7 +38,7 @@
         <img src="/logo.png" alt="" />
         <div>
           <p class="welcome">Welcome to the</p>
-          <h1>{kiosk.config?.name ?? ''}!</h1>
+          <h1>{NAME}!</h1>
         </div>
       </header>
 
@@ -89,10 +90,10 @@
         {/if}
       {:else}
         <footer>
-          <p class="tagline">{kiosk.config?.tagline ?? ''}</p>
+          <p class="tagline">{TAGLINE}</p>
           <p class="about">
             Read <button type="button" class="link" onclick={onrules}>what we're about</button>
-            here at the {kiosk.config?.short_name ?? ''}.
+            here at the {SHORT_NAME}.
           </p>
         </footer>
       {/if}

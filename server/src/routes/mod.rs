@@ -3,7 +3,6 @@
 pub mod admin;
 pub mod kiosk;
 
-use axum::extract::State;
 use axum::http::{header, StatusCode, Uri};
 use axum::response::{IntoResponse, Response};
 use axum::Router;
@@ -36,17 +35,10 @@ fn content_type(path: &str) -> &'static str {
     }
 }
 
-async fn web_file(State(state): State<Shared>, uri: Uri) -> Response {
+async fn web_file(uri: Uri) -> Response {
     let path = uri.path().trim_start_matches('/');
     if path.starts_with("api/") {
         return (StatusCode::NOT_FOUND, "No such API route.").into_response();
-    }
-
-    // A `logo.png` next to config.toml replaces the built-in logo.
-    if path == "logo.png" {
-        if let Ok(logo) = std::fs::read(state.paths.base.join("logo.png")) {
-            return ([(header::CONTENT_TYPE, "image/png"), (header::CACHE_CONTROL, "no-cache")], logo).into_response();
-        }
     }
 
     // "/" is the kiosk page and "/admin" is the admin page.

@@ -103,9 +103,7 @@ async fn kiosk_sign_up_sign_out_and_undo() {
     let server = TestServer::start(Config::default()).await;
 
     let config = server.get("/api/kiosk/config").await;
-    assert_eq!(config["name"], "Honey Brook Youth Center");
-    assert_eq!(config["rules"].as_array().unwrap().len(), 3);
-    assert!(config["waiver_text"].as_str().unwrap().contains("the Honey Brook Youth Center"));
+    assert_eq!(config["use_keyboard"], true);
     assert!(config["started"].is_string());
 
     // Signing up also signs the kid in, and saves the signature.

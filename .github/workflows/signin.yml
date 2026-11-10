@@ -1,7 +1,7 @@
-# Tests the new sign-in app (Rust server + Svelte pages), builds signin.exe,
+# Tests the Rust server and the Svelte pages, builds signin.exe,
 # and tries the installer on a real Windows machine.
 # Pushing a tag like v2.0.0 also publishes the download as a GitHub release.
-name: Sign In (Rust + Svelte)
+name: Build and test
 
 on:
   push:
@@ -87,7 +87,7 @@ jobs:
             powershell -NoProfile -NonInteractive -ExecutionPolicy Bypass -File download\install-script.ps1
             if ($LASTEXITCODE -ne 0) { throw "The installer failed ($run)" }
             $config = Invoke-RestMethod http://127.0.0.1:8080/api/kiosk/config
-            if ($config.name -ne 'Honey Brook Youth Center') { throw "The program is not answering ($run)" }
+            if (-not $config.started) { throw "The program is not answering ($run)" }
           }
           if (-not (Test-Path C:\YouthCenterSignIn\data\signin.db)) { throw 'No database was created' }
           if (-not (Test-Path "$([Environment]::GetFolderPath('Startup'))\Youth Center Sign In.lnk")) { throw 'No startup shortcut' }

@@ -1,7 +1,7 @@
 <script lang="ts">
   // A pop-up with the rules, or with the waiver text.
 
-  import { kiosk } from './state.svelte';
+  import { RULES, RULES_INTRO, WAIVER_TEXT } from '../lib/center';
 
   let { show, onclose }: { show: 'rules' | 'waiver'; onclose: () => void } = $props();
 </script>
@@ -11,14 +11,14 @@
   <div class="sheet" onclick={(event) => event.stopPropagation()}>
     {#if show === 'rules'}
       <h1>What we're about</h1>
-      <p>{kiosk.config?.rules_intro}</p>
-      {#each kiosk.config?.rules ?? [] as rule}
+      <p>{RULES_INTRO}</p>
+      {#each RULES as rule}
         <h2>{rule.title}</h2>
         <p>{rule.text}</p>
       {/each}
     {:else}
       <h1>Terms and conditions</h1>
-      <p class="small">{kiosk.config?.waiver_text}</p>
+      <p class="small">{WAIVER_TEXT}</p>
     {/if}
     <button type="button" class="btn primary" onclick={onclose}>Close</button>
   </div>
