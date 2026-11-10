@@ -34,8 +34,8 @@ signed in.
 
 1. Download **YouthCenterSignIn.zip** from the latest [release](../../releases).
 2. Right-click the zip, choose **Extract All**, and open the extracted folder.
-3. Double-click **Install**. If Windows says "Windows protected your PC", choose
-   **More info**, then **Run anyway**.
+3. Double-click **Install** (not "install-script"). If Windows says "Windows protected
+   your PC", choose **More info**, then **Run anyway**.
 4. When Windows asks "Do you want to allow this app to make changes?", choose **Yes**.
 
 The installer copies the program to `C:\YouthCenterSignIn`, makes it start whenever you
@@ -293,7 +293,7 @@ web/                    Svelte: the pages
   src/lib/              shared: server calls, search, the offline queue
 install/                what staff download, next to signin.exe
   Install.cmd           double-click to install or update
-  install.ps1           the installer itself
+  install-script.ps1           the installer itself
   config.toml           the settings file, with every setting explained
 ```
 

@@ -1,6 +1,6 @@
 # Installs or updates Youth Center Sign In on the office computer.
 #
-# Run it by double-clicking "Install.cmd" in the same folder. It is safe to
+# Run it by double-clicking "Install" (Install.cmd) in the same folder. It is safe to
 # run again: an update keeps your settings and all sign-in data.
 #
 # What it does:
