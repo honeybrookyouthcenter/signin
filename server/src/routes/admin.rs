@@ -45,8 +45,12 @@ pub fn router(state: Shared) -> Router<Shared> {
         .route("/microsoft/logout", post(microsoft_logout))
         .layer(middleware::from_fn_with_state(state, require_admin));
 
-    // These are how you get in, so they can't need the PIN themselves.
-    Router::new().route("/session", get(session)).route("/login", post(login)).merge(protected)
+    // These are how you get in and out, so they can't need the PIN themselves.
+    Router::new()
+        .route("/session", get(session))
+        .route("/login", post(login))
+        .route("/logout", post(logout))
+        .merge(protected)
 }
 
 // ---------------------------------------------------------------- PIN + sessions
@@ -152,6 +156,17 @@ async fn login(State(state): State<Shared>, Json(body): Json<Pin>) -> Result<Res
 
     let cookie = format!("{COOKIE}={session}; Path=/; HttpOnly; SameSite=Strict");
     Ok(([(header::SET_COOKIE, cookie)], Json(json!({}))).into_response())
+}
+
+/// Forgets this browser's session, so the PIN is needed again. The kiosk calls
+/// this whenever it shows, so going from the staff page back to the kiosk
+/// locks the staff page.
+async fn logout(State(state): State<Shared>, headers: HeaderMap) -> Response {
+    if let Some(session) = session_cookie(&headers) {
+        state.memory().sessions.remove(&session);
+    }
+    let cookie = format!("{COOKIE}=; Path=/; HttpOnly; SameSite=Strict; Max-Age=0");
+    ([(header::SET_COOKIE, cookie)], Json(json!({}))).into_response()
 }
 
 async fn set_pin(State(state): State<Shared>, Json(body): Json<Pin>) -> ApiResult<Value> {

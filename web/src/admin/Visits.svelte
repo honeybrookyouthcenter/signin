@@ -5,6 +5,7 @@
   import { addDays, formatDate, formatTime, toDateText } from '../lib/time';
   import type { Person, Visit } from '../lib/types';
   import { live } from './live.svelte';
+  import PersonDialog from './PersonDialog.svelte';
   import PersonPicker from './PersonPicker.svelte';
 
   const today = () => toDateText(new Date());
@@ -19,6 +20,8 @@
   /** The "add a sign-in" window, once a person is picked. */
   let adding = $state<{ person: Person | null; timeIn: string; timeOut: string } | null>(null);
   let people = $state<Person[]>([]);
+  /** The kid whose details are open, after tapping their name. */
+  let viewing = $state<Person | null>(null);
 
   let differentKids = $derived(new Set(visits.map((visit) => visit.person_id)).size);
   let hereNow = $derived(visits.filter((visit) => visit.sign_out_kind === null).length);
@@ -95,6 +98,22 @@
     );
   }
 
+  async function view(visit: Visit) {
+    try {
+      // Removed kids can still have sign-ins, so look in the whole list.
+      const everyone = await api<Person[]>('GET', '/api/admin/people');
+      people = everyone.filter((person) => !person.archived);
+      viewing = everyone.find((person) => person.id === visit.person_id) ?? null;
+    } catch (problem) {
+      error = (problem as Error).message;
+    }
+  }
+
+  function closeView(changed: boolean) {
+    viewing = null;
+    if (changed) void load();
+  }
+
   function howItEnded(visit: Visit): string {
     switch (visit.sign_out_kind) {
       case 'auto':
@@ -140,7 +159,11 @@
     <tbody>
       {#each visits as visit (visit.id)}
         <tr>
-          <td><b>{visit.person_name}</b></td>
+          <td>
+            <button type="button" class="name" onclick={() => view(visit)} title="See {visit.person_name}'s details">
+              {visit.person_name}
+            </button>
+          </td>
           {#if editing?.id === visit.id}
             <td><input type="time" bind:value={editing.timeIn} /></td>
             <td><input type="time" bind:value={editing.timeOut} /></td>
@@ -205,3 +228,24 @@
     </div>
   </div>
 {/if}
+
+{#if viewing}
+  <PersonDialog person={viewing} {people} onclose={closeView} />
+{/if}
+
+<style>
+  /* A kid's name that opens their details. Looks like the bold name it replaced. */
+  .name {
+    padding: 0;
+    border: 0;
+    background: none;
+    color: inherit;
+    font: inherit;
+    font-weight: 500;
+    text-align: left;
+    cursor: pointer;
+  }
+  .name:hover {
+    text-decoration: underline;
+  }
+</style>

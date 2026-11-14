@@ -1,5 +1,6 @@
 <script lang="ts">
   // "Something changed": the kid updates their grade, address or guardian.
+  // Someone 18 or older updates their own phone number instead of a guardian.
   // Saved info is shown mostly hidden, and only the parts they open are
   // retyped. The rest stays as it was.
 
@@ -28,7 +29,7 @@
   let grade = $state(saved.grade);
   // A part with nothing saved starts open.
   let editAddress = $state(saved.address === '');
-  let editGuardian = $state(saved.guardian === '' && saved.phone === '');
+  let editGuardian = $state(saved.adult ? saved.phone === '' : saved.guardian === '' && saved.phone === '');
   let street = $state('');
   let city = $state('');
   // Not called `state`, because that would clash with Svelte's `$state`.
@@ -40,7 +41,8 @@
 
   function save() {
     const changes: InfoChanges = {};
-    if (grade !== info.grade) changes.grade = grade;
+    // Always send the grade: it may have just been picked on the screen before.
+    if (grade) changes.grade = grade;
 
     if (editAddress) {
       if (!street.trim() || !city.trim() || !region.trim()) {
@@ -49,7 +51,13 @@
       }
       Object.assign(changes, { street, city, state: region });
     }
-    if (editGuardian) {
+    if (editGuardian && info.adult) {
+      if (!guardian_phone.trim()) {
+        error = 'Please enter your phone number.';
+        return;
+      }
+      Object.assign(changes, { guardian_phone, guardian_email });
+    } else if (editGuardian) {
       if (!guardian_name.trim() || !guardian_phone.trim()) {
         error = "Please enter your guardian's name and phone number.";
         return;
@@ -89,7 +97,18 @@
         </div>
       {/if}
 
-      {#if editGuardian}
+      {#if editGuardian && info.adult}
+        <TextField label="Your phone number" bind:value={guardian_phone} />
+        <TextField label="Your email (optional)" bind:value={guardian_email} wide />
+      {:else if info.adult}
+        <div class="field full">
+          <span>Phone</span>
+          <div class="saved">
+            <b>{info.phone}</b>
+            <button type="button" class="btn" onclick={() => (editGuardian = true)}>Change phone</button>
+          </div>
+        </div>
+      {:else if editGuardian}
         <TextField label="Guardian's full name" bind:value={guardian_name} caps />
         <TextField label="Guardian's phone number" bind:value={guardian_phone} />
         <TextField label="Guardian's email (optional)" bind:value={guardian_email} wide />

@@ -1,10 +1,11 @@
 <script lang="ts">
-  // The confirmation after signing in or out, with Undo. After a sign-in it
-  // may also ask "is your info still right?". The kid is already signed in
-  // by then, so walking away is fine.
+  // The confirmation after signing in or out, with Undo. At the first sign-in
+  // of a new school year it also asks for their grade and "is your info still
+  // right?". The kid is already signed in by then, so walking away is fine.
 
   import { formatTime } from '../lib/time';
   import type { MaskedInfo } from '../lib/types';
+  import GradeChips from './GradeChips.svelte';
   import { maskedInfo, saveInfo } from './state.svelte';
 
   let {
@@ -25,7 +26,7 @@
     time: string;
     /** They just signed up. */
     isNew?: boolean;
-    /** Their info is old, so ask about it. */
+    /** They haven't checked their info this school year, so ask about it. */
     askInfo?: boolean;
     onundo?: () => void;
     onhome: () => void;
@@ -38,6 +39,8 @@
 
   let info = $state<MaskedInfo | null>(null);
   let thanked = $state(false);
+  /** The grade they picked for this school year. Empty until they pick one. */
+  let grade = $state('');
   let seconds = $derived(info && !thanked ? SECONDS_WITH_QUESTION : thanked ? 1.5 : SECONDS);
   let hasInfo = $derived(info !== null && (info.address !== '' || info.guardian !== '' || info.phone !== ''));
 
@@ -54,7 +57,7 @@
   });
 
   function stillRight() {
-    saveInfo(personId, {});
+    saveInfo(personId, { grade });
     thanked = true;
   }
 </script>
@@ -82,22 +85,30 @@
         <p class="thanks">Thanks for checking.</p>
       {:else if info}
         <div class="question">
-          {#if hasInfo}
-            <h2>One quick thing: is this still right?</h2>
+          {#if hasInfo && !grade}
+            <h2>New school year! What grade are you in now?</h2>
+            <div class="grades"><GradeChips bind:value={grade} /></div>
+          {:else if hasInfo}
+            <h2>Thanks. Is the rest still right?</h2>
             <dl>
               <dt>Grade</dt>
-              <dd>{info.grade || 'not set'}</dd>
+              <dd>{grade}</dd>
               <dt>Home</dt>
               <dd>{info.address || 'not set'}</dd>
-              <dt>Guardian</dt>
-              <dd>{info.guardian || 'not set'}{info.phone ? ` · ${info.phone}` : ''}</dd>
+              {#if info.adult}
+                <dt>Phone</dt>
+                <dd>{info.phone || 'not set'}</dd>
+              {:else}
+                <dt>Guardian</dt>
+                <dd>{info.guardian || 'not set'}{info.phone ? ` · ${info.phone}` : ''}</dd>
+              {/if}
             </dl>
             <div class="actions">
               <button type="button" class="btn primary" onclick={stillRight}>Yes, still right</button>
-              <button type="button" class="btn" onclick={() => info && onupdate(info)}>Something changed</button>
+              <button type="button" class="btn" onclick={() => info && onupdate({ ...info, grade })}>Something changed</button>
             </div>
           {:else}
-            <h2>We're missing your address and guardian's info.</h2>
+            <h2>We're missing your address and {info.adult ? 'phone number' : "guardian's info"}.</h2>
             <div class="actions">
               <button type="button" class="btn primary" onclick={() => info && onupdate(info)}>Add it now</button>
               <button type="button" class="btn" onclick={onhome}>Not now</button>
@@ -165,6 +176,9 @@
   }
   .question .actions {
     margin-top: 1.5rem;
+  }
+  .grades {
+    margin-top: 0.9rem;
   }
   .thanks {
     margin-top: 1.5rem;

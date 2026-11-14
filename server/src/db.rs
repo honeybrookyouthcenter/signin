@@ -7,15 +7,19 @@
 use std::path::Path;
 
 use anyhow::Result;
-use chrono::{Days, Local, Months, NaiveDate, NaiveDateTime, NaiveTime, Timelike};
+use chrono::{Datelike, Days, Local, NaiveDate, NaiveDateTime, NaiveTime, Timelike};
 use rusqlite::{params, Connection, OptionalExtension, Row};
 use serde::{Deserialize, Serialize};
 
 pub const TIME_FORMAT: &str = "%Y-%m-%dT%H:%M:%S";
 pub const DATE_FORMAT: &str = "%Y-%m-%d";
 
-/// A kid's info is asked about again after this many months.
-const INFO_EXPIRES_MONTHS: u32 = 6;
+/// The kiosk asks each kid to check their grade and info once a school year,
+/// at their first visit on or after August 1.
+const SCHOOL_YEAR_STARTS_MONTH: u32 = 8;
+
+/// From this age a kid gives their own phone number instead of a guardian's.
+const ADULT_AGE: u32 = 18;
 
 // ---------------------------------------------------------------- time helpers
 
@@ -176,10 +180,24 @@ impl Person {
     }
 }
 
+/// August 1 of the school year `today` is in.
+fn school_year_start(today: NaiveDate) -> NaiveDate {
+    let year = if today.month() >= SCHOOL_YEAR_STARTS_MONTH { today.year() } else { today.year() - 1 };
+    NaiveDate::from_ymd_opt(year, SCHOOL_YEAR_STARTS_MONTH, 1).unwrap_or(today)
+}
+
+/// True if the kid hasn't checked their info since this school year started.
 fn info_expired(info_updated: Option<&str>, today: NaiveDate) -> bool {
     let Some(text) = info_updated else { return true };
     let Ok(updated) = NaiveDate::parse_from_str(text, DATE_FORMAT) else { return true };
-    updated < today - Months::new(INFO_EXPIRES_MONTHS)
+    updated < school_year_start(today)
+}
+
+/// True if someone with this birthday is 18 or older. False if we don't know.
+pub fn is_adult(birthday: Option<&str>, today: NaiveDate) -> bool {
+    let Some(text) = birthday else { return false };
+    let Ok(born) = NaiveDate::parse_from_str(text, DATE_FORMAT) else { return false };
+    today.years_since(born).is_some_and(|age| age >= ADULT_AGE)
 }
 
 const PERSON_COLUMNS: &str = "id, outlook_id, first_name, last_name, birthday, grade, street, city, state,
@@ -771,13 +789,28 @@ mod tests {
     }
 
     #[test]
-    fn info_expires_after_six_months() {
+    fn info_expires_when_a_new_school_year_starts() {
+        let day = |text: &str| NaiveDate::parse_from_str(text, DATE_FORMAT).unwrap();
+        // In November, anything checked since August 1 is fine.
+        assert!(info_expired(None, day("2026-11-10")));
+        assert!(info_expired(Some("2026-07-31"), day("2026-11-10")));
+        assert!(!info_expired(Some("2026-08-01"), day("2026-11-10")));
+        assert!(info_expired(Some("not a date"), day("2026-11-10")));
+        // In July it is still last school year.
+        assert!(!info_expired(Some("2025-09-01"), day("2026-07-31")));
+        assert!(info_expired(Some("2025-07-31"), day("2026-07-31")));
+        // On August 1 everyone is asked again.
+        assert!(info_expired(Some("2026-07-31"), day("2026-08-01")));
+    }
+
+    #[test]
+    fn adult_from_the_18th_birthday() {
         let today = NaiveDate::from_ymd_opt(2026, 11, 10).unwrap();
-        assert!(info_expired(None, today));
-        assert!(info_expired(Some("2026-05-09"), today));
-        assert!(!info_expired(Some("2026-05-10"), today));
-        assert!(!info_expired(Some("2026-11-10"), today));
-        assert!(info_expired(Some("not a date"), today));
+        assert!(is_adult(Some("2008-11-10"), today));
+        assert!(!is_adult(Some("2008-11-11"), today));
+        assert!(!is_adult(Some("2015-01-01"), today));
+        assert!(!is_adult(None, today));
+        assert!(!is_adult(Some("not a date"), today));
     }
 
     #[test]

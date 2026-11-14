@@ -1,10 +1,11 @@
 <script lang="ts">
   // Sign-up for a new kid, in three short steps:
   //   1. about you   2. home and guardian   3. rules and the guardian's signature
+  // Someone 18 or older gives their own phone number and signs for themselves.
 
   import { NAME, RULES } from '../lib/center';
   import { normalize } from '../lib/search';
-  import { toDateText } from '../lib/time';
+  import { isAdult, toDateText } from '../lib/time';
   import type { KioskPerson, SignUpForm } from '../lib/types';
   import GradeChips from './GradeChips.svelte';
   import Keyboard from './Keyboard.svelte';
@@ -59,6 +60,8 @@
   /** Someone with the same name who is already signed up. */
   let existing = $state<KioskPerson | null>(null);
   let existingDismissed = false;
+  /** 18 or older, going by the birthday picked in step 1. */
+  let adult = $derived(isAdult(birthday()));
 
 
   function birthday(): Date | null {
@@ -91,17 +94,17 @@
       if (born > youngest) return 'You have to be at least five to sign up.';
     }
     if (step === 2) {
-      return missing([
+      const address: [string, string][] = [
         [street, 'your street address'],
         [city, 'your city'],
         [region, 'your state'],
-        [guardian_name, "your guardian's name"],
-        [guardian_phone, "your guardian's phone number"],
-      ]);
+      ];
+      if (adult) return missing([...address, [guardian_phone, 'your phone number']]);
+      return missing([...address, [guardian_name, "your guardian's name"], [guardian_phone, "your guardian's phone number"]]);
     }
     if (step === 3) {
-      if (!agreed) return 'A guardian needs to agree to the terms and conditions.';
-      if (!hasInk) return 'A guardian needs to sign in the box.';
+      if (!agreed) return adult ? 'Please agree to the terms and conditions.' : 'A guardian needs to agree to the terms and conditions.';
+      if (!hasInk) return adult ? 'Please sign in the box.' : 'A guardian needs to sign in the box.';
     }
     return '';
   }
@@ -130,7 +133,7 @@
       street: street.trim(),
       city: city.trim(),
       state: region.trim(),
-      guardian_name: guardian_name.trim(),
+      guardian_name: adult ? '' : guardian_name.trim(),
       guardian_phone: guardian_phone.trim(),
       guardian_email: guardian_email.trim(),
       signature: pad?.toDataUrl() ?? '',
@@ -149,7 +152,7 @@
     <h1>
       Sign up
       <span class="step">
-        Step {step} of 3 · {['About you', 'Your home and guardian', 'Rules and signature'][step - 1]}
+        Step {step} of 3 · {['About you', adult ? 'Your home and phone' : 'Your home and guardian', 'Rules and signature'][step - 1]}
       </span>
     </h1>
     <button type="button" class="btn quiet" onclick={oncancel}>Cancel</button>
@@ -200,9 +203,14 @@
         <TextField label="Street address" bind:value={street} caps wide />
         <TextField label="City" bind:value={city} caps />
         <TextField label="State" bind:value={region} caps />
-        <TextField label="Guardian's full name" bind:value={guardian_name} caps />
-        <TextField label="Guardian's phone number" bind:value={guardian_phone} />
-        <TextField label="Guardian's email (optional)" bind:value={guardian_email} wide />
+        {#if adult}
+          <TextField label="Your phone number" bind:value={guardian_phone} />
+          <TextField label="Your email (optional)" bind:value={guardian_email} wide />
+        {:else}
+          <TextField label="Guardian's full name" bind:value={guardian_name} caps />
+          <TextField label="Guardian's phone number" bind:value={guardian_phone} />
+          <TextField label="Guardian's email (optional)" bind:value={guardian_email} wide />
+        {/if}
       </div>
     {:else}
       <div class="last-step">
@@ -218,11 +226,11 @@
             <span>
               I agree to the
               <button type="button" class="link" onclick={() => (showing = 'waiver')}>terms and conditions</button>
-              of leaving my child at the {NAME}.
+              {adult ? `of attending the ${NAME}.` : `of leaving my child at the ${NAME}.`}
             </span>
           </label>
           <div class="sign-title">
-            <span>Guardian's signature</span>
+            <span>{adult ? 'Your signature' : "Guardian's signature"}</span>
             <button type="button" class="link" onclick={() => pad?.clear()}>Clear</button>
           </div>
           <SignaturePad bind:this={pad} bind:hasInk />
