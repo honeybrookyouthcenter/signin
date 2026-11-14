@@ -9,7 +9,7 @@
 //! Running the import again is safe. Visits keep the id the old app gave
 //! them, so nothing is added twice.
 
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, HashMap};
 use std::path::{Path, PathBuf};
 
 use anyhow::{Context, Result};
@@ -53,7 +53,14 @@ pub struct ImportReport {
     pub entries_skipped: usize,
     pub visits_added: usize,
     pub visits_updated: usize,
-    pub people_added: usize,
+    /// Kids already in the database (from Outlook) before the import.
+    pub people_before: usize,
+    /// Kids in the old logs, found by their Outlook contact id.
+    pub people_matched: usize,
+    /// Kids in the old logs whose contact id has changed, found by their name.
+    pub people_matched_by_name: usize,
+    /// Kids in the old logs not in Outlook any more: name and last visit.
+    pub people_added: Vec<(String, NaiveDate)>,
     pub dry_run: bool,
 }
 
@@ -80,15 +87,39 @@ impl ImportReport {
             println!("COULD NOT READ:          {} ({reason})", path.display());
         }
         println!();
+        let kids = self.people_matched + self.people_matched_by_name + self.people_added.len();
+        println!("Kids in the database now (from Outlook): {}", self.people_before);
+        println!("Kids in the old logs:                    {kids}");
+        println!("  found by Outlook contact:              {}", self.people_matched);
+        println!("  found by name:                         {}", self.people_matched_by_name);
+        println!("  not in Outlook any more:               {}", self.people_added.len());
+        if self.people_before == 0 {
+            println!("  (Outlook has not been synced yet, so every kid counts as not in Outlook.)");
+        }
+
+        // The most recent ones first: a kid seen last week should be in Outlook.
+        let mut added = self.people_added.clone();
+        added.sort_by(|a, b| b.1.cmp(&a.1));
+        if !added.is_empty() {
+            println!();
+            println!("Kids not in Outlook any more, most recent first. They are kept for");
+            println!("the reports and hidden from the kiosk:");
+            for (name, last_visit) in added.iter().take(20) {
+                println!("  {last_visit}  {name}");
+            }
+            if added.len() > 20 {
+                println!("  ... and {} more", added.len() - 20);
+            }
+        }
+
+        println!();
         if self.dry_run {
             println!("Dry run: nothing was saved. Run again without --dry-run to import.");
             println!("  visits that would be added:      {}", self.visits_added);
             println!("  visits that would be updated:    {}", self.visits_updated);
-            println!("  kids not in the database yet:    {}", self.people_added);
         } else {
             println!("Visits added:            {}", self.visits_added);
             println!("Visits updated:          {}", self.visits_updated);
-            println!("Kids added from logs:    {} (Outlook sync fills in their details)", self.people_added);
         }
     }
 }
@@ -188,6 +219,11 @@ fn read_folder(folder: &Path, report: &mut ImportReport) -> Result<Vec<OldVisit>
     Ok(merged.into_values().map(|(visit, _)| visit).collect())
 }
 
+/// A name in lower case with single spaces, for comparing.
+fn plain_name(name: &str) -> String {
+    name.split_whitespace().collect::<Vec<_>>().join(" ").to_lowercase()
+}
+
 fn read_log_file(path: &Path) -> Result<Vec<OldLog>> {
     let text = std::fs::read_to_string(path)?;
     // The old app's files start with an invisible "byte order mark".
@@ -206,23 +242,57 @@ pub fn import(conn: &mut Connection, folder: &Path, dry_run: bool) -> Result<Imp
 
     // Everything is saved together, or not at all.
     let transaction = conn.transaction()?;
+
+    // Kids by name, for contacts whose id has changed since the old app saw them.
+    // A name two kids share is left out, so it never links to the wrong kid.
+    let people = db::all_people(&transaction)?;
+    report.people_before = people.len();
+    let mut by_name: HashMap<String, Option<String>> = HashMap::new();
+    for person in &people {
+        let name = plain_name(&format!("{} {}", person.first_name, person.last_name));
+        let shared = by_name.contains_key(&name);
+        by_name.insert(name, if shared { None } else { Some(person.id.clone()) });
+    }
+
+    // Old contact id -> the person's id here, so each kid is looked up once.
+    let mut found: HashMap<String, String> = HashMap::new();
+    // Kids added, by old contact id -> where they are in `report.people_added`.
+    let mut added: HashMap<String, usize> = HashMap::new();
+
     for visit in &visits {
-        // The old app's person id is the Outlook contact id.
-        let person = match db::person_by_outlook_id(&transaction, &visit.outlook_id)? {
-            Some(person) => person,
+        let day = visit.signed_in_at.date();
+        if let Some(index) = added.get(&visit.outlook_id) {
+            let last_visit = &mut report.people_added[*index].1;
+            *last_visit = (*last_visit).max(day);
+        }
+
+        let person_id = match found.get(&visit.outlook_id) {
+            Some(id) => id.clone(),
             None => {
-                let (first_name, last_name) = visit.name.split_once(' ').unwrap_or((&visit.name, ""));
-                let person = Person {
-                    id: Uuid::new_v4().to_string(),
-                    outlook_id: Some(visit.outlook_id.clone()),
-                    first_name: first_name.to_string(),
-                    last_name: last_name.to_string(),
-                    created_at: db::time_text(visit.signed_in_at),
-                    ..Person::default()
+                // The old app's person id is the Outlook contact id.
+                let id = if let Some(person) = db::person_by_outlook_id(&transaction, &visit.outlook_id)? {
+                    report.people_matched += 1;
+                    person.id
+                } else if let Some(Some(id)) = by_name.get(&plain_name(&visit.name)) {
+                    report.people_matched_by_name += 1;
+                    id.clone()
+                } else {
+                    let (first_name, last_name) = visit.name.split_once(' ').unwrap_or((&visit.name, ""));
+                    let person = Person {
+                        id: Uuid::new_v4().to_string(),
+                        outlook_id: Some(visit.outlook_id.clone()),
+                        first_name: first_name.to_string(),
+                        last_name: last_name.to_string(),
+                        created_at: db::time_text(visit.signed_in_at),
+                        ..Person::default()
+                    };
+                    db::insert_person(&transaction, &person)?;
+                    added.insert(visit.outlook_id.clone(), report.people_added.len());
+                    report.people_added.push((visit.name.clone(), day));
+                    person.id
                 };
-                db::insert_person(&transaction, &person)?;
-                report.people_added += 1;
-                person
+                found.insert(visit.outlook_id.clone(), id.clone());
+                id
             }
         };
 
@@ -239,7 +309,7 @@ pub fn import(conn: &mut Connection, folder: &Path, dry_run: bool) -> Result<Imp
                 transaction.execute(
                     "INSERT INTO visits (id, person_id, person_name, signed_in_at, signed_out_at, sign_out_kind)
                      VALUES (?, ?, ?, ?, ?, ?)",
-                    params![visit.id, person.id, visit.name, db::time_text(visit.signed_in_at), signed_out_at, kind],
+                    params![visit.id, person_id, visit.name, db::time_text(visit.signed_in_at), signed_out_at, kind],
                 )?;
                 report.visits_added += 1;
             }
@@ -355,7 +425,9 @@ mod tests {
         assert_eq!(report.bad_files.len(), 1);
         assert_eq!(report.entries_skipped, 1);
         assert_eq!(report.visits_added, 3);
-        assert_eq!(report.people_added, 2);
+        assert_eq!(report.people_before, 1);
+        assert_eq!(report.people_matched, 1);
+        assert_eq!(report.people_added.len(), 2);
         let day = NaiveDate::from_ymd_opt(2021, 5, 14).unwrap();
         assert_eq!(report.days[&day], (3, 1));
 
@@ -376,8 +448,49 @@ mod tests {
 
         // A second run adds nothing.
         let again = import(&mut conn, &folder, false).unwrap();
-        assert_eq!((again.visits_added, again.visits_updated, again.people_added), (0, 0, 0));
+        assert_eq!((again.visits_added, again.visits_updated, again.people_added.len()), (0, 0, 0));
+        assert_eq!(again.people_matched, 3);
         assert_eq!(db::visits_on(&conn, day).unwrap().len(), 3);
+
+        std::fs::remove_dir_all(folder).unwrap();
+    }
+
+    #[test]
+    fn finds_a_kid_by_name_when_the_contact_id_changed() {
+        let folder = folder_with_logs("by-name");
+        let mut conn = db::open_in_memory().unwrap();
+
+        // Alex's contact was made again, so it has a new id. Two kids are called Sam
+        // Reed, so the name alone can't say which one.
+        let people = [
+            ("alex", "new-id-1", "alex", "STONE"),
+            ("sam-1", "new-id-2", "Sam", "Reed"),
+            ("sam-2", "new-id-3", "Sam", "Reed"),
+        ];
+        for (id, outlook_id, first_name, last_name) in people {
+            let person = Person {
+                id: id.into(),
+                outlook_id: Some(outlook_id.into()),
+                first_name: first_name.into(),
+                last_name: last_name.into(),
+                ..Person::default()
+            };
+            db::insert_person(&conn, &person).unwrap();
+        }
+
+        let report = import(&mut conn, &folder, false).unwrap();
+        assert_eq!(report.people_matched, 0);
+        assert_eq!(report.people_matched_by_name, 1);
+        let mut added = report.people_added.clone();
+        added.sort();
+        let day = NaiveDate::from_ymd_opt(2021, 5, 14).unwrap();
+        assert_eq!(added, vec![("Jo Mary Park".to_string(), day), ("Sam Reed".to_string(), day)]);
+
+        let visits = db::visits_on(&conn, day).unwrap();
+        assert_eq!(visits[1].person_name, "Alex Stone");
+        assert_eq!(visits[1].person_id, "alex");
+        assert_ne!(visits[0].person_id, "sam-1");
+        assert_ne!(visits[0].person_id, "sam-2");
 
         std::fs::remove_dir_all(folder).unwrap();
     }
@@ -389,7 +502,7 @@ mod tests {
 
         let report = import(&mut conn, &folder, true).unwrap();
         assert_eq!(report.visits_added, 3);
-        assert_eq!(report.people_added, 3);
+        assert_eq!(report.people_added.len(), 3);
         assert!(db::all_people(&conn).unwrap().is_empty());
 
         std::fs::remove_dir_all(folder).unwrap();

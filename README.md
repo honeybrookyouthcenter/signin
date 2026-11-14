@@ -181,8 +181,12 @@ while the program is running.
   how many were recovered per day.
 - **Running it again is safe.** Each visit keeps the id the old app gave it, so nothing is
   added twice. Import early to try things out, then once more right before switching over.
-- Kids are matched by their Outlook contact id, so it works before or after Outlook is
-  connected. A kid whose contact has been deleted stays in the reports, hidden from the kiosk.
+- **Connect Outlook first.** Kids are matched to their Outlook contact by the contact's
+  id, or by name if the contact was made again since (only when no other kid has that
+  name). A kid with no contact any more stays in the reports, hidden from the kiosk.
+- The report lists those kids, most recent first. Kids from years ago are expected there.
+  If kids who came last month are listed, check that Settings shows Outlook connected
+  and synced, and that they are in Outlook under the same name.
 - Old visits with no sign-out are marked "never signed out". No time is made up.
 - Old waiver signatures (the `COVID-19` folder) stay where they are. The Kids page finds
   them by name.
