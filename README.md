@@ -39,8 +39,9 @@ signed in.
 
 The installer copies the program to `C:\YouthCenterSignIn`, makes it start whenever you
 sign in to Windows, lets the tablet through the firewall, and stops the computer from
-sleeping. When it finishes it opens the **staff page** in your browser and shows the
-**address for the tablet**. Write that address down. A "Sign In - Staff page" shortcut is
+sleeping. The program runs in a minimized window on the taskbar called "Youth Center Sign In -
+please leave open". When the installer finishes it opens the **staff page** in your
+browser and shows the **address for the tablet**. Write that address down. A "Sign In - Staff page" shortcut is
 also put on the desktop.
 
 Then, on the staff page under **Settings**:
@@ -208,6 +209,32 @@ The OneDrive folder is `Youth Center Sign In` in this computer's OneDrive, the s
 folder the old app used. The live database is deliberately **not** in OneDrive, because syncing a database file
 while it is in use can damage it. Only finished copies go there.
 
+### Keeping it running
+
+The program is not a Windows service. It starts when someone signs in to Windows on the
+office computer, and runs as long as its window stays open. So it is **not** running:
+
+- after a restart (Windows updates do this), until someone signs in, or
+- if someone closes its window. Signing out and back in, or restarting, starts it again.
+
+The tablet then says it can't reach the office computer. Sign-ins made meanwhile wait
+on the tablet and are sent once the program is back.
+
+To make restarts hands-off, let the office computer sign itself in. Anyone who turns the
+computer on then gets straight into that account, which is usually fine for an office PC:
+
+- Download Microsoft's free **Autologon** (search "Sysinternals Autologon"), run it,
+  type the account's password and choose **Enable**. Or:
+- Press Win+R, type `netplwiz`, and untick "Users must enter a user name and password
+  to use this computer". On Windows 11 that box only shows after turning off
+  **Settings → Accounts → Sign-in options → "For improved security, only allow Windows
+  Hello sign-in"**.
+
+Also set **Settings → Windows Update → Active hours** to cover the evenings the youth
+center is open, so Windows doesn't restart in the middle of one.
+
+### Other jobs
+
 - **Update:** download the new zip and double-click **Install** again. Settings and data
   are kept, and the kiosk page reloads itself.
 - **Restore a backup:** close the program's window, copy a backup file over
@@ -374,7 +401,7 @@ browser (Chromium):
    Outlook after a kiosk edit to confirm the notes still look right.
 2. **The installer on the real office PC.** GitHub's Windows machine has no OneDrive, no
    "allow this app to make changes?" prompt and no download warning, so those three
-   parts have not been seen working. After installing, check Settings → Backups shows
+   parts have not been seen working, and nobody has looked at the program's window. After installing, check Settings → Backups shows
    a OneDrive folder.
 3. **The real tablet in Edge kiosk mode:** speed, whether the Windows touch keyboard
    stays hidden, and how the screens fit its resolution (they were drawn at 1280×800 and

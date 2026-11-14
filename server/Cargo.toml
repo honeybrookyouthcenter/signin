@@ -22,5 +22,9 @@ tracing-appender = "0.2"
 tracing-subscriber = { version = "0.3", features = ["chrono"] }
 uuid = { version = "1", features = ["v4"] }
 
+# Only to give the program's window a title on Windows.
+[target.'cfg(windows)'.dependencies]
+windows-sys = { version = "0.61", features = ["Win32_System_Console"] }
+
 [profile.release]
 strip = true
