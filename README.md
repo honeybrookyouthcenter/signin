@@ -6,8 +6,9 @@ computer.
 
 ![The kiosk home screen](docs/screenshots/kiosk-home.png)
 
-> **Status.** This version (Rust + Svelte) replaces the old Windows app. It has not run
-> at the center yet. See [What has and hasn't been tested](#what-has-and-hasnt-been-tested).
+> **Status.** This version (Rust + Svelte) replaces the old Windows app. It has been
+> installed and tried at the center, but has not taken over from the old app yet. See
+> [What has and hasn't been tested](#what-has-and-hasnt-been-tested).
 > The old app's code is in this repo's history, before the rewrite.
 
 ## Contents
@@ -367,7 +368,9 @@ type-checks the pages and `npm test` runs their tests.
 
 GitHub Actions (`.github/workflows/signin.yml`) runs all tests on every push, builds
 `signin.exe` on Windows, and runs the installer there to check the program starts.
-Pushing a tag such as `v2.0.1` publishes `YouthCenterSignIn.zip` as a release.
+To publish a release, push a tag such as `v2.0.1`, or make the release on GitHub's
+Releases page with a new tag. Either way, the build attaches `YouthCenterSignIn.zip` to
+it when it finishes (about ten minutes).
 
 **Notes for whoever maintains this:**
 

@@ -34,5 +34,5 @@ export const WAIVER_TEXT = `By signing this agreement, I voluntarily agree to as
 /** The state most kids live in. The sign-up form starts with it filled in. */
 export const HOME_STATE = 'PA';
 
-/** Towns most kids come from. On the sign-up form, one tap fills in the city. */
+/** Towns most kids come from. On the sign-up and info forms, one tap fills in the town and state. */
 export const NEARBY_TOWNS = ['Honey Brook', 'Elverson', 'Morgantown', 'Narvon', 'Coatesville', 'Downingtown'];

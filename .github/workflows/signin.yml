@@ -1,6 +1,7 @@
 # Tests the Rust server and the Svelte pages, builds signin.exe,
 # and tries the installer on a real Windows machine.
-# Pushing a tag like v2.0.0 also publishes the download as a GitHub release.
+# A new tag like v2.0.0 also publishes the download as a GitHub release: pushed
+# from git, or made with a release on GitHub's Releases page.
 name: Build and test
 
 on:
@@ -115,4 +116,10 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           Compress-Archive -Path download\* -DestinationPath YouthCenterSignIn.zip
-          gh release create $env:GITHUB_REF_NAME --generate-notes YouthCenterSignIn.zip
+          # If the release was made on GitHub's Releases page, add the download to it.
+          $releases = gh release list --json tagName --jq '.[].tagName'
+          if ($releases -contains $env:GITHUB_REF_NAME) {
+            gh release upload $env:GITHUB_REF_NAME YouthCenterSignIn.zip --clobber
+          } else {
+            gh release create $env:GITHUB_REF_NAME --generate-notes YouthCenterSignIn.zip
+          }
