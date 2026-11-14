@@ -1,0 +1,21 @@
+# Settings for Youth Center Sign In.
+#
+# You don't have to change anything here. Every line is optional, and lines
+# starting with # are notes that are ignored. To change a setting, remove the
+# # in front of it, edit it, save, and restart Youth Center Sign In.
+
+# The port the pages are served on. The kiosk opens http://OFFICE-PC-NAME:8080
+port = 8080
+
+# Where backups, daily logs and waiver signatures go. Normally this is found
+# by itself: the "Youth Center Sign In" folder in this computer's OneDrive,
+# which is the folder the old app used. Set it only to use a different folder.
+# Use single quotes, so the backslashes can stay as they are.
+# onedrive_folder = 'C:\Users\YouthCenter\OneDrive\Youth Center Sign In'
+
+# Outlook contacts sync. The program has a Microsoft app ID built in. Set one
+# here only to use a different app registration (see the README).
+# "consumers" is for a personal Microsoft account (outlook.com, hotmail.com, live.com).
+[microsoft]
+# client_id = ""
+tenant = "consumers"
