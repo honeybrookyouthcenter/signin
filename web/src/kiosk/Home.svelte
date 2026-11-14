@@ -118,12 +118,14 @@
     flex-direction: column;
     align-items: center;
     gap: 1.4rem;
-    padding: 2.2rem 2rem 1rem;
+    padding: 1.5rem 2rem;
     overflow: hidden;
   }
 
+  /* Auto margins center the card in the space above the keyboard. */
   .panel {
     flex: none;
+    margin: auto 0;
     width: min(100%, 50rem);
     max-height: 100%;
     display: flex;
