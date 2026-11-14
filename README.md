@@ -252,17 +252,3 @@ installer there. To publish a release, make one on GitHub's Releases page with a
 like `v2.0.1`. The build attaches `YouthCenterSignIn.zip` about ten minutes later.
 
 [AGENTS.md](AGENTS.md) has the rules for changing the code.
-
----
-
-## What has and hasn't been tested
-
-**Tested automatically** (43 server tests, 16 page tests, and both pages in a real
-browser): signing in and out, sign-up, siblings, the school-year check, 18 and older,
-working with the office computer off, the staff page and PIN, reports, merging, the
-import, backups, and Outlook sync against a **stand-in** Microsoft server. Every push
-also installs and starts the program on a Windows machine.
-
-**Tried at the center** (November 2026): installing, connecting Outlook, importing the
-old logs, changes reaching Outlook, backups in OneDrive, the program's window, the staff
-page as an app, the tablet in Edge kiosk mode, and the waiver text.
