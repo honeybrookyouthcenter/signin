@@ -32,7 +32,7 @@ README alone.
    sends it after. A kid is signed in before being asked anything else.
 7. **The kiosk is fast and calm.** It should feel like an app, not a web page: instant
    response to taps, no waiting on the network, no page reloads. The look is plain: one
-   card, the gold logo, light type, hairlines, no emoji, no bright colors, no badges.
+   card, the logo, light type, hairlines, no emoji, no bright colors, no badges.
 8. **One organization.** This is only for the youth center. Its name, rules and waiver
    text are in `web/src/lib/center.ts`. Do not add options to rebrand it.
 9. **Say what was tested.** Outlook sync is only tested against a stand-in server.

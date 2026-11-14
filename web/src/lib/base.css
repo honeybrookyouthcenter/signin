@@ -3,9 +3,9 @@
    and one accent color taken from the logo. */
 
 :root {
-  /* Gold, from the HBYC logo. */
-  --accent: #af890e;
-  --accent-ink: color-mix(in srgb, var(--accent) 78%, black);
+  /* Orange, from the logo. Darker for text, so it reads on white. */
+  --accent: #f9a025;
+  --accent-ink: color-mix(in srgb, var(--accent) 60%, black);
   --accent-soft: color-mix(in srgb, var(--accent) 12%, white);
 
   --text: #24221e;
