@@ -280,6 +280,12 @@ async fn admin_people_pin_and_settings() {
     assert_eq!(status, StatusCode::UNAUTHORIZED);
     let login = server.http.post(format!("{}/api/admin/login", server.url)).json(&json!({ "pin": "246810" })).send().await.unwrap();
     assert!(login.headers()["set-cookie"].to_str().unwrap().starts_with("signin_session="));
+    // Logging out (the kiosk does this when it shows) clears the cookie.
+    let logout = server.http.post(format!("{}/api/admin/logout", server.url)).json(&json!({})).send().await.unwrap();
+    assert_eq!(logout.status(), StatusCode::OK);
+    assert!(logout.headers()["set-cookie"].to_str().unwrap().contains("Max-Age=0"));
+    // The browser must not keep API answers, or the back button shows old ones.
+    assert_eq!(logout.headers()["cache-control"], "no-store");
 
     // Settings are saved and shown in the status.
     let (status, _) = server

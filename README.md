@@ -143,10 +143,12 @@ That's it. To bring over the old app's sign-in history, see
 ![The staff page](docs/screenshots/admin-today.png)
 
 Open <http://localhost:8080/admin> on the office PC, or tap the small "Staff" link on the
-kiosk and enter the PIN.
+kiosk and enter the PIN. Going back to the kiosk locks the staff page again, so the next
+person who taps "Staff" needs the PIN too.
 
 - **Sign-ins:** today's list updates by itself. Pick any earlier day. Sign someone out,
-  fix times, delete a wrong entry, or add one that was missed.
+  fix times, delete a wrong entry, or add one that was missed. Tap a name to see and edit
+  that kid's details.
 - **Reports:** sign-ins and different kids per month and per day for any range of dates,
   with a CSV download for Excel.
 - **Kids:** search, add and edit. **Merge a duplicate** moves one kid's sign-ins to
@@ -388,7 +390,8 @@ browser (Chromium):
 - The kiosk with the server stopped: sign-ins waited on the tablet and arrived with the
   right time once the server was back.
 - Staff page: fixing and adding visits, reports and CSV, editing, merging and removing
-  kids, and the PIN being required from another address.
+  kids, and the PIN being required from another address, including again after going
+  back to the kiosk.
 - Import of old-format logs, including side copies, a broken file, and running twice.
 - Backups and daily CSV files.
 - Outlook sync logic, against a **stand-in** Microsoft server written for the tests.
