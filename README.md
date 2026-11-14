@@ -126,15 +126,26 @@ That's it. To bring over the old app's sign-in history, see
 
 - **Sign in:** type a few letters, tap your name. A confirmation shows for five seconds
   with an **Undo** button. Search forgives one typo.
-- **Info check:** when a kid's address and guardian info is more than six months old, the
-  confirmation also asks "is this still right?". The kid is already signed in by then, so
-  walking away loses nothing. Saved info is shown mostly hidden (`123 M•••`, `•••-•••-1234`)
+- **Info check:** once a school year, at a kid's first sign-in on or after August 1, the
+  confirmation asks what grade they are in now, then "is the rest still right?". The kid
+  is already signed in by then, so walking away loses nothing. (To move the date, change
+  `SCHOOL_YEAR_STARTS_MONTH` in `server/src/db.rs`.) Saved info is shown mostly hidden (`123 M•••`, `•••-•••-1234`)
   because anyone can tap any name. "Something changed" lets them retype only the part
   that changed.
 - **Sign out:** type your name and tap it, the same as signing in. The kiosk asks first,
   so nobody signs out by accident.
 - **Sign up:** three short screens (about you, home and guardian, rules and the
-  guardian's signature). Finishing signs the kid in too.
+  guardian's signature). Finishing signs the kid in too. Under the Town box, tapping a
+  nearby town fills in the town and state, so most kids only type their street (the towns are listed in
+  `web/src/lib/center.ts`). The guardian's name must have a first and last name, and the
+  phone number must have 10 digits.
+- **Siblings:** after a sign-up, **Sign up a sibling** starts the next kid with the same
+  last name, home and guardian filled in. The parent types the kid's name, birthday and
+  grade, checks the rest, and agrees and signs again, so every kid has their own signature.
+- **18 and older:** going by the birthday, sign-up and the info check ask for their own
+  phone number instead of a guardian's, and they sign the form themselves. Their phone
+  is kept where a guardian's phone would be, so it shows as the contact's home phone in
+  Outlook.
 - Everyone still signed in at the nightly sign-out time (11 PM unless changed in Settings)
   is signed out automatically.
 
@@ -143,10 +154,12 @@ That's it. To bring over the old app's sign-in history, see
 ![The staff page](docs/screenshots/admin-today.png)
 
 Open <http://localhost:8080/admin> on the office PC, or tap the small "Staff" link on the
-kiosk and enter the PIN.
+kiosk and enter the PIN. Going back to the kiosk locks the staff page again, so the next
+person who taps "Staff" needs the PIN too.
 
 - **Sign-ins:** today's list updates by itself. Pick any earlier day. Sign someone out,
-  fix times, delete a wrong entry, or add one that was missed.
+  fix times, delete a wrong entry, or add one that was missed. Tap a name to see and edit
+  that kid's details.
 - **Reports:** sign-ins and different kids per month and per day for any range of dates,
   with a CSV download for Excel.
 - **Kids:** search, add and edit. **Merge a duplicate** moves one kid's sign-ins to
@@ -381,14 +394,18 @@ Pushing a tag such as `v2.0.1` publishes `YouthCenterSignIn.zip` as a release.
 
 ## What has and hasn't been tested
 
-**Tested**, by 42 server tests, 11 page tests, and by driving both pages in a real
+**Tested**, by 43 server tests, 16 page tests, and by driving both pages in a real
 browser (Chromium):
 
-- Sign in, sign out, undo, sign up with signature, the info check, auto sign-out.
+- Sign in, sign out, undo, sign up with signature, signing up a sibling, the
+  info check, auto sign-out.
+- The start-of-school-year grade question, and sign-up and the info check for someone
+  18 or older.
 - The kiosk with the server stopped: sign-ins waited on the tablet and arrived with the
   right time once the server was back.
 - Staff page: fixing and adding visits, reports and CSV, editing, merging and removing
-  kids, and the PIN being required from another address.
+  kids, and the PIN being required from another address, including again after going
+  back to the kiosk.
 - Import of old-format logs, including side copies, a broken file, and running twice.
 - Backups and daily CSV files.
 - Outlook sync logic, against a **stand-in** Microsoft server written for the tests.

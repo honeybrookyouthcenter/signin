@@ -1,10 +1,11 @@
 <script lang="ts">
-  // The confirmation after signing in or out, with Undo. After a sign-in it
-  // may also ask "is your info still right?". The kid is already signed in
-  // by then, so walking away is fine.
+  // The confirmation after signing in or out, with Undo. At the first sign-in
+  // of a new school year it also asks for their grade and "is your info still
+  // right?". The kid is already signed in by then, so walking away is fine.
 
   import { formatTime } from '../lib/time';
   import type { MaskedInfo } from '../lib/types';
+  import GradeChips from './GradeChips.svelte';
   import { maskedInfo, saveInfo } from './state.svelte';
 
   let {
@@ -17,6 +18,7 @@
     onundo,
     onhome,
     onupdate,
+    onsibling,
   }: {
     kind: 'in' | 'out' | 'saved';
     personId: string;
@@ -25,25 +27,31 @@
     time: string;
     /** They just signed up. */
     isNew?: boolean;
-    /** Their info is old, so ask about it. */
+    /** They haven't checked their info this school year, so ask about it. */
     askInfo?: boolean;
     onundo?: () => void;
     onhome: () => void;
     onupdate: (info: MaskedInfo) => void;
+    /** After a sign-up: sign up a sibling with the same home and guardian. */
+    onsibling?: () => void;
   } = $props();
 
   /** How long the screen stays before going home by itself. */
   const SECONDS = 5;
+  /** Long enough for a parent to see the sibling button. */
+  const SECONDS_AFTER_SIGN_UP = 20;
   const SECONDS_WITH_QUESTION = 40;
 
   let info = $state<MaskedInfo | null>(null);
   let thanked = $state(false);
-  let seconds = $derived(info && !thanked ? SECONDS_WITH_QUESTION : thanked ? 1.5 : SECONDS);
-  // The kid taps each line to check it. "Yes, still right" waits until all
-  // three are checked, so they have to look at each one instead of tapping
-  // straight through.
-  let checked = $state({ grade: false, home: false, guardian: false });
-  let allChecked = $derived(checked.grade && checked.home && checked.guardian);
+  /** The grade they picked for this school year. Empty until they pick one. */
+  let grade = $state('');
+  let seconds = $derived(info && !thanked ? SECONDS_WITH_QUESTION : thanked ? 1.5 : onsibling ? SECONDS_AFTER_SIGN_UP : SECONDS);
+  // The kid taps each line to check it. "Yes, still right" waits until both
+  // are checked, so they have to look at each one instead of tapping
+  // straight through. The grade needs no check: they just picked it.
+  let checked = $state({ home: false, contact: false });
+  let allChecked = $derived(checked.home && checked.contact);
   let hasInfo = $derived(info !== null && (info.address !== '' || info.guardian !== '' || info.phone !== ''));
 
   // Go home after a while. Starts over when the question appears.
@@ -59,12 +67,12 @@
   });
 
   function stillRight() {
-    saveInfo(personId, {});
+    saveInfo(personId, { grade });
     thanked = true;
   }
 </script>
 
-{#snippet line(key: 'grade' | 'home' | 'guardian', label: string, value: string)}
+{#snippet line(key: 'home' | 'contact', label: string, value: string)}
   <button type="button" class="line" class:checked={checked[key]} aria-pressed={checked[key]} onclick={() => (checked[key] = !checked[key])}>
     <svg class="tick" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 12.5l3.5 3.5 6.5-7" /></svg>
     <span class="label">{label}</span>
@@ -95,20 +103,31 @@
         <p class="thanks">Thanks for checking.</p>
       {:else if info}
         <div class="question">
-          {#if hasInfo}
-            <h2>One quick thing: is this still right?</h2>
+          {#if hasInfo && !grade}
+            <h2>New school year! What grade are you in now?</h2>
+            <div class="grades"><GradeChips bind:value={grade} /></div>
+          {:else if hasInfo}
+            <h2>Thanks. Is the rest still right?</h2>
             <p class="hint">Tap each line to check it.</p>
             <div class="lines">
-              {@render line('grade', 'Grade', info.grade || 'not set')}
+              <div class="line checked">
+                <svg class="tick" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 12.5l3.5 3.5 6.5-7" /></svg>
+                <span class="label">Grade</span>
+                <span>{grade}</span>
+              </div>
               {@render line('home', 'Home', info.address || 'not set')}
-              {@render line('guardian', 'Guardian', `${info.guardian || 'not set'}${info.phone ? ` · ${info.phone}` : ''}`)}
+              {#if info.adult}
+                {@render line('contact', 'Phone', info.phone || 'not set')}
+              {:else}
+                {@render line('contact', 'Guardian', `${info.guardian || 'not set'}${info.phone ? ` · ${info.phone}` : ''}`)}
+              {/if}
             </div>
             <div class="actions">
               <button type="button" class="btn primary" disabled={!allChecked} onclick={stillRight}>Yes, still right</button>
-              <button type="button" class="btn" onclick={() => info && onupdate(info)}>Something changed</button>
+              <button type="button" class="btn" onclick={() => info && onupdate({ ...info, grade })}>Something changed</button>
             </div>
           {:else}
-            <h2>We're missing your address and guardian's info.</h2>
+            <h2>We're missing your address and {info.adult ? 'phone number' : "guardian's info"}.</h2>
             <div class="actions">
               <button type="button" class="btn primary" onclick={() => info && onupdate(info)}>Add it now</button>
               <button type="button" class="btn" onclick={onhome}>Not now</button>
@@ -120,6 +139,9 @@
       {#if !info && !thanked}
         <div class="actions">
           <button type="button" class="btn primary" onclick={onhome}>Done</button>
+          {#if onsibling}
+            <button type="button" class="btn" onclick={onsibling}>Sign up a sibling</button>
+          {/if}
           {#if onundo}
             <button type="button" class="btn" onclick={onundo}>Undo</button>
           {/if}
@@ -186,7 +208,7 @@
     text-align: left;
     color: var(--text);
   }
-  .line:active {
+  button.line:active {
     background: var(--press);
   }
   .label {
@@ -211,6 +233,9 @@
   }
   .question .actions {
     margin-top: 1.5rem;
+  }
+  .grades {
+    margin-top: 0.9rem;
   }
   .thanks {
     margin-top: 1.5rem;

@@ -93,12 +93,27 @@
   }
 </script>
 
+<!-- Backspace sits at the right end of the top row, as on a tablet keyboard. -->
+{#snippet backspaceKey()}
+  <button
+    type="button"
+    tabindex="-1"
+    class="wide"
+    aria-label="Backspace"
+    onpointerdown={holdBackspace}
+    onpointerup={stopRepeat}
+    onpointerleave={stopRepeat}
+    onpointercancel={stopRepeat}>⌫</button
+  >
+{/snippet}
+
 <div class="keyboard" class:letters={layout === 'letters'}>
   {#if layout === 'full'}
     <div class="row">
       {#each NUMBERS as key}
         <button type="button" tabindex="-1" onpointerdown={(event) => press(event, () => type(key))}>{key}</button>
       {/each}
+      {@render backspaceKey()}
     </div>
   {/if}
 
@@ -119,17 +134,8 @@
           {upper ? key.toUpperCase() : key}
         </button>
       {/each}
-      {#if index === 2}
-        <button
-          type="button"
-          tabindex="-1"
-          class="wide"
-          aria-label="Backspace"
-          onpointerdown={holdBackspace}
-          onpointerup={stopRepeat}
-          onpointerleave={stopRepeat}
-          onpointercancel={stopRepeat}>⌫</button
-        >
+      {#if index === 0 && layout === 'letters'}
+        {@render backspaceKey()}
       {/if}
     </div>
   {/each}
