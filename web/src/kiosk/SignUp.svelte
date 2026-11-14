@@ -1,8 +1,13 @@
 <script lang="ts">
   // Sign-up for a new kid, in three short steps:
   //   1. about you   2. home and guardian   3. rules and the guardian's signature
+  //
+  // For a brother or sister of a kid who just signed up, the last name, home,
+  // guardian and signature start filled in from that kid, so a parent signing
+  // up several kids only types each kid's name, birthday and grade.
 
-  import { NAME, RULES } from '../lib/center';
+  import { HOME_STATE, NAME, RULES } from '../lib/center';
+  import { isFullName, isPhone } from '../lib/checks';
   import { normalize } from '../lib/search';
   import { toDateText } from '../lib/time';
   import type { KioskPerson, SignUpForm } from '../lib/types';
@@ -12,15 +17,19 @@
   import SignaturePad from './SignaturePad.svelte';
   import { inputMode, kiosk } from './state.svelte';
   import TextField from './TextField.svelte';
+  import TownChips from './TownChips.svelte';
 
   let {
     typedName = '',
+    family,
     oncancel,
     ondone,
     onexisting,
   }: {
     /** What the kid typed in the search box before tapping Sign up. */
     typedName?: string;
+    /** The sign-up of a brother or sister, to start from. */
+    family?: SignUpForm;
     oncancel: () => void;
     ondone: (form: SignUpForm) => void;
     /** The kid turned out to be signed up already. */
@@ -36,22 +45,26 @@
   const capital = (word: string) => word.slice(0, 1).toUpperCase() + word.slice(1);
   // svelte-ignore state_referenced_locally
   const typedWords = typedName.trim().split(/\s+/).filter(Boolean).map(capital);
+  // svelte-ignore state_referenced_locally
+  const sibling = family;
 
   let step = $state(1);
   let error = $state('');
   let first_name = $state(typedWords[0] ?? '');
-  let last_name = $state(typedWords.slice(1).join(' '));
+  let last_name = $state(sibling?.last_name ?? typedWords.slice(1).join(' '));
   let grade = $state('');
   let month = $state('');
   let day = $state('');
   let year = $state('');
-  let street = $state('');
-  let city = $state('');
+  let street = $state(sibling?.street ?? '');
+  let city = $state(sibling?.city ?? '');
   // Not called `state`, because that would clash with Svelte's `$state`.
-  let region = $state('');
-  let guardian_name = $state('');
-  let guardian_phone = $state('');
-  let guardian_email = $state('');
+  let region = $state(sibling?.state ?? HOME_STATE);
+  let guardian_name = $state(sibling?.guardian_name ?? '');
+  let guardian_phone = $state(sibling?.guardian_phone ?? '');
+  let guardian_email = $state(sibling?.guardian_email ?? '');
+  /** The guardian's signature from the brother or sister, until they choose to sign again. */
+  let keptSignature = $state(sibling?.signature ?? '');
   let agreed = $state(false);
   let hasInk = $state(false);
   let pad: SignaturePad | undefined = $state();
@@ -91,17 +104,20 @@
       if (born > youngest) return 'You have to be at least five to sign up.';
     }
     if (step === 2) {
-      return missing([
+      const problem = missing([
         [street, 'your street address'],
-        [city, 'your city'],
+        [city, 'your town'],
         [region, 'your state'],
         [guardian_name, "your guardian's name"],
         [guardian_phone, "your guardian's phone number"],
       ]);
+      if (problem) return problem;
+      if (!isFullName(guardian_name)) return "Please enter your guardian's first and last name.";
+      if (!isPhone(guardian_phone)) return "Please check your guardian's phone number. It should have 10 digits.";
     }
     if (step === 3) {
       if (!agreed) return 'A guardian needs to agree to the terms and conditions.';
-      if (!hasInk) return 'A guardian needs to sign in the box.';
+      if (!keptSignature && !hasInk) return 'A guardian needs to sign in the box.';
     }
     return '';
   }
@@ -133,7 +149,7 @@
       guardian_name: guardian_name.trim(),
       guardian_phone: guardian_phone.trim(),
       guardian_email: guardian_email.trim(),
-      signature: pad?.toDataUrl() ?? '',
+      signature: keptSignature || (pad?.toDataUrl() ?? ''),
     });
   }
 
@@ -147,7 +163,7 @@
 <div class="screen">
   <div class="form-bar">
     <h1>
-      Sign up
+      {sibling ? 'Sign up a brother or sister' : 'Sign up'}
       <span class="step">
         Step {step} of 3 · {['About you', 'Your home and guardian', 'Rules and signature'][step - 1]}
       </span>
@@ -198,7 +214,8 @@
     {:else if step === 2}
       <div class="fields">
         <TextField label="Street address" bind:value={street} caps wide />
-        <TextField label="City" bind:value={city} caps />
+        <TownChips bind:city bind:region />
+        <TextField label="Town" bind:value={city} caps />
         <TextField label="State" bind:value={region} caps />
         <TextField label="Guardian's full name" bind:value={guardian_name} caps />
         <TextField label="Guardian's phone number" bind:value={guardian_phone} />
@@ -221,11 +238,19 @@
               of leaving my child at the {NAME}.
             </span>
           </label>
-          <div class="sign-title">
-            <span>Guardian's signature</span>
-            <button type="button" class="link" onclick={() => pad?.clear()}>Clear</button>
-          </div>
-          <SignaturePad bind:this={pad} bind:hasInk />
+          {#if keptSignature}
+            <div class="sign-title">
+              <span>Guardian's signature, from {sibling?.first_name}'s sign-up</span>
+              <button type="button" class="link" onclick={() => (keptSignature = '')}>Sign again</button>
+            </div>
+            <img class="kept" src={keptSignature} alt="The guardian's signature" />
+          {:else}
+            <div class="sign-title">
+              <span>Guardian's signature</span>
+              <button type="button" class="link" onclick={() => pad?.clear()}>Clear</button>
+            </div>
+            <SignaturePad bind:this={pad} bind:hasInk />
+          {/if}
         </div>
       </div>
     {/if}
@@ -296,6 +321,15 @@
     height: 1.8rem;
     margin: 0;
     accent-color: var(--text);
+  }
+  .kept {
+    display: block;
+    width: 100%;
+    height: 9rem;
+    object-fit: contain;
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius);
+    background: #fff;
   }
   .sign-title {
     display: flex;

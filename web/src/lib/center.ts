@@ -30,3 +30,9 @@ export const RULES = [
 
 /** What a guardian agrees to when signing a kid up. */
 export const WAIVER_TEXT = `By signing this agreement, I voluntarily agree to assume all of the foregoing risks and accept sole responsibility for any injury to my child(ren) or myself (including, but not limited to, personal injury, disability, and death), illness, damage, loss, claim, liability, or expense, of any kind, that I or my child(ren) may experience or incur in connection with my child(ren)’s attendance at the ${NAME} or participation in the ${NAME} programming (“Claims”). On my behalf, and on behalf of my children, I hereby release, covenant not to sue, discharge, and hold harmless the ${NAME}, its employees, agents, and representatives, of and from the Claims, including all liabilities, claims, actions, damages, costs or expenses of any kind arising out of or relating thereto. I understand and agree that this release includes any Claims based on the actions, omissions, or negligence of the ${NAME}, its employees, agents, and representatives, occurring before, during, or after participation in any of the ${NAME} programs.`;
+
+/** The state most kids live in. The sign-up form starts with it filled in. */
+export const HOME_STATE = 'PA';
+
+/** Towns most kids come from. On the sign-up form, one tap fills in the city. */
+export const NEARBY_TOWNS = ['Honey Brook', 'Elverson', 'Morgantown', 'Narvon', 'Coatesville', 'Downingtown', 'Glenmoore', 'Gap'];

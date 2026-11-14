@@ -3,11 +3,14 @@
   // Saved info is shown mostly hidden, and only the parts they open are
   // retyped. The rest stays as it was.
 
+  import { isFullName, isPhone } from '../lib/checks';
   import type { InfoChanges, MaskedInfo } from '../lib/types';
+  import { HOME_STATE } from '../lib/center';
   import GradeChips from './GradeChips.svelte';
   import Keyboard from './Keyboard.svelte';
   import { inputMode } from './state.svelte';
   import TextField from './TextField.svelte';
+  import TownChips from './TownChips.svelte';
 
   let {
     firstName,
@@ -32,7 +35,7 @@
   let street = $state('');
   let city = $state('');
   // Not called `state`, because that would clash with Svelte's `$state`.
-  let region = $state('');
+  let region = $state(HOME_STATE);
   let guardian_name = $state('');
   let guardian_phone = $state('');
   let guardian_email = $state('');
@@ -44,7 +47,7 @@
 
     if (editAddress) {
       if (!street.trim() || !city.trim() || !region.trim()) {
-        error = 'Please enter your street address, city and state.';
+        error = 'Please enter your street address, town and state.';
         return;
       }
       Object.assign(changes, { street, city, state: region });
@@ -52,6 +55,14 @@
     if (editGuardian) {
       if (!guardian_name.trim() || !guardian_phone.trim()) {
         error = "Please enter your guardian's name and phone number.";
+        return;
+      }
+      if (!isFullName(guardian_name)) {
+        error = "Please enter your guardian's first and last name.";
+        return;
+      }
+      if (!isPhone(guardian_phone)) {
+        error = "Please check your guardian's phone number. It should have 10 digits.";
         return;
       }
       Object.assign(changes, { guardian_name, guardian_phone, guardian_email });
@@ -77,7 +88,8 @@
 
       {#if editAddress}
         <TextField label="Street address" bind:value={street} caps wide />
-        <TextField label="City" bind:value={city} caps />
+        <TownChips bind:city bind:region />
+        <TextField label="Town" bind:value={city} caps />
         <TextField label="State" bind:value={region} caps />
       {:else}
         <div class="field full">

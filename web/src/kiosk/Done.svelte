@@ -17,6 +17,7 @@
     onundo,
     onhome,
     onupdate,
+    onsibling,
   }: {
     kind: 'in' | 'out' | 'saved';
     personId: string;
@@ -30,15 +31,19 @@
     onundo?: () => void;
     onhome: () => void;
     onupdate: (info: MaskedInfo) => void;
+    /** After a sign-up: sign up a brother or sister with the same home and guardian. */
+    onsibling?: () => void;
   } = $props();
 
   /** How long the screen stays before going home by itself. */
   const SECONDS = 5;
+  /** Long enough for a parent to see the brother-or-sister button. */
+  const SECONDS_AFTER_SIGN_UP = 20;
   const SECONDS_WITH_QUESTION = 40;
 
   let info = $state<MaskedInfo | null>(null);
   let thanked = $state(false);
-  let seconds = $derived(info && !thanked ? SECONDS_WITH_QUESTION : thanked ? 1.5 : SECONDS);
+  let seconds = $derived(info && !thanked ? SECONDS_WITH_QUESTION : thanked ? 1.5 : onsibling ? SECONDS_AFTER_SIGN_UP : SECONDS);
   let hasInfo = $derived(info !== null && (info.address !== '' || info.guardian !== '' || info.phone !== ''));
 
   // Go home after a while. Starts over when the question appears.
@@ -109,6 +114,9 @@
       {#if !info && !thanked}
         <div class="actions">
           <button type="button" class="btn primary" onclick={onhome}>Done</button>
+          {#if onsibling}
+            <button type="button" class="btn" onclick={onsibling}>Sign up a brother or sister</button>
+          {/if}
           {#if onundo}
             <button type="button" class="btn" onclick={onundo}>Undo</button>
           {/if}
