@@ -22,7 +22,7 @@
         isNew?: boolean;
         askInfo?: boolean;
         undo?: () => void;
-        /** After a sign-up, what was entered, so a brother or sister can start from it. */
+        /** After a sign-up, what was entered, so a sibling can start from it. */
         family?: SignUpForm;
       }
     | { name: 'info'; personId: string; firstName: string; info: MaskedInfo }

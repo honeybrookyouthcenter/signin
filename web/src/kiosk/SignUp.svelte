@@ -2,9 +2,9 @@
   // Sign-up for a new kid, in three short steps:
   //   1. about you   2. home and guardian   3. rules and the guardian's signature
   //
-  // For a brother or sister of a kid who just signed up, the last name, home,
-  // guardian and signature start filled in from that kid, so a parent signing
-  // up several kids only types each kid's name, birthday and grade.
+  // For a sibling of a kid who just signed up, the last name, home and
+  // guardian start filled in from that kid, so a parent signing up several
+  // kids only types each kid's name, birthday and grade, and signs for each.
 
   import { HOME_STATE, NAME, RULES } from '../lib/center';
   import { isFullName, isPhone } from '../lib/checks';
@@ -28,7 +28,7 @@
   }: {
     /** What the kid typed in the search box before tapping Sign up. */
     typedName?: string;
-    /** The sign-up of a brother or sister, to start from. */
+    /** The sign-up of a sibling, to start from. */
     family?: SignUpForm;
     oncancel: () => void;
     ondone: (form: SignUpForm) => void;
@@ -63,8 +63,6 @@
   let guardian_name = $state(sibling?.guardian_name ?? '');
   let guardian_phone = $state(sibling?.guardian_phone ?? '');
   let guardian_email = $state(sibling?.guardian_email ?? '');
-  /** The guardian's signature from the brother or sister, until they choose to sign again. */
-  let keptSignature = $state(sibling?.signature ?? '');
   let agreed = $state(false);
   let hasInk = $state(false);
   let pad: SignaturePad | undefined = $state();
@@ -117,7 +115,7 @@
     }
     if (step === 3) {
       if (!agreed) return 'A guardian needs to agree to the terms and conditions.';
-      if (!keptSignature && !hasInk) return 'A guardian needs to sign in the box.';
+      if (!hasInk) return 'A guardian needs to sign in the box.';
     }
     return '';
   }
@@ -149,7 +147,7 @@
       guardian_name: guardian_name.trim(),
       guardian_phone: guardian_phone.trim(),
       guardian_email: guardian_email.trim(),
-      signature: keptSignature || (pad?.toDataUrl() ?? ''),
+      signature: pad?.toDataUrl() ?? '',
     });
   }
 
@@ -163,7 +161,7 @@
 <div class="screen">
   <div class="form-bar">
     <h1>
-      {sibling ? 'Sign up a brother or sister' : 'Sign up'}
+      {sibling ? 'Sign up a sibling' : 'Sign up'}
       <span class="step">
         Step {step} of 3 · {['About you', 'Your home and guardian', 'Rules and signature'][step - 1]}
       </span>
@@ -214,9 +212,9 @@
     {:else if step === 2}
       <div class="fields">
         <TextField label="Street address" bind:value={street} caps wide />
-        <TownChips bind:city bind:region />
         <TextField label="Town" bind:value={city} caps />
         <TextField label="State" bind:value={region} caps />
+        <TownChips bind:city bind:region />
         <TextField label="Guardian's full name" bind:value={guardian_name} caps />
         <TextField label="Guardian's phone number" bind:value={guardian_phone} />
         <TextField label="Guardian's email (optional)" bind:value={guardian_email} wide />
@@ -238,19 +236,11 @@
               of leaving my child at the {NAME}.
             </span>
           </label>
-          {#if keptSignature}
-            <div class="sign-title">
-              <span>Guardian's signature, from {sibling?.first_name}'s sign-up</span>
-              <button type="button" class="link" onclick={() => (keptSignature = '')}>Sign again</button>
-            </div>
-            <img class="kept" src={keptSignature} alt="The guardian's signature" />
-          {:else}
-            <div class="sign-title">
-              <span>Guardian's signature</span>
-              <button type="button" class="link" onclick={() => pad?.clear()}>Clear</button>
-            </div>
-            <SignaturePad bind:this={pad} bind:hasInk />
-          {/if}
+          <div class="sign-title">
+            <span>Guardian's signature</span>
+            <button type="button" class="link" onclick={() => pad?.clear()}>Clear</button>
+          </div>
+          <SignaturePad bind:this={pad} bind:hasInk />
         </div>
       </div>
     {/if}
@@ -321,15 +311,6 @@
     height: 1.8rem;
     margin: 0;
     accent-color: var(--text);
-  }
-  .kept {
-    display: block;
-    width: 100%;
-    height: 9rem;
-    object-fit: contain;
-    border: 1px solid var(--line-strong);
-    border-radius: var(--radius);
-    background: #fff;
   }
   .sign-title {
     display: flex;

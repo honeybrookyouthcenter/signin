@@ -35,4 +35,4 @@ export const WAIVER_TEXT = `By signing this agreement, I voluntarily agree to as
 export const HOME_STATE = 'PA';
 
 /** Towns most kids come from. On the sign-up form, one tap fills in the city. */
-export const NEARBY_TOWNS = ['Honey Brook', 'Elverson', 'Morgantown', 'Narvon', 'Coatesville', 'Downingtown', 'Glenmoore', 'Gap'];
+export const NEARBY_TOWNS = ['Honey Brook', 'Elverson', 'Morgantown', 'Narvon', 'Coatesville', 'Downingtown'];

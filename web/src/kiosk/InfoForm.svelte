@@ -88,9 +88,9 @@
 
       {#if editAddress}
         <TextField label="Street address" bind:value={street} caps wide />
-        <TownChips bind:city bind:region />
         <TextField label="Town" bind:value={city} caps />
         <TextField label="State" bind:value={region} caps />
+        <TownChips bind:city bind:region />
       {:else}
         <div class="field full">
           <span>Home</span>

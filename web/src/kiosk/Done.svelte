@@ -31,13 +31,13 @@
     onundo?: () => void;
     onhome: () => void;
     onupdate: (info: MaskedInfo) => void;
-    /** After a sign-up: sign up a brother or sister with the same home and guardian. */
+    /** After a sign-up: sign up a sibling with the same home and guardian. */
     onsibling?: () => void;
   } = $props();
 
   /** How long the screen stays before going home by itself. */
   const SECONDS = 5;
-  /** Long enough for a parent to see the brother-or-sister button. */
+  /** Long enough for a parent to see the sibling button. */
   const SECONDS_AFTER_SIGN_UP = 20;
   const SECONDS_WITH_QUESTION = 40;
 
@@ -115,7 +115,7 @@
         <div class="actions">
           <button type="button" class="btn primary" onclick={onhome}>Done</button>
           {#if onsibling}
-            <button type="button" class="btn" onclick={onsibling}>Sign up a brother or sister</button>
+            <button type="button" class="btn" onclick={onsibling}>Sign up a sibling</button>
           {/if}
           {#if onundo}
             <button type="button" class="btn" onclick={onundo}>Undo</button>

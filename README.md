@@ -134,13 +134,13 @@ That's it. To bring over the old app's sign-in history, see
 - **Sign out:** type your name and tap it, the same as signing in. The kiosk asks first,
   so nobody signs out by accident.
 - **Sign up:** three short screens (about you, home and guardian, rules and the
-  guardian's signature). Finishing signs the kid in too. Tapping a nearby town fills in
-  the town and state, so most kids only type their street (the towns are listed in
+  guardian's signature). Finishing signs the kid in too. Under the Town box, tapping a
+  nearby town fills in the town and state, so most kids only type their street (the towns are listed in
   `web/src/lib/center.ts`). The guardian's name must have a first and last name, and the
   phone number must have 10 digits.
-- **Brothers and sisters:** after a sign-up, **Sign up a brother or sister** starts the
-  next kid with the same last name, home, guardian and signature filled in. The parent
-  types the kid's name, birthday and grade, checks the rest, and ticks "I agree" again.
+- **Siblings:** after a sign-up, **Sign up a sibling** starts the next kid with the same
+  last name, home and guardian filled in. The parent types the kid's name, birthday and
+  grade, checks the rest, and agrees and signs again, so every kid has their own signature.
 - Everyone still signed in at the nightly sign-out time (11 PM unless changed in Settings)
   is signed out automatically.
 
@@ -390,7 +390,7 @@ Pushing a tag such as `v2.0.1` publishes `YouthCenterSignIn.zip` as a release.
 **Tested**, by 42 server tests, 14 page tests, and by driving both pages in a real
 browser (Chromium):
 
-- Sign in, sign out, undo, sign up with signature, signing up a brother or sister, the
+- Sign in, sign out, undo, sign up with signature, signing up a sibling, the
   info check, auto sign-out.
 - The kiosk with the server stopped: sign-ins waited on the tablet and arrived with the
   right time once the server was back.
