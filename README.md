@@ -378,7 +378,7 @@ Pushing a tag such as `v2.0.1` publishes `YouthCenterSignIn.zip` as a release.
 
 ## What has and hasn't been tested
 
-**Tested**, by 41 server tests, 11 page tests, and by driving both pages in a real
+**Tested**, by 42 server tests, 11 page tests, and by driving both pages in a real
 browser (Chromium):
 
 - Sign in, sign out, undo, sign up with signature, the info check, auto sign-out.
@@ -393,21 +393,19 @@ browser (Chromium):
   a Windows machine, runs the installer twice (install, then update), and checks the
   program answers, the database exists, and the startup shortcut and firewall rule are there.
 
-**Not tested yet. Check these first at the center:**
+**Tried at the center** (November 2026): installing on the office PC, connecting Outlook
+with the youth center's account (the kids came in), and importing the real old logs.
 
-1. **Outlook with the real account.** The sync has never talked to Microsoft itself.
-   The app ID is now built in, but no one has connected with it yet. After "Connect Outlook",
-   confirm the kids appear with grade and guardian filled in. Look at one contact in
-   Outlook after a kiosk edit to confirm the notes still look right.
-2. **The installer on the real office PC.** GitHub's Windows machine has no OneDrive, no
-   "allow this app to make changes?" prompt and no download warning, so those three
-   parts have not been seen working, and nobody has looked at the program's window. After installing, check Settings → Backups shows
-   a OneDrive folder.
-3. **The real tablet in Edge kiosk mode:** speed, whether the Windows touch keyboard
+**Not tested yet. Check these at the center:**
+
+1. **Changes going back to Outlook.** After a kiosk sign-up or info update, open that
+   contact in Outlook and confirm the notes (grade, guardian) still look right.
+2. **Backups in OneDrive.** Check Settings → Backups shows a OneDrive folder, and that a
+   backup file appears there the morning after.
+3. **The program's window** on the office PC: its title on the taskbar and the welcome note.
+4. **The real tablet in Edge kiosk mode:** speed, whether the Windows touch keyboard
    stays hidden, and how the screens fit its resolution (they were drawn at 1280×800 and
    scale with the screen).
-4. **The import on a copy of the real OneDrive folder.** The old file format was worked
-   out from the old app's code, not from real files.
 5. **The waiver text.** It was copied from the old app. Read it once on the sign-up
    screen ("terms and conditions") to confirm it is still what the center wants.
 
