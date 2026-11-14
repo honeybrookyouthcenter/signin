@@ -41,6 +41,21 @@
     }
     pin = '';
   }
+
+  // When the browser says this page can be installed as an app, offer it.
+  // Browsers don't fire this once it is installed.
+  type InstallPrompt = Event & { prompt: () => Promise<void> };
+  let installPrompt = $state<InstallPrompt | null>(null);
+  window.addEventListener('beforeinstallprompt', (event) => {
+    event.preventDefault();
+    installPrompt = event as InstallPrompt;
+  });
+  window.addEventListener('appinstalled', () => (installPrompt = null));
+
+  async function install() {
+    await installPrompt?.prompt();
+    installPrompt = null;
+  }
 </script>
 
 {#if session?.allowed}
@@ -51,6 +66,9 @@
       <button type="button" class:on={tab === item.id} onclick={() => (tab = item.id)}>{item.name}</button>
     {/each}
     <span class="grow"></span>
+    {#if installPrompt}
+      <button type="button" class="install" onclick={install}>Install as an app</button>
+    {/if}
     <a href="/">Open the kiosk page</a>
   </nav>
   <div class="wrap">
@@ -113,6 +131,14 @@
   }
   nav .grow {
     flex: 1;
+  }
+  nav .install {
+    margin-right: 1rem;
+    padding: 0.35rem 0.8rem;
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius);
+    color: var(--text);
+    font-size: 0.9rem;
   }
   nav a,
   .login a {

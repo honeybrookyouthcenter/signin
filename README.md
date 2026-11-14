@@ -42,7 +42,8 @@ sign in to Windows, lets the tablet through the firewall, and stops the computer
 sleeping. The program runs in a minimized window on the taskbar called "Youth Center Sign In -
 please leave open". When the installer finishes it opens the **staff page** in your
 browser and shows the **address for the tablet**. Write that address down. A "Sign In - Staff page" shortcut is
-also put on the desktop.
+also put on the desktop. To give the staff page its own window and taskbar icon, choose
+**Install as an app** at the top right of the staff page.
 
 Then, on the staff page under **Settings**:
 
@@ -326,6 +327,8 @@ web/                    Svelte: the pages
   src/lib/              shared: server calls, search, the offline queue
   src/lib/center.ts     the center's name, rules and waiver text
   public/logo.png       the logo
+  public/icon-*.png     the logo on a white circle, for app and browser tab icons
+  public/staff.webmanifest  lets the browser install the staff page as an app
 install/                what staff download, next to signin.exe
   Install.cmd           double-click to install or update
   install-script.ps1           the installer itself
@@ -403,10 +406,12 @@ with the youth center's account (the kids came in), and importing the real old l
 2. **Backups in OneDrive.** Check Settings → Backups shows a OneDrive folder, and that a
    backup file appears there the morning after.
 3. **The program's window** on the office PC: its title on the taskbar and the welcome note.
-4. **The real tablet in Edge kiosk mode:** speed, whether the Windows touch keyboard
+4. **Installing the staff page as an app** with the new button, and its icon. The button
+   was only tried with a simulated browser prompt.
+5. **The real tablet in Edge kiosk mode:** speed, whether the Windows touch keyboard
    stays hidden, and how the screens fit its resolution (they were drawn at 1280×800 and
    scale with the screen).
-5. **The waiver text.** It was copied from the old app. Read it once on the sign-up
+6. **The waiver text.** It was copied from the old app. Read it once on the sign-up
    screen ("terms and conditions") to confirm it is still what the center wants.
 
 ---

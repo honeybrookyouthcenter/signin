@@ -1,0 +1,14 @@
+{
+  "name": "Youth Center Sign In",
+  "short_name": "Sign In",
+  "description": "Staff page for the Honey Brook Youth Center sign-in kiosk.",
+  "start_url": "/admin",
+  "scope": "/admin",
+  "display": "standalone",
+  "background_color": "#f8f7f4",
+  "theme_color": "#ffffff",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
