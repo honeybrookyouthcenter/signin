@@ -416,23 +416,17 @@ browser (Chromium):
   a Windows machine, runs the installer twice (install, then update), and checks the
   program answers, the database exists, and the startup shortcut and firewall rule are there.
 
-**Tried at the center** (November 2026): installing on the office PC, connecting Outlook
-with the youth center's account (the kids came in), and importing the real old logs.
+**Tried at the center** (November 2026):
 
-**Not tested yet. Check these at the center:**
-
-1. **Changes going back to Outlook.** After a kiosk sign-up or info update, open that
-   contact in Outlook and confirm the notes (grade, guardian) still look right.
-2. **Backups in OneDrive.** Check Settings → Backups shows a OneDrive folder, and that a
-   backup file appears there the morning after.
-3. **The program's window** on the office PC: its title on the taskbar and the welcome note.
-4. **Installing the staff page as an app** with the new button, and its icon. The button
-   was only tried with a simulated browser prompt.
-5. **The real tablet in Edge kiosk mode:** speed, whether the Windows touch keyboard
-   stays hidden, and how the screens fit its resolution (they were drawn at 1280×800 and
-   scale with the screen).
-6. **The waiver text.** It was copied from the old app. Read it once on the sign-up
-   screen ("terms and conditions") to confirm it is still what the center wants.
+- Installing on the office PC, connecting Outlook with the youth center's account (the
+  kids came in), and importing the real old logs.
+- Changes going back to Outlook: after a kiosk sign-up or info update, the contact's
+  notes (grade, guardian) look right.
+- Backups: a backup file appears in the OneDrive folder the morning after.
+- The program's window on the office PC, and installing the staff page as an app.
+- The real tablet in Edge kiosk mode: speed, the Windows touch keyboard staying hidden,
+  and how the screens fit.
+- The waiver text is still what the center wants.
 
 ---
 
