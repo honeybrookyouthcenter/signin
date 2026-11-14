@@ -1,29 +1,10 @@
 # Youth Center Sign In
 
-A sign-in kiosk for the Honey Brook Youth Center. Kids type their name on a tablet at the
-entrance and tap it. Staff see who is here, fix mistakes and pull reports from the office
-computer.
+The sign-in kiosk for the Honey Brook Youth Center. Kids type their name on a tablet at
+the entrance and tap it. Staff see who is here, fix mistakes and get reports from the
+office computer.
 
 ![The kiosk home screen](docs/screenshots/kiosk-home.png)
-
-> **Status.** This version (Rust + Svelte) replaces the old Windows app. It has been
-> installed and tried at the center, but has not taken over from the old app yet. See
-> [What has and hasn't been tested](#what-has-and-hasnt-been-tested).
-> The old app's code is in this repo's history, before the rewrite.
-
-## Contents
-
-- [Install](#install)
-- [How it works](#how-it-works)
-- [Using it](#using-it)
-- [Bring over the old sign-in logs](#bring-over-the-old-sign-in-logs)
-- [Looking after it](#looking-after-it)
-- [Get the Microsoft app ID](#get-the-microsoft-app-id) (once, by whoever maintains this)
-- [Working on the code](#working-on-the-code)
-- [What has and hasn't been tested](#what-has-and-hasnt-been-tested)
-- [Switching over from the old app](#switching-over-from-the-old-app)
-
----
 
 ## Install
 
@@ -38,82 +19,66 @@ signed in.
    your PC", choose **More info**, then **Run anyway**.
 4. When Windows asks "Do you want to allow this app to make changes?", choose **Yes**.
 
-The installer copies the program to `C:\YouthCenterSignIn`, makes it start whenever you
-sign in to Windows, lets the tablet through the firewall, and stops the computer from
-sleeping. The program runs in a minimized window on the taskbar called "Youth Center Sign In -
-please leave open". When the installer finishes it opens the **staff page** in your
-browser and shows the **address for the tablet**. Write that address down. A "Sign In - Staff page" shortcut is
-also put on the desktop. To give the staff page its own window and taskbar icon, choose
-**Install as an app** at the top right of the staff page.
+The installer puts the program in `C:\YouthCenterSignIn` and sets it to start when you
+sign in to Windows. It also lets the tablet through the firewall and stops the computer
+from sleeping. The program runs in a small window on the taskbar called "Youth Center
+Sign In - please leave open".
+
+When it finishes, it opens the **staff page** and shows the **address for the tablet**.
+Write that address down. There is also a "Sign In - Staff page" shortcut on the desktop.
 
 Then, on the staff page under **Settings**:
 
-5. **Admin PIN:** choose a PIN. This computer never needs it. Every other device does.
-6. **Outlook contacts:** choose **Connect Outlook**. A short code and a Microsoft web
-   address appear. Open that address on any phone or computer, type the code, and sign
-   in with **the youth center's Microsoft account**. The page changes to "connected" by
-   itself and the kids appear under **Kids**.
+5. **Admin PIN:** choose a PIN. The office computer never asks for it. Other devices do.
+6. **Outlook contacts:** choose **Connect Outlook**. Open the Microsoft address it shows
+   on any phone or computer, type the code, and sign in with **the youth center's
+   Microsoft account**. The kids appear under **Kids**.
 7. **Backups:** check that the folder shown is inside OneDrive.
 
 ### On the tablet
 
-8. In Edge, open the address the installer showed, like `http://OFFICE-PC:8080`, and
-   check the sign-in screen appears. The tablet must be on the same Wi-Fi as the office
-   computer.
+8. In Edge, open the address the installer showed (like `http://OFFICE-PC:8080`) and
+   check the sign-in screen appears. The tablet must be on the same Wi-Fi.
 9. Windows Settings → Accounts → Other users → **Set up a kiosk** → Microsoft Edge →
    **As a digital sign or interactive display** → enter that address.
 
-That's it. To bring over the old app's sign-in history, see
-[Bring over the old sign-in logs](#bring-over-the-old-sign-in-logs).
-
 ### If something doesn't work
 
-- **The tablet can't open the address.** Use the second address the installer showed
+- **The tablet can't open the address.** Try the second address the installer showed
   (numbers, like `http://192.168.1.20:8080`). If that works, ask whoever looks after the
-  router to give the office computer a fixed address, so it never changes. If neither
-  works, run **Install** again and answer **Y** when it asks about marking the network
-  as Private.
-- **Settings says Outlook is "not set up".** This copy of the program has no Microsoft
-  app ID. Download the latest version, or see [Get the Microsoft app ID](#get-the-microsoft-app-id).
-- **Outlook asks to connect again later.** Microsoft forgets the sign-in after about 90
-  days without use, for example over a long break. Choose Connect Outlook again.
-- **Windows shows its own keyboard over the kiosk's.** Switch under Settings → Kiosk →
-  Keyboard on the kiosk.
+  router to give the office computer a fixed address. If neither works, run **Install**
+  again and answer **Y** when it asks about marking the network as Private.
+- **Settings says Outlook is "not set up".** Download the latest version, or see
+  [Get the Microsoft app ID](#get-the-microsoft-app-id).
+- **Outlook asks to connect again.** Microsoft forgets the sign-in after about 90 days
+  without use. Choose Connect Outlook again.
+- **Windows shows its own keyboard over the kiosk's.** Turn it off under Settings →
+  Kiosk → Keyboard on the kiosk.
 
 ---
 
 ## How it works
 
 ```
- ┌──────────────── Office PC (on during open nights) ───────────────────────┐
- │                                                                           │
- │   signin.exe  ── one program, starts with Windows                         │
- │     ├─ serves the kiosk page and the staff page                           │
- │     ├─ stores sign-ins + a copy of the kids list in  data\signin.db       │
- │     ├─ syncs kids  ⇄  Outlook contacts                                    │
- │     └─ nightly backup  →  OneDrive\Youth Center Sign In\Backups\          │
- │                                                                           │
- │   Staff: open  http://localhost:8080/admin  in any browser                │
- └───────────────────────────────▲───────────────────────────────────────────┘
-                                 │  same Wi-Fi
- ┌───────────────────────────────┴──────────────┐
- │  Tablet at the entrance                       │
- │  Edge in kiosk mode → http://OFFICE-PC:8080   │
- └───────────────────────────────────────────────┘
+ Office computer                                 Tablet at the entrance
+ ┌──────────────────────────────────────┐        ┌─────────────────────────┐
+ │ signin.exe                           │ Wi-Fi  │ Edge in kiosk mode      │
+ │  - serves the kiosk and staff pages  │◄──────►│ http://OFFICE-PC:8080   │
+ │  - saves sign-ins in data\signin.db  │        └─────────────────────────┘
+ │  - syncs kids with Outlook contacts  │
+ │  - backs up to OneDrive each night   │
+ └──────────────────────────────────────┘
 ```
 
-- **One place writes sign-ins.** Only `signin.exe` saves them, one at a time, into one
-  database file. The old app had the tablet and the office PC each rewriting the same
-  day's file through OneDrive, and whichever wrote last erased the other's entries.
-- **No hosting and no bills.** Nothing runs on the internet except the Outlook contacts
-  sync the center already uses.
-- **Outlook stays the kids list** staff see on their phones. The program keeps its own
-  copy, so searching is instant and sign-in keeps working when the internet is down.
-- **The tablet doesn't wait on the network.** Each sign-in is saved on the tablet first,
-  then sent. If the office PC can't be reached, sign-ins wait on the tablet and are sent
-  when it is back, with the time the kid actually tapped.
-- **Easy to hand over.** One folder (`C:\YouthCenterSignIn`) holds the program, its
-  settings and its data.
+- **Only the office computer saves sign-ins**, into one database. (The old app had two
+  computers writing the same file through OneDrive, and sign-ins went missing.)
+- **The tablet never waits on the network.** It saves each sign-in first, then sends it.
+  If the office computer is off, sign-ins wait on the tablet and arrive later with the
+  right time.
+- **Outlook is still the kids list.** The program keeps a copy, so search is instant and
+  works without internet.
+- **Nothing is hosted online and nothing costs money.** Only the Outlook sync uses the
+  internet.
 
 ---
 
@@ -125,60 +90,48 @@ That's it. To bring over the old app's sign-in history, see
 |---|---|
 | ![Searching](docs/screenshots/kiosk-search.png) | ![Signed in](docs/screenshots/kiosk-signed-in.png) |
 
-- **Sign in:** type a few letters, tap your name. A confirmation shows for five seconds
-  with an **Undo** button. Search forgives one typo.
-- **Info check:** once a school year, at a kid's first sign-in on or after August 1, the
-  confirmation asks what grade they are in now, then "is the rest still right?". The kid
-  is already signed in by then, so walking away loses nothing. (To move the date, change
-  `SCHOOL_YEAR_STARTS_MONTH` in `server/src/db.rs`.) Saved info is shown mostly hidden (`123 M•••`, `•••-•••-1234`)
-  because anyone can tap any name. "Something changed" lets them retype only the part
-  that changed.
-- **Sign out:** type your name and tap it, the same as signing in. The kiosk asks first,
-  so nobody signs out by accident.
-- **Sign up:** three short screens (about you, home and guardian, rules and the
-  guardian's signature). Finishing signs the kid in too. Under the Town box, tapping a
-  nearby town fills in the town and state, so most kids only type their street (the towns are listed in
-  `web/src/lib/center.ts`). The guardian's name must have a first and last name, and the
-  phone number must have 10 digits.
+- **Sign in or out:** type a few letters and tap your name. Search forgives one typo.
+  Signing in shows **Undo** for a few seconds. Signing out asks first.
+- **Sign up:** three short screens: about you, home and guardian, then the rules and the
+  guardian's signature. Finishing also signs the kid in. Tapping a nearby town fills in
+  the town and state (the towns are in `web/src/lib/center.ts`).
 - **Siblings:** after a sign-up, **Sign up a sibling** starts the next kid with the same
-  last name, home and guardian filled in. The parent types the kid's name, birthday and
-  grade, checks the rest, and agrees and signs again, so every kid has their own signature.
-- **18 and older:** going by the birthday, sign-up and the info check ask for their own
-  phone number instead of a guardian's, and they sign the form themselves. Their phone
-  is kept where a guardian's phone would be, so it shows as the contact's home phone in
-  Outlook.
-- Everyone still signed in at the nightly sign-out time (11 PM unless changed in Settings)
-  is signed out automatically.
+  last name, home and guardian. The guardian signs again for each kid.
+- **18 and older** give their own phone number and sign for themselves.
+- **Once a school year**, at a kid's first sign-in on or after August 1, the kiosk asks
+  their grade and has them check their home and guardian. They are already signed in, so
+  walking away loses nothing. Saved info is partly hidden (`123 M•••`) because anyone can
+  tap any name.
+- Anyone still signed in at 11 PM is signed out automatically (change the time in
+  Settings).
 
 ### Staff
 
 ![The staff page](docs/screenshots/admin-today.png)
 
-Open <http://localhost:8080/admin> on the office PC, or tap the small "Staff" link on the
-kiosk and enter the PIN. Going back to the kiosk locks the staff page again, so the next
-person who taps "Staff" needs the PIN too.
+Open <http://localhost:8080/admin> on the office computer, or tap "Staff" on the kiosk
+and enter the PIN. Going back to the kiosk locks the staff page again.
 
-- **Sign-ins:** today's list updates by itself. Pick any earlier day. Sign someone out,
-  fix times, delete a wrong entry, or add one that was missed. Tap a name to see and edit
-  that kid's details.
-- **Reports:** sign-ins and different kids per month and per day for any range of dates,
-  with a CSV download for Excel.
+- **Sign-ins:** today's list, or any earlier day. Sign someone out, fix times, delete a
+  wrong entry or add a missed one. Tap a name to see that kid.
+- **Reports:** sign-ins and different kids per month and per day, with a CSV download
+  for Excel.
 - **Kids:** search, add and edit. **Merge a duplicate** moves one kid's sign-ins to
-  another and deletes the extra. **Remove** hides a kid from the kiosk and deletes their
-  Outlook contact, and keeps their past sign-ins in the reports.
-- **Settings:** Outlook connection and "Sync now", whether the kiosk is connected, the
-  nightly sign-out time, backups, and the PIN.
+  another. **Remove** hides a kid from the kiosk and Outlook but keeps their sign-ins in
+  the reports.
+- **Settings:** Outlook, the kiosk connection, the nightly sign-out time, backups and
+  the PIN.
+- **Install as an app** (top right) gives the staff page its own window.
 
-Changes made in Outlook reach the kiosk within five minutes. Changes made at the kiosk or
-on the staff page reach Outlook within seconds when the internet is up, and wait if it
-is not.
+Changes in Outlook reach the kiosk within five minutes. Changes on the kiosk or staff
+page reach Outlook within seconds when the internet is up.
 
 ---
 
 ## Bring over the old sign-in logs
 
-The old app wrote one file per day (`2021-05-14.json`) into its OneDrive folder. One
-command copies them all into the new database:
+The old app saved one file per day in OneDrive. To copy them into the new database,
+press Win+R, type `cmd`, and run:
 
 ```
 cd C:\YouthCenterSignIn
@@ -186,27 +139,13 @@ signin.exe import "%OneDrive%\Youth Center Sign In" --dry-run
 signin.exe import "%OneDrive%\Youth Center Sign In"
 ```
 
-Type these in a Command Prompt window (press Win+R, type `cmd`). It is fine to run them
-while the program is running.
-
-- `--dry-run` only reports: visits per day, files it could not read, and what would be
-  added. Check the totals against the old app before running it for real.
-- **Side copies are merged in.** When the tablet and the office PC both wrote the same
-  day, OneDrive kept the loser under a longer name such as `2021-05-14-TABLET.json`. The
-  import reads those too, so sign-ins that went missing can come back. The report shows
-  how many were recovered per day.
-- **Running it again is safe.** Each visit keeps the id the old app gave it, so nothing is
-  added twice. Import early to try things out, then once more right before switching over.
-- **Connect Outlook first.** Kids are matched to their Outlook contact by the contact's
-  id, or by name if the contact was made again since (only when no other kid has that
-  name). A kid with no contact any more stays in the reports, hidden from the kiosk.
-- The report lists those kids, most recent first. Kids from years ago are expected there.
-  If kids who came last month are listed, check that Settings shows Outlook connected
-  and synced, and that they are in Outlook under the same name.
-- Old visits with no sign-out are marked "never signed out". No time is made up.
-- Old waiver signatures (the `COVID-19` folder) stay where they are. The Kids page finds
-  them by name.
-- The old admin PIN is not carried over. Set a new one.
+- `--dry-run` only reports what it would add. Check the totals before running it for real.
+- Running it again is safe. Nothing is added twice.
+- Connect Outlook first, so old sign-ins are matched to the right kids. Kids it can't
+  match are listed. Kids from years ago are expected there.
+- It also reads the extra copies OneDrive made when two computers saved the same day, so
+  some lost sign-ins come back.
+- Old signatures stay in the old `COVID-19` folder. The Kids page finds them by name.
 
 ---
 
@@ -214,231 +153,127 @@ while the program is running.
 
 | What | Where |
 |---|---|
-| Database (sign-ins, kids, settings) | `C:\YouthCenterSignIn\data\signin.db` |
-| Nightly database copies (last 60) | `<OneDrive folder>\Backups\signin-YYYY-MM-DD.db` |
-| Daily logs for Excel | `<OneDrive folder>\Logs\YYYY-MM-DD.csv` |
-| Guardian signatures | `<OneDrive folder>\Waivers\<Name>.png` |
-| Program log (errors, sync activity) | `C:\YouthCenterSignIn\data\logs\signin.log.YYYY-MM-DD` |
+| Database | `C:\YouthCenterSignIn\data\signin.db` |
+| Nightly backups (last 60) | `OneDrive\Youth Center Sign In\Backups` |
+| Daily logs for Excel | `OneDrive\Youth Center Sign In\Logs` |
+| Guardian signatures | `OneDrive\Youth Center Sign In\Waivers` |
+| Program log (errors) | `C:\YouthCenterSignIn\data\logs` |
 
-The OneDrive folder is `Youth Center Sign In` in this computer's OneDrive, the same
-folder the old app used. The live database is deliberately **not** in OneDrive, because syncing a database file
-while it is in use can damage it. Only finished copies go there.
+The live database is **not** in OneDrive on purpose: syncing a database while it is in
+use can damage it. Only the backups go there.
 
 ### Keeping it running
 
-The program is not a Windows service. It starts when someone signs in to Windows on the
-office computer, and runs as long as its window stays open. So it is **not** running:
+The program runs while its window is open. It starts when someone signs in to Windows.
+So after a restart, it isn't running until someone signs in. Meanwhile the tablet says it
+can't reach the office computer, and keeps sign-ins until it can.
 
-- after a restart (Windows updates do this), until someone signs in, or
-- if someone closes its window. Signing out and back in, or restarting, starts it again.
-
-The tablet then says it can't reach the office computer. Sign-ins made meanwhile wait
-on the tablet and are sent once the program is back.
-
-To make restarts hands-off, let the office computer sign itself in. Anyone who turns the
-computer on then gets straight into that account, which is usually fine for an office PC:
-
-- Download Microsoft's free **Autologon** (search "Sysinternals Autologon"), run it,
-  type the account's password and choose **Enable**. Or:
-- Press Win+R, type `netplwiz`, and untick "Users must enter a user name and password
-  to use this computer". On Windows 11 that box only shows after turning off
-  **Settings → Accounts → Sign-in options → "For improved security, only allow Windows
-  Hello sign-in"**.
-
-Also set **Settings → Windows Update → Active hours** to cover the evenings the youth
-center is open, so Windows doesn't restart in the middle of one.
+- To have the computer sign itself in after a restart, use Microsoft's free
+  **Sysinternals Autologon**, or press Win+R, type `netplwiz`, and untick "Users must
+  enter a user name and password". On Windows 11 that box only shows after turning off
+  **Settings → Accounts → Sign-in options → "only allow Windows Hello sign-in"**.
+- Set **Settings → Windows Update → Active hours** to cover open nights.
+- If the tablet was restarted while the office computer was off, turn the computer on,
+  then restart the tablet.
 
 ### Other jobs
 
-- **Update:** download the new zip and double-click **Install** again. Settings and data
-  are kept, and the kiosk page reloads itself.
-- **Restore a backup:** close the program's window, copy a backup file over
-  `C:\YouthCenterSignIn\data\signin.db`, and start the program again from the Start
-  menu's Startup folder or by restarting the computer.
-- **Move to a new PC:** run **Install** on the new PC, close the program, copy the `data`
-  folder and `config.toml` from the old PC over the new ones, and restart. Connect Outlook
-  again, and give the tablet the new address.
-- **Remove it:** delete the "Youth Center Sign In" shortcut from the Startup folder
-  (press Win+R, type `shell:startup`), then delete `C:\YouthCenterSignIn`.
-- **Forgot the PIN:** set a new one on the office PC under Settings. It doesn't ask for the old one.
-- **Kiosk says it can't reach the office computer:** check the PC is on and awake, and
-  that both are on the same Wi-Fi. Sign-ins made meanwhile are kept on the tablet until it
-  reconnects. If the tablet itself was restarted while the PC was off, turn the PC on,
-  then restart the tablet.
-- **Handing off to someone else:** they need this README, the admin PIN, the youth
-  center's Microsoft account, and access to this GitHub repo.
+- **Update:** download the new zip and double-click **Install**. Settings and data are
+  kept.
+- **Restore a backup:** close the program's window, copy the backup over
+  `C:\YouthCenterSignIn\data\signin.db`, and restart the computer.
+- **Move to a new computer:** run **Install** on it, close the program, copy over the
+  `data` folder and `config.toml` from the old one, and restart. Connect Outlook again
+  and give the tablet the new address.
+- **Remove it:** press Win+R, type `shell:startup`, delete the "Youth Center Sign In"
+  shortcut, then delete `C:\YouthCenterSignIn`.
+- **Forgot the PIN:** set a new one on the office computer under Settings.
+- **Handing it to someone else:** they need this README, the PIN, the youth center's
+  Microsoft account, and access to this GitHub repo.
 
 ---
 
 ## Get the Microsoft app ID
 
-Before the program may read and write Outlook contacts, Microsoft wants it registered as
-an "app". This is free and done **once**, by whoever maintains this. The ID it gives is
-not a secret: it shows up in every Microsoft sign-in link, and the program never uses a
-password or "client secret", so don't create one. It is built into the program, so staff
-never see this step.
+Microsoft needs the program registered as an "app" before it can use Outlook contacts.
+This is free, done **once** by whoever maintains this, and already built into the
+releases. The ID is not a secret. Don't create a password or "client secret".
 
-1. Go to <https://entra.microsoft.com> and sign in. Any Microsoft account that can open
-   the Azure portal works. It does not have to be the youth center's account. If Microsoft
-   asks you to sign up for Azure first, the free sign-up is enough and nothing here costs money.
-2. Open **Applications → App registrations → New registration**.
-   - Name: `Youth Center Sign In`
-   - Supported account types: **Personal Microsoft accounts only**
-   - Redirect URI: leave empty
-   - Choose **Register**.
-3. Open **Authentication**. Under "Advanced settings", set **Allow public client flows**
-   to **Yes**, and save.
-4. Open **API permissions → Add a permission → Microsoft Graph → Delegated permissions**.
-   Type `contacts` in the search box and open the **Contacts** group. Tick
-   **Contacts.ReadWrite** ("Have full access to user contacts"), and choose
-   **Add permissions**. `User.Read` is already there. A note saying personal accounts
-   don't support admin consent is fine: this permission doesn't need it.
-5. Open **Overview** and copy the **Application (client) ID**. It looks like
-   `1a2b3c4d-0000-1111-2222-333344445555`.
-6. Paste it into `server/src/config.rs`:
+1. Go to <https://entra.microsoft.com> and sign in with any Microsoft account. If asked
+   to sign up for Azure, the free sign-up is enough.
+2. **Applications → App registrations → New registration.** Name: `Youth Center Sign In`.
+   Account types: **Personal Microsoft accounts only**. Leave Redirect URI empty.
+   **Register**.
+3. **Authentication:** set **Allow public client flows** to **Yes** and save.
+4. **API permissions → Add a permission → Microsoft Graph → Delegated permissions:**
+   tick **Contacts.ReadWrite** and **Add permissions**. A note about admin consent can
+   be ignored.
+5. **Overview:** copy the **Application (client) ID**.
+6. Paste it into `server/src/config.rs` (`BUILT_IN_CLIENT_ID`), commit, and publish a new
+   release.
 
-   ```rust
-   pub const BUILT_IN_CLIENT_ID: &str = "paste-it-here";
-   ```
-
-   Commit, and push a new version tag to publish a release with the ID inside.
-
-To try an ID without rebuilding, or to use a different registration on one computer, put
-it in `C:\YouthCenterSignIn\config.toml`, which wins over the built-in one:
+To try an ID without a new release, put it in `C:\YouthCenterSignIn\config.toml`:
 
 ```toml
 [microsoft]
 client_id = "paste-it-here"
 ```
 
-Microsoft renames these screens from time to time, so the labels may differ a little. If
-the youth center's account is a work or school account instead of a personal one, choose
-"Accounts in any organizational directory and personal Microsoft accounts" in step 2 and
-set `tenant = "common"` in `config.toml`.
+If the center's account is a work or school account, choose "Accounts in any
+organizational directory and personal Microsoft accounts" in step 2, and add
+`tenant = "common"` under `[microsoft]` in `config.toml`.
 
 ---
 
 ## Working on the code
 
 ```
-server/                 Rust: the program that runs on the office PC
-  src/main.rs           starts everything; also the `import` command
-  src/config.rs         reads config.toml
-  src/db.rs             the SQLite database; all SQL is in this file
-  src/app.rs            shared state and the error type
-  src/routes/kiosk.rs   what the tablet calls
-  src/routes/admin.rs   what the staff page calls, and the PIN check
-  src/routes/mod.rs     the route table and the web pages
-  src/graph.rs          Outlook contacts sync
-  src/notes.rs          the old "notes" format for grade and guardian
-  src/backup.rs         nightly sign-out, backups and CSV logs
-  src/import.rs         import of the old app's logs
-  src/waivers.rs        guardian signature files
-  src/tests.rs          end-to-end tests, with a stand-in for Microsoft
-web/                    Svelte: the pages
-  src/kiosk/            the tablet page
-  src/admin/            the staff page
-  src/lib/              shared: server calls, search, the offline queue
-  src/lib/center.ts     the center's name, rules and waiver text
-  public/logo.png       the logo
-  public/icon-*.png     the logo on a white circle, for app and browser tab icons
-  public/staff.webmanifest  lets the browser install the staff page as an app
-install/                what staff download, next to signin.exe
-  Install.cmd           double-click to install or update
-  install-script.ps1           the installer itself
-  config.toml           the settings file, with every setting explained
+server/          Rust: the program on the office computer (all SQL is in db.rs)
+web/src/kiosk/   Svelte: the tablet page
+web/src/admin/   Svelte: the staff page
+web/src/lib/     shared code; center.ts has the center's name, rules and waiver text
+install/         the installer and settings file staff download
 ```
 
 You need [Rust](https://rustup.rs) and [Node.js](https://nodejs.org) 22 or newer.
 
 ```
-cd web
-npm install
-npm run build        # builds the pages into web/dist
-
-cd ../server
-cargo run            # http://localhost:8080 and http://localhost:8080/admin
-cargo test
+cd web && npm install && npm run build    # build the pages first: they go inside the exe
+cd server && cargo run                    # http://localhost:8080 and /admin
+cd server && cargo test                   # server tests
+cd web && npm run check && npm test       # page tests
 ```
 
-`cargo build --release` bakes `web/dist` into the exe, so build the web pages first.
-While working on the pages, run `cargo run` in one terminal and `npm run dev` in `web/`
-in another. Open the address Vite prints, and the pages reload as you save. `npm run check`
-type-checks the pages and `npm test` runs their tests.
+While working on the pages, run `cargo run` and `npm run dev` (in `web/`) side by side,
+and open the address Vite prints.
 
-GitHub Actions (`.github/workflows/signin.yml`) runs all tests on every push, builds
-`signin.exe` on Windows, and runs the installer there to check the program starts.
-To publish a release, push a tag such as `v2.0.1`, or make the release on GitHub's
-Releases page with a new tag. Either way, the build attaches `YouthCenterSignIn.zip` to
-it when it finishes (about ten minutes).
+Every push runs the tests on GitHub, builds `signin.exe` on Windows and tries the
+installer there. To publish a release, make one on GitHub's Releases page with a new tag
+like `v2.0.1`. The build attaches `YouthCenterSignIn.zip` about ten minutes later.
 
-**Notes for whoever maintains this:**
-
-- The Rust is kept plain on purpose: handlers read a request, run SQL, and return JSON.
-  Crates used: `axum` + `tokio` (web server), `rusqlite` (SQLite, compiled in), `reqwest`
-  (calls to Microsoft), `rust-embed` (pages inside the exe), `serde`, `chrono`, `uuid`,
-  `toml`, `tracing`, `anyhow`.
-- The pages stay current by asking the server again every 10 to 20 seconds. There is no
-  push channel from server to page.
-- Things only needed while the program runs (logged-in sessions, the Outlook token) are
-  in one `Memory` struct in `app.rs`. Everything that must survive a restart is in SQLite.
-- Times are stored as local time text (`2026-11-10T18:42:05`).
-- To change the database layout, add a new entry to `MIGRATIONS` in `db.rs`. Never edit
-  an old one.
-- The tablet makes the ids for visits and new kids. That is what makes a resent request
-  harmless: the same id is only saved once.
-- Outlook sync reads the whole contact list each time and compares. It is simple, and
-  fine for a few hundred contacts.
-- The kiosk page is served over plain `http` on the local network. Browsers turn some
-  features off there (`crypto.randomUUID`, service workers), which is why `web/src/lib/uuid.ts`
-  exists.
+[AGENTS.md](AGENTS.md) has the rules for changing the code.
 
 ---
 
 ## What has and hasn't been tested
 
-**Tested**, by 43 server tests, 16 page tests, and by driving both pages in a real
-browser (Chromium):
+**Tested automatically** (43 server tests, 16 page tests, and both pages in a real
+browser): signing in and out, sign-up, siblings, the school-year check, 18 and older,
+working with the office computer off, the staff page and PIN, reports, merging, the
+import, backups, and Outlook sync against a **stand-in** Microsoft server. Every push
+also installs and starts the program on a Windows machine.
 
-- Sign in, sign out, undo, sign up with signature, signing up a sibling, the
-  info check, auto sign-out.
-- The start-of-school-year grade question, and sign-up and the info check for someone
-  18 or older.
-- The kiosk with the server stopped: sign-ins waited on the tablet and arrived with the
-  right time once the server was back.
-- Staff page: fixing and adding visits, reports and CSV, editing, merging and removing
-  kids, and the PIN being required from another address, including again after going
-  back to the kiosk.
-- Import of old-format logs, including side copies, a broken file, and running twice.
-- Backups and daily CSV files.
-- Outlook sync logic, against a **stand-in** Microsoft server written for the tests.
-- **The installer and `signin.exe` on Windows.** Every push, GitHub builds the program on
-  a Windows machine, runs the installer twice (install, then update), and checks the
-  program answers, the database exists, and the startup shortcut and firewall rule are there.
-
-**Tried at the center** (November 2026):
-
-- Installing on the office PC, connecting Outlook with the youth center's account (the
-  kids came in), and importing the real old logs.
-- Changes going back to Outlook: after a kiosk sign-up or info update, the contact's
-  notes (grade, guardian) look right.
-- Backups: a backup file appears in the OneDrive folder the morning after.
-- The program's window on the office PC, and installing the staff page as an app.
-- The real tablet in Edge kiosk mode: speed, the Windows touch keyboard staying hidden,
-  and how the screens fit.
-- The waiver text is still what the center wants.
+**Tried at the center** (November 2026): installing, connecting Outlook, importing the
+old logs, changes reaching Outlook, backups in OneDrive, the program's window, the staff
+page as an app, the tablet in Edge kiosk mode, and the waiver text.
 
 ---
 
 ## Switching over from the old app
 
-1. [Install](#install) on the office PC and connect Outlook. Run the import with
-   `--dry-run`, check the totals, then run it for real.
-2. Try the kiosk page on the tablet in a normal Edge window while the old app is still
-   the real kiosk.
-3. On a quiet open night, run both: old app on the tablet as usual, new kiosk page open
-   on a second device. Compare the counts at the end of the night.
-4. Run the import one more time to pick up the last nights. Put the tablet into Edge
-   kiosk mode pointing at the new page.
-5. After a few good weeks, remove the old app from the tablet and the office PC. The
-   import code (`server/src/import.rs`) can then be deleted too.
+1. Install on the office computer, connect Outlook, and import the old logs.
+2. Run both for a night or two and compare the counts.
+3. Import once more to pick up the last nights, then put the tablet into Edge kiosk mode
+   on the new page.
+4. After a few good weeks, remove the old app. `server/src/import.rs` can then be
+   deleted too.
