@@ -3,7 +3,8 @@
 pub mod admin;
 pub mod kiosk;
 
-use axum::http::{header, StatusCode, Uri};
+use axum::http::{header, HeaderValue, StatusCode, Uri};
+use axum::middleware;
 use axum::response::{IntoResponse, Response};
 use axum::Router;
 use rust_embed::RustEmbed;
@@ -11,11 +12,18 @@ use rust_embed::RustEmbed;
 use crate::app::Shared;
 
 pub fn router(state: Shared) -> Router {
-    Router::new()
+    let api = Router::new()
         .nest("/api/kiosk", kiosk::router())
         .nest("/api/admin", admin::router(state.clone()))
-        .fallback(web_file)
-        .with_state(state)
+        .layer(middleware::map_response(never_cache));
+    api.fallback(web_file).with_state(state)
+}
+
+/// The API's answers change all the time, so the browser must always ask
+/// again. Without this, the back button could show an old "you are logged in".
+async fn never_cache(mut response: Response) -> Response {
+    response.headers_mut().insert(header::CACHE_CONTROL, HeaderValue::from_static("no-store"));
+    response
 }
 
 /// The built web pages (`web/dist`), baked into the program when it is compiled.

@@ -5,11 +5,12 @@
   // For a sibling of a kid who just signed up, the last name, home and
   // guardian start filled in from that kid, so a parent signing up several
   // kids only types each kid's name, birthday and grade, and signs for each.
+  // Someone 18 or older gives their own phone number and signs for themselves.
 
   import { HOME_STATE, NAME, RULES } from '../lib/center';
   import { isFullName, isPhone } from '../lib/checks';
   import { normalize } from '../lib/search';
-  import { toDateText } from '../lib/time';
+  import { isAdult, toDateText } from '../lib/time';
   import type { KioskPerson, SignUpForm } from '../lib/types';
   import GradeChips from './GradeChips.svelte';
   import Keyboard from './Keyboard.svelte';
@@ -60,9 +61,12 @@
   let city = $state(sibling?.city ?? '');
   // Not called `state`, because that would clash with Svelte's `$state`.
   let region = $state(sibling?.state ?? HOME_STATE);
-  let guardian_name = $state(sibling?.guardian_name ?? '');
-  let guardian_phone = $state(sibling?.guardian_phone ?? '');
-  let guardian_email = $state(sibling?.guardian_email ?? '');
+  // An older sibling who is 18 or older gave their own phone, not a guardian's.
+  // svelte-ignore state_referenced_locally
+  const guardian = sibling?.guardian_name ? sibling : undefined;
+  let guardian_name = $state(guardian?.guardian_name ?? '');
+  let guardian_phone = $state(guardian?.guardian_phone ?? '');
+  let guardian_email = $state(guardian?.guardian_email ?? '');
   let agreed = $state(false);
   let hasInk = $state(false);
   let pad: SignaturePad | undefined = $state();
@@ -70,6 +74,8 @@
   /** Someone with the same name who is already signed up. */
   let existing = $state<KioskPerson | null>(null);
   let existingDismissed = false;
+  /** 18 or older, going by the birthday picked in step 1. */
+  let adult = $derived(isAdult(birthday()));
 
 
   function birthday(): Date | null {
@@ -102,20 +108,25 @@
       if (born > youngest) return 'You have to be at least five to sign up.';
     }
     if (step === 2) {
-      const problem = missing([
+      const address: [string, string][] = [
         [street, 'your street address'],
         [city, 'your town'],
         [region, 'your state'],
-        [guardian_name, "your guardian's name"],
-        [guardian_phone, "your guardian's phone number"],
-      ]);
+      ];
+      if (adult) {
+        const problem = missing([...address, [guardian_phone, 'your phone number']]);
+        if (problem) return problem;
+        if (!isPhone(guardian_phone)) return 'Please check your phone number. It should have 10 digits.';
+        return '';
+      }
+      const problem = missing([...address, [guardian_name, "your guardian's name"], [guardian_phone, "your guardian's phone number"]]);
       if (problem) return problem;
       if (!isFullName(guardian_name)) return "Please enter your guardian's first and last name.";
       if (!isPhone(guardian_phone)) return "Please check your guardian's phone number. It should have 10 digits.";
     }
     if (step === 3) {
-      if (!agreed) return 'A guardian needs to agree to the terms and conditions.';
-      if (!hasInk) return 'A guardian needs to sign in the box.';
+      if (!agreed) return adult ? 'Please agree to the terms and conditions.' : 'A guardian needs to agree to the terms and conditions.';
+      if (!hasInk) return adult ? 'Please sign in the box.' : 'A guardian needs to sign in the box.';
     }
     return '';
   }
@@ -144,7 +155,7 @@
       street: street.trim(),
       city: city.trim(),
       state: region.trim(),
-      guardian_name: guardian_name.trim(),
+      guardian_name: adult ? '' : guardian_name.trim(),
       guardian_phone: guardian_phone.trim(),
       guardian_email: guardian_email.trim(),
       signature: pad?.toDataUrl() ?? '',
@@ -163,7 +174,7 @@
     <h1>
       {sibling ? 'Sign up a sibling' : 'Sign up'}
       <span class="step">
-        Step {step} of 3 · {['About you', 'Your home and guardian', 'Rules and signature'][step - 1]}
+        Step {step} of 3 · {['About you', adult ? 'Your home and phone' : 'Your home and guardian', 'Rules and signature'][step - 1]}
       </span>
     </h1>
     <button type="button" class="btn quiet" onclick={oncancel}>Cancel</button>
@@ -215,9 +226,14 @@
         <TextField label="Town" bind:value={city} caps />
         <TextField label="State" bind:value={region} caps />
         <TownChips bind:city bind:region />
-        <TextField label="Guardian's full name" bind:value={guardian_name} caps />
-        <TextField label="Guardian's phone number" bind:value={guardian_phone} />
-        <TextField label="Guardian's email (optional)" bind:value={guardian_email} wide />
+        {#if adult}
+          <TextField label="Your phone number" bind:value={guardian_phone} />
+          <TextField label="Your email (optional)" bind:value={guardian_email} wide />
+        {:else}
+          <TextField label="Guardian's full name" bind:value={guardian_name} caps />
+          <TextField label="Guardian's phone number" bind:value={guardian_phone} />
+          <TextField label="Guardian's email (optional)" bind:value={guardian_email} wide />
+        {/if}
       </div>
     {:else}
       <div class="last-step">
@@ -233,11 +249,11 @@
             <span>
               I agree to the
               <button type="button" class="link" onclick={() => (showing = 'waiver')}>terms and conditions</button>
-              of leaving my child at the {NAME}.
+              {adult ? `of attending the ${NAME}.` : `of leaving my child at the ${NAME}.`}
             </span>
           </label>
           <div class="sign-title">
-            <span>Guardian's signature</span>
+            <span>{adult ? 'Your signature' : "Guardian's signature"}</span>
             <button type="button" class="link" onclick={() => pad?.clear()}>Clear</button>
           </div>
           <SignaturePad bind:this={pad} bind:hasInk />

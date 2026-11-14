@@ -31,6 +31,12 @@
   }
   void load();
 
+  // The browser's back and forward buttons can show this page again from
+  // memory. Check again, since going to the kiosk locks the staff page.
+  window.addEventListener('pageshow', (event) => {
+    if (event.persisted) void load();
+  });
+
   async function logIn(event: SubmitEvent) {
     event.preventDefault();
     try {
