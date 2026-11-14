@@ -19,7 +19,7 @@ pub const DATE_FORMAT: &str = "%Y-%m-%d";
 const SCHOOL_YEAR_STARTS_MONTH: u32 = 8;
 
 /// From this age a kid gives their own phone number instead of a guardian's.
-const ADULT_AGE: i32 = 18;
+const ADULT_AGE: u32 = 18;
 
 // ---------------------------------------------------------------- time helpers
 
@@ -197,11 +197,7 @@ fn info_expired(info_updated: Option<&str>, today: NaiveDate) -> bool {
 pub fn is_adult(birthday: Option<&str>, today: NaiveDate) -> bool {
     let Some(text) = birthday else { return false };
     let Ok(born) = NaiveDate::parse_from_str(text, DATE_FORMAT) else { return false };
-    let mut age = today.year() - born.year();
-    if (today.month(), today.day()) < (born.month(), born.day()) {
-        age -= 1;
-    }
-    age >= ADULT_AGE
+    today.years_since(born).is_some_and(|age| age >= ADULT_AGE)
 }
 
 const PERSON_COLUMNS: &str = "id, outlook_id, first_name, last_name, birthday, grade, street, city, state,

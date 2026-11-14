@@ -4,7 +4,7 @@
 
   import { api } from '../lib/api';
   import { GRADES } from '../lib/center';
-  import { formatDate, isAdult } from '../lib/time';
+  import { formatDate, fromDateText, isAdult } from '../lib/time';
   import type { Person } from '../lib/types';
   import PersonPicker from './PersonPicker.svelte';
 
@@ -27,7 +27,7 @@
   let merging = $state(false);
   let error = $state('');
   /** 18 or older: the phone and email are their own, not a guardian's. */
-  let adult = $derived(isAdult(editing.birthday));
+  let adult = $derived(isAdult(editing.birthday ? fromDateText(editing.birthday) : null));
 
   /** Runs a change and closes the window if it worked. */
   async function change(action: () => Promise<unknown>) {

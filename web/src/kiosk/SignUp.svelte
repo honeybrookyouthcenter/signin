@@ -61,7 +61,7 @@
   let existing = $state<KioskPerson | null>(null);
   let existingDismissed = false;
   /** 18 or older, going by the birthday picked in step 1. */
-  let adult = $derived(isAdult(birthday() ? toDateText(birthday()!) : null));
+  let adult = $derived(isAdult(birthday()));
 
 
   function birthday(): Date | null {

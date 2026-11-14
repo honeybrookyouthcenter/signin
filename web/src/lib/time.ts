@@ -60,12 +60,10 @@ export function ago(seconds: number): string {
 /** From this age a kid gives their own phone number instead of a guardian's. */
 const ADULT_AGE = 18;
 
-/** True if someone with this birthday ("2008-11-10") is 18 or older today. */
-export function isAdult(birthday: string | null | undefined, today = new Date()): boolean {
+/** True if someone born on this day is 18 or older today. False if we don't know. */
+export function isAdult(birthday: Date | null, today = new Date()): boolean {
   if (!birthday) return false;
-  const [year, month, day] = birthday.split('-').map(Number);
-  if (!year || !month || !day) return false;
-  let age = today.getFullYear() - year;
-  if (today.getMonth() + 1 < month || (today.getMonth() + 1 === month && today.getDate() < day)) age -= 1;
-  return age >= ADULT_AGE;
+  const grownUp = new Date(birthday);
+  grownUp.setFullYear(birthday.getFullYear() + ADULT_AGE);
+  return grownUp <= today;
 }
