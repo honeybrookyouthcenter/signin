@@ -266,14 +266,3 @@ also installs and starts the program on a Windows machine.
 **Tried at the center** (November 2026): installing, connecting Outlook, importing the
 old logs, changes reaching Outlook, backups in OneDrive, the program's window, the staff
 page as an app, the tablet in Edge kiosk mode, and the waiver text.
-
----
-
-## Switching over from the old app
-
-1. Install on the office computer, connect Outlook, and import the old logs.
-2. Run both for a night or two and compare the counts.
-3. Import once more to pick up the last nights, then put the tablet into Edge kiosk mode
-   on the new page.
-4. After a few good weeks, remove the old app. `server/src/import.rs` can then be
-   deleted too.
