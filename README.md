@@ -228,7 +228,9 @@ while it is in use can damage it. Only finished copies go there.
 
 Before the program may read and write Outlook contacts, Microsoft wants it registered as
 an "app". This is free and done **once**, by whoever maintains this. The ID it gives is
-not a secret. It is built into the program, so staff never see this step.
+not a secret: it shows up in every Microsoft sign-in link, and the program never uses a
+password or "client secret", so don't create one. It is built into the program, so staff
+never see this step.
 
 1. Go to <https://entra.microsoft.com> and sign in. Any Microsoft account that can open
    the Azure portal works. It does not have to be the youth center's account. If Microsoft
@@ -240,8 +242,11 @@ not a secret. It is built into the program, so staff never see this step.
    - Choose **Register**.
 3. Open **Authentication**. Under "Advanced settings", set **Allow public client flows**
    to **Yes**, and save.
-4. Open **API permissions → Add a permission → Microsoft Graph → Delegated permissions**,
-   tick **Contacts.ReadWrite**, and choose **Add permissions**. `User.Read` is already there.
+4. Open **API permissions → Add a permission → Microsoft Graph → Delegated permissions**.
+   Type `contacts` in the search box and open the **Contacts** group. Tick
+   **Contacts.ReadWrite** ("Have full access to user contacts"), and choose
+   **Add permissions**. `User.Read` is already there. A note saying personal accounts
+   don't support admin consent is fine: this permission doesn't need it.
 5. Open **Overview** and copy the **Application (client) ID**. It looks like
    `1a2b3c4d-0000-1111-2222-333344445555`.
 6. Paste it into `server/src/config.rs`:
