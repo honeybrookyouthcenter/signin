@@ -64,6 +64,14 @@
   }
 </script>
 
+{#snippet line(key: 'grade' | 'home' | 'guardian', label: string, value: string)}
+  <button type="button" class="line" class:checked={checked[key]} aria-pressed={checked[key]} onclick={() => (checked[key] = !checked[key])}>
+    <svg class="tick" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 12.5l3.5 3.5 6.5-7" /></svg>
+    <span class="label">{label}</span>
+    <span>{value}</span>
+  </button>
+{/snippet}
+
 <div class="screen">
   <div class="center">
     <div class="card" class:out={kind === 'out'}>
@@ -91,21 +99,9 @@
             <h2>One quick thing: is this still right?</h2>
             <p class="hint">Tap each line to check it.</p>
             <div class="lines">
-              <button type="button" class="line" class:checked={checked.grade} aria-pressed={checked.grade} onclick={() => (checked.grade = !checked.grade)}>
-                <span class="tick" aria-hidden="true"></span>
-                <span class="label">Grade</span>
-                <span class="value">{info.grade || 'not set'}</span>
-              </button>
-              <button type="button" class="line" class:checked={checked.home} aria-pressed={checked.home} onclick={() => (checked.home = !checked.home)}>
-                <span class="tick" aria-hidden="true"></span>
-                <span class="label">Home</span>
-                <span class="value">{info.address || 'not set'}</span>
-              </button>
-              <button type="button" class="line" class:checked={checked.guardian} aria-pressed={checked.guardian} onclick={() => (checked.guardian = !checked.guardian)}>
-                <span class="tick" aria-hidden="true"></span>
-                <span class="label">Guardian</span>
-                <span class="value">{info.guardian || 'not set'}{info.phone ? ` · ${info.phone}` : ''}</span>
-              </button>
+              {@render line('grade', 'Grade', info.grade || 'not set')}
+              {@render line('home', 'Home', info.address || 'not set')}
+              {@render line('guardian', 'Guardian', `${info.guardian || 'not set'}${info.phone ? ` · ${info.phone}` : ''}`)}
             </div>
             <div class="actions">
               <button type="button" class="btn primary" disabled={!allChecked} onclick={stillRight}>Yes, still right</button>
@@ -196,21 +192,22 @@
   .label {
     color: var(--muted);
   }
-  /* An empty circle that fills with a check mark when tapped. */
+  /* An empty circle that fills in green with a white check when tapped. */
   .tick {
     width: 1.8rem;
     height: 1.8rem;
     border: 1.5px solid var(--line-strong);
     border-radius: 50%;
-    background: center / 1.1rem no-repeat;
+    fill: none;
+    stroke: transparent;
+    stroke-width: 2.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
   }
   .checked .tick {
     border-color: var(--good);
-    background-color: var(--good);
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E");
-  }
-  .question .btn:disabled {
-    opacity: 0.35;
+    background: var(--good);
+    stroke: #fff;
   }
   .question .actions {
     margin-top: 1.5rem;
