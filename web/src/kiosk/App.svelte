@@ -22,9 +22,11 @@
         isNew?: boolean;
         askInfo?: boolean;
         undo?: () => void;
+        /** After a sign-up, what was entered, so a sibling can start from it. */
+        family?: SignUpForm;
       }
     | { name: 'info'; personId: string; firstName: string; info: MaskedInfo }
-    | { name: 'sign-up'; typedName: string };
+    | { name: 'sign-up'; typedName: string; family?: SignUpForm };
 
   /** With nobody touching the screen for this long, go back to the start. */
   const IDLE_SECONDS = 90;
@@ -77,7 +79,7 @@
 
   function finishSignUp(form: SignUpForm) {
     const { personId, signedInAt } = signUp(form);
-    screen = { name: 'done', kind: 'in', personId, firstName: form.first_name, time: signedInAt, isNew: true };
+    screen = { name: 'done', kind: 'in', personId, firstName: form.first_name, time: signedInAt, isNew: true, family: form };
   }
 
   function finishInfo(personId: string, firstName: string, changes: InfoChanges) {
@@ -160,6 +162,7 @@
       onundo={done.undo}
       onhome={home}
       onupdate={(info) => (screen = { name: 'info', personId: done.personId, firstName: done.firstName, info })}
+      onsibling={done.family ? () => (screen = { name: 'sign-up', typedName: '', family: done.family }) : undefined}
     />
   {/key}
 {:else if screen.name === 'info'}
@@ -171,7 +174,7 @@
     onsave={(changes) => finishInfo(editing.personId, editing.firstName, changes)}
   />
 {:else if screen.name === 'sign-up'}
-  <SignUp typedName={screen.typedName} oncancel={home} ondone={finishSignUp} onexisting={pick} />
+  <SignUp typedName={screen.typedName} family={screen.family} oncancel={home} ondone={finishSignUp} onexisting={pick} />
 {/if}
 
 {#if showRules}

@@ -1,9 +1,14 @@
 <script lang="ts">
   // Sign-up for a new kid, in three short steps:
   //   1. about you   2. home and guardian   3. rules and the guardian's signature
+  //
+  // For a sibling of a kid who just signed up, the last name, home and
+  // guardian start filled in from that kid, so a parent signing up several
+  // kids only types each kid's name, birthday and grade, and signs for each.
   // Someone 18 or older gives their own phone number and signs for themselves.
 
-  import { NAME, RULES } from '../lib/center';
+  import { HOME_STATE, NAME, RULES } from '../lib/center';
+  import { isFullName, isPhone } from '../lib/checks';
   import { normalize } from '../lib/search';
   import { isAdult, toDateText } from '../lib/time';
   import type { KioskPerson, SignUpForm } from '../lib/types';
@@ -13,15 +18,19 @@
   import SignaturePad from './SignaturePad.svelte';
   import { inputMode, kiosk } from './state.svelte';
   import TextField from './TextField.svelte';
+  import TownChips from './TownChips.svelte';
 
   let {
     typedName = '',
+    family,
     oncancel,
     ondone,
     onexisting,
   }: {
     /** What the kid typed in the search box before tapping Sign up. */
     typedName?: string;
+    /** The sign-up of a sibling, to start from. */
+    family?: SignUpForm;
     oncancel: () => void;
     ondone: (form: SignUpForm) => void;
     /** The kid turned out to be signed up already. */
@@ -37,22 +46,27 @@
   const capital = (word: string) => word.slice(0, 1).toUpperCase() + word.slice(1);
   // svelte-ignore state_referenced_locally
   const typedWords = typedName.trim().split(/\s+/).filter(Boolean).map(capital);
+  // svelte-ignore state_referenced_locally
+  const sibling = family;
 
   let step = $state(1);
   let error = $state('');
   let first_name = $state(typedWords[0] ?? '');
-  let last_name = $state(typedWords.slice(1).join(' '));
+  let last_name = $state(sibling?.last_name ?? typedWords.slice(1).join(' '));
   let grade = $state('');
   let month = $state('');
   let day = $state('');
   let year = $state('');
-  let street = $state('');
-  let city = $state('');
+  let street = $state(sibling?.street ?? '');
+  let city = $state(sibling?.city ?? '');
   // Not called `state`, because that would clash with Svelte's `$state`.
-  let region = $state('');
-  let guardian_name = $state('');
-  let guardian_phone = $state('');
-  let guardian_email = $state('');
+  let region = $state(sibling?.state ?? HOME_STATE);
+  // An older sibling who is 18 or older gave their own phone, not a guardian's.
+  // svelte-ignore state_referenced_locally
+  const guardian = sibling?.guardian_name ? sibling : undefined;
+  let guardian_name = $state(guardian?.guardian_name ?? '');
+  let guardian_phone = $state(guardian?.guardian_phone ?? '');
+  let guardian_email = $state(guardian?.guardian_email ?? '');
   let agreed = $state(false);
   let hasInk = $state(false);
   let pad: SignaturePad | undefined = $state();
@@ -96,11 +110,19 @@
     if (step === 2) {
       const address: [string, string][] = [
         [street, 'your street address'],
-        [city, 'your city'],
+        [city, 'your town'],
         [region, 'your state'],
       ];
-      if (adult) return missing([...address, [guardian_phone, 'your phone number']]);
-      return missing([...address, [guardian_name, "your guardian's name"], [guardian_phone, "your guardian's phone number"]]);
+      if (adult) {
+        const problem = missing([...address, [guardian_phone, 'your phone number']]);
+        if (problem) return problem;
+        if (!isPhone(guardian_phone)) return 'Please check your phone number. It should have 10 digits.';
+        return '';
+      }
+      const problem = missing([...address, [guardian_name, "your guardian's name"], [guardian_phone, "your guardian's phone number"]]);
+      if (problem) return problem;
+      if (!isFullName(guardian_name)) return "Please enter your guardian's first and last name.";
+      if (!isPhone(guardian_phone)) return "Please check your guardian's phone number. It should have 10 digits.";
     }
     if (step === 3) {
       if (!agreed) return adult ? 'Please agree to the terms and conditions.' : 'A guardian needs to agree to the terms and conditions.';
@@ -150,7 +172,7 @@
 <div class="screen">
   <div class="form-bar">
     <h1>
-      Sign up
+      {sibling ? 'Sign up a sibling' : 'Sign up'}
       <span class="step">
         Step {step} of 3 · {['About you', adult ? 'Your home and phone' : 'Your home and guardian', 'Rules and signature'][step - 1]}
       </span>
@@ -201,8 +223,9 @@
     {:else if step === 2}
       <div class="fields">
         <TextField label="Street address" bind:value={street} caps wide />
-        <TextField label="City" bind:value={city} caps />
+        <TextField label="Town" bind:value={city} caps />
         <TextField label="State" bind:value={region} caps />
+        <TownChips bind:city bind:region />
         {#if adult}
           <TextField label="Your phone number" bind:value={guardian_phone} />
           <TextField label="Your email (optional)" bind:value={guardian_email} wide />
