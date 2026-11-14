@@ -126,15 +126,20 @@ That's it. To bring over the old app's sign-in history, see
 
 - **Sign in:** type a few letters, tap your name. A confirmation shows for five seconds
   with an **Undo** button. Search forgives one typo.
-- **Info check:** when a kid's address and guardian info is more than six months old, the
-  confirmation also asks "is this still right?". The kid is already signed in by then, so
-  walking away loses nothing. Saved info is shown mostly hidden (`123 M•••`, `•••-•••-1234`)
+- **Info check:** once a school year, at a kid's first sign-in on or after August 1, the
+  confirmation asks what grade they are in now, then "is the rest still right?". The kid
+  is already signed in by then, so walking away loses nothing. (To move the date, change
+  `SCHOOL_YEAR_STARTS_MONTH` in `server/src/db.rs`.) Saved info is shown mostly hidden (`123 M•••`, `•••-•••-1234`)
   because anyone can tap any name. "Something changed" lets them retype only the part
   that changed.
 - **Sign out:** type your name and tap it, the same as signing in. The kiosk asks first,
   so nobody signs out by accident.
 - **Sign up:** three short screens (about you, home and guardian, rules and the
   guardian's signature). Finishing signs the kid in too.
+- **18 and older:** going by the birthday, sign-up and the info check ask for their own
+  phone number instead of a guardian's, and they sign the form themselves. Their phone
+  is kept where a guardian's phone would be, so it shows as the contact's home phone in
+  Outlook.
 - Everyone still signed in at the nightly sign-out time (11 PM unless changed in Settings)
   is signed out automatically.
 
@@ -383,10 +388,12 @@ Pushing a tag such as `v2.0.1` publishes `YouthCenterSignIn.zip` as a release.
 
 ## What has and hasn't been tested
 
-**Tested**, by 42 server tests, 11 page tests, and by driving both pages in a real
+**Tested**, by 43 server tests, 13 page tests, and by driving both pages in a real
 browser (Chromium):
 
 - Sign in, sign out, undo, sign up with signature, the info check, auto sign-out.
+- The start-of-school-year grade question, and sign-up and the info check for someone
+  18 or older.
 - The kiosk with the server stopped: sign-ins waited on the tablet and arrived with the
   right time once the server was back.
 - Staff page: fixing and adding visits, reports and CSV, editing, merging and removing

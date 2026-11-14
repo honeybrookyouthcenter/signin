@@ -56,3 +56,16 @@ export function ago(seconds: number): string {
   if (seconds < 86400) return `${Math.floor(seconds / 3600)} hr ago`;
   return `${Math.floor(seconds / 86400)} days ago`;
 }
+
+/** From this age a kid gives their own phone number instead of a guardian's. */
+const ADULT_AGE = 18;
+
+/** True if someone with this birthday ("2008-11-10") is 18 or older today. */
+export function isAdult(birthday: string | null | undefined, today = new Date()): boolean {
+  if (!birthday) return false;
+  const [year, month, day] = birthday.split('-').map(Number);
+  if (!year || !month || !day) return false;
+  let age = today.getFullYear() - year;
+  if (today.getMonth() + 1 < month || (today.getMonth() + 1 === month && today.getDate() < day)) age -= 1;
+  return age >= ADULT_AGE;
+}

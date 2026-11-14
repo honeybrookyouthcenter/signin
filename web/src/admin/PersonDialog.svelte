@@ -4,7 +4,7 @@
 
   import { api } from '../lib/api';
   import { GRADES } from '../lib/center';
-  import { formatDate } from '../lib/time';
+  import { formatDate, isAdult } from '../lib/time';
   import type { Person } from '../lib/types';
   import PersonPicker from './PersonPicker.svelte';
 
@@ -26,6 +26,8 @@
   let editing = $state<Partial<Person>>({ ...person, birthday: person.birthday ?? '' });
   let merging = $state(false);
   let error = $state('');
+  /** 18 or older: the phone and email are their own, not a guardian's. */
+  let adult = $derived(isAdult(editing.birthday));
 
   /** Runs a change and closes the window if it worked. */
   async function change(action: () => Promise<unknown>) {
@@ -91,9 +93,14 @@
         <label class="full">Street address <input type="text" bind:value={editing.street} /></label>
         <label>City <input type="text" bind:value={editing.city} /></label>
         <label>State <input type="text" bind:value={editing.state} /></label>
-        <label>Guardian's name <input type="text" bind:value={editing.guardian_name} /></label>
-        <label>Guardian's phone <input type="text" bind:value={editing.guardian_phone} /></label>
-        <label class="full">Guardian's email <input type="text" bind:value={editing.guardian_email} /></label>
+        {#if adult}
+          <label>Phone (their own, 18 or older) <input type="text" bind:value={editing.guardian_phone} /></label>
+          <label>Email <input type="text" bind:value={editing.guardian_email} /></label>
+        {:else}
+          <label>Guardian's name <input type="text" bind:value={editing.guardian_name} /></label>
+          <label>Guardian's phone <input type="text" bind:value={editing.guardian_phone} /></label>
+          <label class="full">Guardian's email <input type="text" bind:value={editing.guardian_email} /></label>
+        {/if}
         <label class="full">Notes <textarea rows="3" bind:value={editing.notes}></textarea></label>
       </div>
 

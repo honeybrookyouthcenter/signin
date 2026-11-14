@@ -172,6 +172,8 @@ struct MaskedInfo {
     address: String,
     guardian: String,
     phone: String,
+    /// 18 or older: they give their own phone number instead of a guardian's.
+    adult: bool,
 }
 
 async fn masked_info(State(state): State<Shared>, Path(id): Path<String>) -> ApiResult<MaskedInfo> {
@@ -185,6 +187,7 @@ async fn masked_info(State(state): State<Shared>, Path(id): Path<String>) -> Api
         address,
         guardian: mask_name(&person.guardian_name),
         phone: mask_phone(&person.guardian_phone),
+        adult: db::is_adult(person.birthday.as_deref(), db::today()),
     }))
 }
 

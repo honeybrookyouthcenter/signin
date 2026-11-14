@@ -25,6 +25,8 @@ export interface MaskedInfo {
   address: string;
   guardian: string;
   phone: string;
+  /** 18 or older: they give their own phone number instead of a guardian's. */
+  adult: boolean;
 }
 
 export interface InfoChanges {
