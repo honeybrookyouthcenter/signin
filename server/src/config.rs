@@ -9,7 +9,7 @@ use serde::Deserialize;
 /// The "Application (client) ID" of the Youth Center Sign In app registration
 /// at Microsoft. It is not a secret. The README explains how to get one.
 /// `client_id` under `[microsoft]` in config.toml overrides it.
-pub const BUILT_IN_CLIENT_ID: &str = "";
+pub const BUILT_IN_CLIENT_ID: &str = "9bb08eb8-1a52-42b5-bef6-d81ef7e351b8";
 
 /// The folder in OneDrive for backups, CSV logs and waiver signatures.
 /// It is the same folder the old app used.

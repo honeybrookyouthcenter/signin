@@ -288,7 +288,8 @@ async fn admin_people_pin_and_settings() {
     assert_eq!(status, StatusCode::OK);
     let status = server.get("/api/admin/status").await;
     assert_eq!(status["settings"], json!({ "auto_sign_out_time": "22:15", "use_keyboard": false, "pin_set": true }));
-    assert_eq!(status["outlook"]["configured"], false);
+    // The built-in Microsoft app ID counts as set up, even before anyone connects.
+    assert_eq!(status["outlook"]["configured"], true);
     assert_eq!(server.get("/api/kiosk/config").await["use_keyboard"], false);
 
     // Asking for the people list is how the kiosk shows it is connected.

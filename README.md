@@ -71,7 +71,7 @@ That's it. To bring over the old app's sign-in history, see
   works, run **Install** again and answer **Y** when it asks about marking the network
   as Private.
 - **Settings says Outlook is "not set up".** This copy of the program has no Microsoft
-  app ID yet. See [Get the Microsoft app ID](#get-the-microsoft-app-id).
+  app ID. Download the latest version, or see [Get the Microsoft app ID](#get-the-microsoft-app-id).
 - **Outlook asks to connect again later.** Microsoft forgets the sign-in after about 90
   days without use, for example over a long break. Choose Connect Outlook again.
 - **Windows shows its own keyboard over the kiosk's.** Switch under Settings → Kiosk →
@@ -364,9 +364,8 @@ browser (Chromium):
 
 **Not tested yet. Check these first at the center:**
 
-1. **Outlook with the real account.** The sync has never talked to Microsoft itself, and
-   the program has no Microsoft app ID until someone does
-   [Get the Microsoft app ID](#get-the-microsoft-app-id). After "Connect Outlook",
+1. **Outlook with the real account.** The sync has never talked to Microsoft itself.
+   The app ID is now built in, but no one has connected with it yet. After "Connect Outlook",
    confirm the kids appear with grade and guardian filled in. Look at one contact in
    Outlook after a kiosk edit to confirm the notes still look right.
 2. **The installer on the real office PC.** GitHub's Windows machine has no OneDrive, no
