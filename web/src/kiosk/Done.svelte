@@ -47,6 +47,11 @@
   /** The grade they picked for this school year. Empty until they pick one. */
   let grade = $state('');
   let seconds = $derived(info && !thanked ? SECONDS_WITH_QUESTION : thanked ? 1.5 : onsibling ? SECONDS_AFTER_SIGN_UP : SECONDS);
+  // The kid taps each line to check it. "Yes, still right" waits until both
+  // are checked, so they have to look at each one instead of tapping
+  // straight through. The grade needs no check: they just picked it.
+  let checked = $state({ home: false, contact: false });
+  let allChecked = $derived(checked.home && checked.contact);
   let hasInfo = $derived(info !== null && (info.address !== '' || info.guardian !== '' || info.phone !== ''));
 
   // Go home after a while. Starts over when the question appears.
@@ -66,6 +71,14 @@
     thanked = true;
   }
 </script>
+
+{#snippet line(key: 'home' | 'contact', label: string, value: string)}
+  <button type="button" class="line" class:checked={checked[key]} aria-pressed={checked[key]} onclick={() => (checked[key] = !checked[key])}>
+    <svg class="tick" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 12.5l3.5 3.5 6.5-7" /></svg>
+    <span class="label">{label}</span>
+    <span>{value}</span>
+  </button>
+{/snippet}
 
 <div class="screen">
   <div class="center">
@@ -95,21 +108,22 @@
             <div class="grades"><GradeChips bind:value={grade} /></div>
           {:else if hasInfo}
             <h2>Thanks. Is the rest still right?</h2>
-            <dl>
-              <dt>Grade</dt>
-              <dd>{grade}</dd>
-              <dt>Home</dt>
-              <dd>{info.address || 'not set'}</dd>
+            <p class="hint">Tap each line to check it.</p>
+            <div class="lines">
+              <div class="line checked">
+                <svg class="tick" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 12.5l3.5 3.5 6.5-7" /></svg>
+                <span class="label">Grade</span>
+                <span>{grade}</span>
+              </div>
+              {@render line('home', 'Home', info.address || 'not set')}
               {#if info.adult}
-                <dt>Phone</dt>
-                <dd>{info.phone || 'not set'}</dd>
+                {@render line('contact', 'Phone', info.phone || 'not set')}
               {:else}
-                <dt>Guardian</dt>
-                <dd>{info.guardian || 'not set'}{info.phone ? ` · ${info.phone}` : ''}</dd>
+                {@render line('contact', 'Guardian', `${info.guardian || 'not set'}${info.phone ? ` · ${info.phone}` : ''}`)}
               {/if}
-            </dl>
+            </div>
             <div class="actions">
-              <button type="button" class="btn primary" onclick={stillRight}>Yes, still right</button>
+              <button type="button" class="btn primary" disabled={!allChecked} onclick={stillRight}>Yes, still right</button>
               <button type="button" class="btn" onclick={() => info && onupdate({ ...info, grade })}>Something changed</button>
             </div>
           {:else}
@@ -169,18 +183,53 @@
   .question h2 {
     font-size: 1.3rem;
   }
-  dl {
-    display: grid;
-    grid-template-columns: auto 1fr;
-    gap: 0.35rem 1.4rem;
-    margin: 0.9rem 0 0;
-    font-size: 1.2rem;
+  .hint {
+    margin: 0.4rem 0 0;
+    color: var(--muted);
+    font-size: 1.05rem;
   }
-  dt {
+  .lines {
+    margin-top: 0.8rem;
+    border-top: 1px solid var(--line);
+  }
+  .line {
+    display: grid;
+    grid-template-columns: auto 6rem 1fr;
+    align-items: center;
+    gap: 1rem;
+    width: 100%;
+    min-height: 3.6rem;
+    padding: 0.5rem 0.2rem;
+    border: 0;
+    border-bottom: 1px solid var(--line);
+    background: none;
+    font: inherit;
+    font-size: 1.2rem;
+    text-align: left;
+    color: var(--text);
+  }
+  button.line:active {
+    background: var(--press);
+  }
+  .label {
     color: var(--muted);
   }
-  dd {
-    margin: 0;
+  /* An empty circle that fills in green with a white check when tapped. */
+  .tick {
+    width: 1.8rem;
+    height: 1.8rem;
+    border: 1.5px solid var(--line-strong);
+    border-radius: 50%;
+    fill: none;
+    stroke: transparent;
+    stroke-width: 2.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .checked .tick {
+    border-color: var(--good);
+    background: var(--good);
+    stroke: #fff;
   }
   .question .actions {
     margin-top: 1.5rem;
